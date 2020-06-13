@@ -2,6 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 
+(require 'subr-x)
+
 (define-error 'templatel-syntax-error "Syntax Error" 'templatel-error)
 
 (defun scanner/new (input)
@@ -69,7 +71,7 @@
   (let ((c (scanner/current scanner)))
     (if (and (>= c a) (<= c b))
         (scanner/any scanner)
-      (format "Expected %s-%s, got %s" a b c))))
+      (scanner/error scanner (format "Expected %s-%s, got %s" a b c)))))
 
 (defun scanner/or (scanner options)
   "SCANNER OPTIONS."
@@ -110,27 +112,74 @@
 
 (defun token/expr-op (scanner)
   "Read '{{' off SCANNER's input."
-  (scanner/matchs scanner "{{"))
+  (scanner/matchs scanner "{{")
+  (parser/_ scanner))
 
 (defun token/expr-cl (scanner)
   "Read '}}' off SCANNER's input."
-  (scanner/matchs scanner "}}"))
+  (scanner/matchs scanner "}}")
+  (parser/_ scanner))
 
 (defun token/stm-op (scanner)
   "Read '{%' off SCANNER's input."
-  (scanner/matchs scanner "{%"))
+  (scanner/matchs scanner "{%")
+  (parser/_ scanner))
 
 (defun token/stm-cl (scanner)
   "Read '%}' off SCANNER's input."
-  (scanner/matchs scanner "%}"))
+  (scanner/matchs scanner "%}")
+  (parser/_ scanner))
 
-(defun tk/dot (scanner)
+(defun token/dot (scanner)
   "Read '.' off SCANNER's input."
-  (scanner/matchs scanner "."))
+  (scanner/matchs scanner ".")
+  (parser/_ scanner))
 
 (defun parser/join-chars (chars)
-  "CHARS."
+  "Join all the CHARS forming a string."
   (string-join (mapcar 'byte-to-string chars) ""))
+
+(defun parser/_ (scanner)
+  "Read whitespaces from SCANNER."
+  (scanner/zero-or-more
+   scanner
+   #'(lambda()
+       (scanner/or
+        scanner
+        (list
+         #'(lambda() (parser/space scanner))
+         #'(lambda() (parser/comment scanner)))))))
+
+(defun parser/space (scanner)
+  "Consume spaces off SCANNER."
+  (scanner/or
+   scanner
+   (list
+    #'(lambda() (scanner/matchs scanner " "))
+    #'(lambda() (scanner/matchs scanner "\t"))
+    #'(lambda() (parser/eol scanner)))))
+
+(defun parser/eol (scanner)
+  "Read end of line from SCANNER."
+  (scanner/or
+   scanner
+   (list
+    #'(lambda() (scanner/matchs scanner "\r\n"))
+    #'(lambda() (scanner/matchs scanner "\n"))
+    #'(lambda() (scanner/matchs scanner "\r")))))
+
+(defun parser/comment (scanner)
+  "Read comment from SCANNER."
+  (scanner/matchs scanner "{#")
+  (let ((str (scanner/zero-or-more
+              scanner
+              #'(lambda()
+                  (scanner/not
+                   scanner
+                   #'(lambda() (scanner/matchs scanner "#}")))
+                  (scanner/any scanner)))))
+    (scanner/matchs scanner "#}")
+    (cons "Comment" (parser/join-chars str))))
 
 ;; Text <- (!(_EXPR_OPEN / _STM_OPEN) .)+
 (defun parser/text (scanner)
@@ -151,16 +200,175 @@
               #'(lambda() (token/stm-op scanner))))))
          (scanner/any scanner))))))
 
+;; Expression    <- _EXPR_OPEN Expr _EXPR_CLOSE
+(defun parser/expression (scanner)
+  "SCANNER."
+  (token/expr-op scanner)
+  (let ((expr (parser/expr scanner)))
+    (token/expr-cl scanner)
+    expr))
+
+;; Expr          <- (Value / Identifier) (_dot Expr)*
+(defun parser/expr (scanner)
+  "SCANNER."
+  (cons
+   "Expr"
+   (cons (scanner/or
+          scanner
+          (list #'(lambda() (parser/value scanner))
+                #'(lambda() (parser/identifier scanner))))
+         (scanner/zero-or-more
+          scanner
+          #'(lambda()
+              (token/dot scanner)
+              (parser/expr scanner))))))
+
+;; Value         <- (Number / BOOL / NIL / String)
+(defun parser/-value (scanner)
+  "Read value off SCANNER."
+  (scanner/or
+   scanner
+   (list
+    #'(lambda() (parser/number scanner))
+    #'(lambda() (parser/bool scanner))
+    #'(lambda() (parser/nil scanner))
+    #'(lambda() (parser/string scanner)))))
+
+(defun parser/value (scanner)
+  "Read Value from SCANNER."
+  (cons
+   "Value"
+   (let ((value (parser/-value scanner)))
+     (parser/_ scanner)
+     value)))
+
+;; Number        <- BIN / HEX / FLOAT / INT
+(defun parser/number (scanner)
+  "Read Number off SCANNER."
+  (cons
+   "Number"
+   (parser/join-chars
+    (scanner/or
+     scanner
+     (list
+      #'(lambda() (parser/bin scanner))
+      #'(lambda() (parser/hex scanner))
+      #'(lambda() (parser/float scanner))
+      #'(lambda() (parser/int scanner)))))))
+
+;; INT           <- [0-9]+                  _
+(defun parser/int (scanner)
+  "Read integer off SCANNER."
+  (scanner/one-or-more
+   scanner
+   #'(lambda() (scanner/range scanner ?0 ?9))))
+
+;; FLOAT         <- [0-9]* '.' [0-9]+       _
+(defun parser/float (scanner)
+  "Read float from SCANNER."
+  (append
+   (scanner/zero-or-more scanner #'(lambda() (scanner/range scanner ?0 ?9)))
+   (scanner/matchs scanner ".")
+   (scanner/one-or-more scanner #'(lambda() (scanner/range scanner ?0 ?9)))))
+
+;; BIN           <- '0b' [0-1]+             _
+(defun parser/bin (scanner)
+  "Read binary number from SCANNER."
+  (append
+   (scanner/matchs scanner "0b")
+   (scanner/one-or-more
+    scanner
+    #'(lambda() (scanner/range scanner ?0 ?1)))))
+
+;; HEX           <- '0x' [0-9a-fA-F]+       _
+(defun parser/hex (scanner)
+  "Read hex number from SCANNER."
+  (append
+   (scanner/matchs scanner "0x")
+   (scanner/one-or-more
+    scanner
+    #'(lambda()
+        (scanner/or
+         scanner
+         (list #'(lambda() (scanner/range scanner ?0 ?9))
+               #'(lambda() (scanner/range scanner ?a ?f))
+               #'(lambda() (scanner/range scanner ?A ?F))))))))
+
+;; BOOL          <- ('true' / 'false')         _
+(defun parser/bool (scanner)
+  "Read boolean value from SCANNER."
+  (cons
+   "Bool"
+   (scanner/or
+    scanner
+    (list #'(lambda() (scanner/matchs scanner "true") t)
+          #'(lambda() (scanner/matchs scanner "false") nil)))))
+
+;; NIL           <- 'nil'                      _
+(defun parser/nil (scanner)
+  "Read nil constant from SCANNER."
+  (scanner/matchs scanner "nil")
+  (cons "Nil" nil))
+
+;; String        <- _QUOTE (!_QUOTE .)* _QUOTE _
+(defun parser/string (scanner)
+  "Read a double quoted string from SCANNER."
+  (scanner/match scanner ?\")
+  (let ((str (scanner/zero-or-more
+              scanner
+              #'(lambda()
+                  (scanner/not
+                   scanner
+                   #'(lambda() (scanner/match scanner ?\")))
+                  (scanner/any scanner)))))
+    (scanner/match scanner ?\")
+    (parser/_ scanner)
+    (cons "String" (parser/join-chars str))))
+
+;; IdentStart    <- [a-zA-Z_]
+(defun parser/identstart (scanner)
+  "Read the first character of an identifier from SCANNER."
+  (scanner/or
+   scanner
+   (list #'(lambda() (scanner/range scanner ?a ?z))
+         #'(lambda() (scanner/range scanner ?A ?Z))
+         #'(lambda() (scanner/match scanner ?_)))))
+
+;; IdentCont    <- [a-zA-Z0-9_]*  _
+(defun parser/identcont (scanner)
+  "Read the rest of an identifier from SCANNER."
+  (scanner/zero-or-more
+   scanner
+   #'(lambda()
+       (scanner/or
+        scanner
+        (list #'(lambda() (scanner/range scanner ?a ?z))
+              #'(lambda() (scanner/range scanner ?A ?Z))
+              #'(lambda() (scanner/range scanner ?0 ?9))
+              #'(lambda() (scanner/match scanner ?_)))))))
+
+(defun parser/identifier (scanner)
+  "Read Identifier entry from SCANNER."
+  (cons
+   "Identifier"
+   (let ((identifier (parser/join-chars
+                      (cons (parser/identstart scanner)
+                            (parser/identcont scanner)))))
+     (parser/_ scanner)
+     identifier)))
+
 (defun parser/template (scanner)
   "Parse Template entry from SCANNER's input."
-
-
-  (parser/text scanner)
-
-  ;; (scanner/matchs scanner "{%")
-
-  ;; (scanner/one-or-more scanner #'(lambda() (scanner/matchs scanner "*")))
-  )
+  (parser/_ scanner)
+  (cons
+   "Template"
+   (scanner/zero-or-more
+    scanner
+    #'(lambda() (scanner/or
+            scanner
+            (list #'(lambda() (parser/text scanner))
+                  ;; #'(lambda() (parser/statement scanner))
+                  #'(lambda() (parser/expression scanner))))))))
 
 (defun templatel-parse-string (input)
   "Parse INPUT."
@@ -168,18 +376,8 @@
     (parser/template s)))
 
 
-(message "%s" (templatel-parse-string "Stuff Stuff Stuff"))
+(message "%s" (templatel-parse-string "Hello, {{ name }}!"))
 
 
-(defun templatel-render-string (template &rest context)
-  "Render TEMPLATE string with CONTEXT variables."
-  (templatel-parse-string template)
-  (message "%s" context))
-
-
-(templatel-render-string
- "Hello, {{ name }}.  It's now {{ time }}!"
- :name "Lincoln"
- :time "dinner time")
-
+(provide 'templatel)
 ;;; templatel.el ends here
