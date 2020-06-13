@@ -1,0 +1,61 @@
+Template      <- _ (Text / Statement / Expression)*
+
+Text          <- (!(_EXPR_OPEN / _STM_OPEN) .)+
+
+Expression    <- _EXPR_OPEN Expr _EXPR_CLOSE
+
+Statement     <- IfStatement / ForStatement
+
+IfStatement   <- _If Expr _STM_CLOSE Template Elif
+               / _If Expr _STM_CLOSE Template Else
+               / _If Expr _STM_CLOSE Template _EndIf
+
+Elif          <- _STM_OPEN _elif Expr _STM_CLOSE Template (Else / _EndIf)
+Else          <- _STM_OPEN _else _STM_CLOSE Template _EndIf
+_If           <- _STM_OPEN _if
+_EndIf        <- _STM_OPEN _endif _STM_CLOSE
+
+ForStatement  <- _For Expr _in Expr _STM_CLOSE Template _EndFor
+_For          <- _STM_OPEN _for
+_EndFor       <- _STM_OPEN _endfor _STM_CLOSE
+
+Expr          <- (Value / Identifier) (_dot Expr)*
+Value         <- (Number / BOOL / NIL / String)
+Number        <- BIN / HEX / FLOAT / INT
+String        <- _QUOTE (!_QUOTE .)* _QUOTE _
+BOOL          <- ('true' / 'false')         _
+NIL           <- 'nil'                      _
+
+
+Identifier    <- [a-zA-Z_][a-zA-Z0-9_]*  _
+INT           <- [0-9]+                  _
+FLOAT         <- [0-9]* '.' [0-9]+       _
+BIN           <- '0b' [0-1]+             _
+HEX           <- '0x' [0-9a-fA-F]+       _
+
+_EXPR_OPEN     <- '{{' _
+_EXPR_CLOSE    <- '}}' _
+_STM_OPEN      <- '{%' _
+_STM_CLOSE     <- '%}' _
+_comment_open  <- '{#' _
+_comment_close <- '#}' _
+_QUOTE         <- '"'  _
+
+
+# Keywords
+_dot            <- '.'      _
+_in             <- 'in'     _
+_is             <- 'is'     _
+_if             <- 'if'     _
+_else           <- 'else'   _
+_elif           <- 'elif'   _
+_endif          <- 'endif'  _
+_for            <- 'for'    _
+_endfor         <- 'endfor' _
+
+# Whitespace Handling
+_               <- (Space / Comment)*
+Comment         <- _comment_open (!_comment_close .)* _comment_close
+Space           <- ' ' / '\t' / _EOL
+_EOL            <- '\r\n' / '\n' / '\r'
+_EndOfFile      <- !.
