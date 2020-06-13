@@ -139,47 +139,19 @@
   "Join all the CHARS forming a string."
   (string-join (mapcar 'byte-to-string chars) ""))
 
-(defun parser/_ (scanner)
-  "Read whitespaces from SCANNER."
-  (scanner/zero-or-more
-   scanner
-   #'(lambda()
-       (scanner/or
-        scanner
-        (list
-         #'(lambda() (parser/space scanner))
-         #'(lambda() (parser/comment scanner)))))))
-
-(defun parser/space (scanner)
-  "Consume spaces off SCANNER."
-  (scanner/or
-   scanner
-   (list
-    #'(lambda() (scanner/matchs scanner " "))
-    #'(lambda() (scanner/matchs scanner "\t"))
-    #'(lambda() (parser/eol scanner)))))
-
-(defun parser/eol (scanner)
-  "Read end of line from SCANNER."
-  (scanner/or
-   scanner
-   (list
-    #'(lambda() (scanner/matchs scanner "\r\n"))
-    #'(lambda() (scanner/matchs scanner "\n"))
-    #'(lambda() (scanner/matchs scanner "\r")))))
-
-(defun parser/comment (scanner)
-  "Read comment from SCANNER."
-  (scanner/matchs scanner "{#")
-  (let ((str (scanner/zero-or-more
-              scanner
-              #'(lambda()
-                  (scanner/not
-                   scanner
-                   #'(lambda() (scanner/matchs scanner "#}")))
-                  (scanner/any scanner)))))
-    (scanner/matchs scanner "#}")
-    (cons "Comment" (parser/join-chars str))))
+;; Template      <- _ (Text / Statement / Expression)*
+(defun parser/template (scanner)
+  "Parse Template entry from SCANNER's input."
+  (parser/_ scanner)
+  (cons
+   "Template"
+   (scanner/zero-or-more
+    scanner
+    #'(lambda() (scanner/or
+            scanner
+            (list #'(lambda() (parser/text scanner))
+                  ;; #'(lambda() (parser/statement scanner))
+                  #'(lambda() (parser/expression scanner))))))))
 
 ;; Text <- (!(_EXPR_OPEN / _STM_OPEN) .)+
 (defun parser/text (scanner)
@@ -208,9 +180,9 @@
     (token/expr-cl scanner)
     expr))
 
-;; Expr          <- (Value / Identifier) (_dot Expr)*
+;; Expr          <- (Value / Identifier) Attribute*
 (defun parser/expr (scanner)
-  "SCANNER."
+  "Read an expression from SCANNER."
   (cons
    "Expr"
    (cons (scanner/or
@@ -219,9 +191,13 @@
                 #'(lambda() (parser/identifier scanner))))
          (scanner/zero-or-more
           scanner
-          #'(lambda()
-              (token/dot scanner)
-              (parser/expr scanner))))))
+          #'(lambda() (parser/attribute scanner))))))
+
+;; Attribute     <- _dot Expr
+(defun parser/attribute (scanner)
+  "Read an Attribute from SCANNER."
+  (token/dot scanner)
+  (cons "Attribute" (parser/expr scanner)))
 
 ;; Value         <- (Number / BOOL / NIL / String)
 (defun parser/-value (scanner)
@@ -347,6 +323,7 @@
               #'(lambda() (scanner/range scanner ?0 ?9))
               #'(lambda() (scanner/match scanner ?_)))))))
 
+;; Identifier   <- IdentStart IdentCont
 (defun parser/identifier (scanner)
   "Read Identifier entry from SCANNER."
   (cons
@@ -357,18 +334,52 @@
      (parser/_ scanner)
      identifier)))
 
-(defun parser/template (scanner)
-  "Parse Template entry from SCANNER's input."
-  (parser/_ scanner)
-  (cons
-   "Template"
-   (scanner/zero-or-more
-    scanner
-    #'(lambda() (scanner/or
-            scanner
-            (list #'(lambda() (parser/text scanner))
-                  ;; #'(lambda() (parser/statement scanner))
-                  #'(lambda() (parser/expression scanner))))))))
+;; _               <- (Space / Comment)*
+(defun parser/_ (scanner)
+  "Read whitespaces from SCANNER."
+  (scanner/zero-or-more
+   scanner
+   #'(lambda()
+       (scanner/or
+        scanner
+        (list
+         #'(lambda() (parser/space scanner))
+         #'(lambda() (parser/comment scanner)))))))
+
+;; Space           <- ' ' / '\t' / _EOL
+(defun parser/space (scanner)
+  "Consume spaces off SCANNER."
+  (scanner/or
+   scanner
+   (list
+    #'(lambda() (scanner/matchs scanner " "))
+    #'(lambda() (scanner/matchs scanner "\t"))
+    #'(lambda() (parser/eol scanner)))))
+
+;; _EOL            <- '\r\n' / '\n' / '\r'
+(defun parser/eol (scanner)
+  "Read end of line from SCANNER."
+  (scanner/or
+   scanner
+   (list
+    #'(lambda() (scanner/matchs scanner "\r\n"))
+    #'(lambda() (scanner/matchs scanner "\n"))
+    #'(lambda() (scanner/matchs scanner "\r")))))
+
+;; Comment         <- "{#" (!"#}" .)* "#}"
+(defun parser/comment (scanner)
+  "Read comment from SCANNER."
+  (scanner/matchs scanner "{#")
+  (let ((str (scanner/zero-or-more
+              scanner
+              #'(lambda()
+                  (scanner/not
+                   scanner
+                   #'(lambda() (scanner/matchs scanner "#}")))
+                  (scanner/any scanner)))))
+    (scanner/matchs scanner "#}")
+    (cons "Comment" (parser/join-chars str))))
+
 
 (defun templatel-parse-string (input)
   "Parse INPUT."
@@ -376,7 +387,7 @@
     (parser/template s)))
 
 
-(message "%s" (templatel-parse-string "Hello, {{ name }}!"))
+;(message "%s" (templatel-parse-string "Hello, {{ name }}!"))
 
 
 (provide 'templatel)

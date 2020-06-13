@@ -19,7 +19,8 @@ ForStatement  <- _For Expr _in Expr _STM_CLOSE Template _EndFor
 _For          <- _STM_OPEN _for
 _EndFor       <- _STM_OPEN _endfor _STM_CLOSE
 
-Expr          <- (Value / Identifier) (_dot Expr)*
+Attribute     <- (_dot Expr)
+Expr          <- (Value / Identifier) Attribute*
 Value         <- (Number / BOOL / NIL / String)
 Number        <- BIN / HEX / FLOAT / INT
 String        <- _QUOTE (!_QUOTE .)* _QUOTE _
