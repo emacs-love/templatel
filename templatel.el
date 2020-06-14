@@ -137,6 +137,26 @@
   (scanner/matchs scanner ".")
   (parser/_ scanner))
 
+(defun token/if (scanner)
+  "Read 'if' off SCANNER's input."
+  (scanner/matchs scanner "if")
+  (parser/_ scanner))
+
+(defun token/elif (scanner)
+  "Read 'elif' off SCANNER's input."
+  (scanner/matchs scanner "elif")
+  (parser/_ scanner))
+
+(defun token/else (scanner)
+  "Read 'else' off SCANNER's input."
+  (scanner/matchs scanner "else")
+  (parser/_ scanner))
+
+(defun token/endif (scanner)
+  "Read 'endif' off SCANNER's input."
+  (scanner/matchs scanner "endif")
+  (parser/_ scanner))
+
 (defun parser/join-chars (chars)
   "Join all the CHARS forming a string."
   (string-join (mapcar 'byte-to-string chars) ""))
@@ -156,7 +176,7 @@
     #'(lambda() (scanner/or
             scanner
             (list #'(lambda() (parser/text scanner))
-                  ;; #'(lambda() (parser/statement scanner))
+                  #'(lambda() (parser/statement scanner))
                   #'(lambda() (parser/expression scanner))))))))
 
 ;; Text <- (!(_EXPR_OPEN / _STM_OPEN) .)+
@@ -178,13 +198,109 @@
               #'(lambda() (token/stm-op scanner))))))
          (scanner/any scanner))))))
 
+;; Statement     <- IfStatement / ForStatement
+(defun parser/statement (scanner)
+  "Parse a statement from SCANNER."
+  (scanner/or
+   scanner
+   (list
+    #'(lambda() (parser/if-stm scanner))
+    ;#'(lambda() (parser/for-stm scanner))
+    )))
+
+;; IfStatement   <- _If Expr _STM_CLOSE Template Elif
+;;                / _If Expr _STM_CLOSE Template Else
+;;                / _If Expr _STM_CLOSE Template _EndIf
+(defun parser/if-stm (scanner)
+  "SCANNER."
+  (scanner/or
+   scanner
+   (list ;#'(lambda() (parser/if-stm-elif scanner))
+         ;#'(lambda() (parser/if-stm-else scanner))
+         #'(lambda() (parser/if-stm-endif scanner)))))
+
+;; _If Expr _STM_CLOSE Template Elif
+(defun parser/if-stm-elif (scanner)
+  "Parse elif from SCANNER."
+  (parser/if scanner)
+  (let* ((expr (parser/expr scanner))
+         (_ (token/stm-cl scanner))
+         (tmpl (parser/template scanner))
+         (elif (parser/elif scanner)))
+    (cons "Elif" (append expr tmpl elif))))
+
+;; _If Expr _STM_CLOSE Template Else
+(defun parser/if-stm-else (scanner)
+  "Parse else from SCANNER."
+  (parser/if scanner)
+  (let* ((expr (parser/expr scanner))
+         (_ (token/stm-cl scanner))
+         (tmpl (parser/template scanner))
+         (else (parser/else scanner)))
+    (cons "Else" (append expr tmpl else))))
+
+;; _If Expr _STM_CLOSE Template _EndIf
+(defun parser/if-stm-endif (scanner)
+  "Parse endif from SCANNER."
+  (parser/if scanner)
+  (let* ((expr (parser/expr scanner))
+         (_    (token/stm-cl scanner))
+         (tmpl (parser/template scanner))
+         (_    (parser/endif scanner)))
+    ;; (message "---- E: %s: " expr)
+    ;; (message "---- T: %s: " tmpl)
+    ;; (message "---- A: %s: " (list expr tmpl))
+    (cons "IfStatement" (list expr tmpl))))
+
+;; Elif          <- _STM_OPEN _elif Expr _STM_CLOSE Template (Else / _EndIf)
+(defun parser/elif (scanner)
+  "Parse elif expression off SCANNER."
+  (token/stm-op scanner)
+  (token/elif scanner)
+  (let ((expr (parser/expr scanner))
+        (_    (token/stm-cl scanner))
+        (tmpl (parser/template scanner)))
+    (cons
+     "Elif"
+     (append
+      expr
+      tmpl
+      (scanner/or
+       scanner
+       (list
+        #'(lambda() (parser/else scanner))
+        #'(lambda() (parser/endif scanner))))))))
+
+;; _If           <- _STM_OPEN _if
+(defun parser/if (scanner)
+  "Parse if condition off SCANNER."
+  (token/stm-op scanner)
+  (token/if scanner))
+
+;; Else          <- _STM_OPEN _else _STM_CLOSE Template _EndIf
+(defun parser/else (scanner)
+  "Parse else expression off SCANNER."
+  (token/stm-op scanner)
+  (token/else scanner)
+  (token/stm-cl scanner)
+  (let ((tmpl (parser/template scanner)))
+    (parser/endif scanner)
+    (cons "Else" tmpl)))
+
+;; _EndIf        <- _STM_OPEN _endif _STM_CLOSE
+(defun parser/endif (scanner)
+  "Parse endif tag off SCANNER."
+  (token/stm-op scanner)
+  (token/endif scanner)
+  (token/stm-cl scanner))
+
 ;; Expression    <- _EXPR_OPEN Expr _EXPR_CLOSE
 (defun parser/expression (scanner)
   "SCANNER."
   (token/expr-op scanner)
   (let ((expr (parser/expr scanner)))
     (token/expr-cl scanner)
-    expr))
+    (cons "Expression" expr)))
 
 ;; Expr          <- (Value / Identifier) Attribute*
 (defun parser/expr (scanner)
@@ -390,16 +506,20 @@
 
 ;; --- Compiler ---
 
-(defun compiler/template (tree)
+(defun compiler/wrap (tree)
   "Compile Template node into a function with TREE as body."
   `(lambda(env)
      (with-temp-buffer
-       ,@(compiler/run tree)
+       ,@tree
        (buffer-string))))
 
 (defun compiler/expr (tree)
-  "Compile an expression from TREE."
+  "Compile an expr from TREE."
   (compiler/run (car tree)))
+
+(defun compiler/expression (tree)
+  "Compile an expression from TREE."
+  `(insert ,(compiler/run tree)))
 
 (defun compiler/text (tree)
   "Compile text from TREE."
@@ -407,18 +527,31 @@
 
 (defun compiler/identifier (tree)
   "Compile identifier from TREE."
-  `(insert (cdr (assoc ,tree env))))
+  `(cdr (assoc ,tree env)))
+
+(defun compiler/if (tree)
+  "Compile if statement off TREE."
+  ;; (message "IF: %s" tree)
+  (let ((expr (car tree))
+        (body (cadr tree)))
+    ;; (message "EXPR: %s" expr)
+    ;; (message "BODY: %s" body)
+    `(if ,(compiler/run expr)
+         ,@(compiler/run body))))
 
 (defun compiler/run (tree)
   "Compile TREE into bytecode."
+  ;; (message "THIS IS TREE: %s" tree)
   (pcase tree
     (`() nil)
-    (`("Template"   . ,a) (compiler/template a))
-    (`("Text"       . ,a) (compiler/text a))
-    (`("Identifier" . ,a) (compiler/identifier a))
-    (`("Expr"       . ,a) (compiler/expr a))
-    ((pred listp)         (mapcar #'compiler/run tree))
-    (_ (message "NOENTIENDO: %s" tree))))
+    (`("Template"    . ,a) (compiler/run a))
+    (`("Text"        . ,a) (compiler/text a))
+    (`("Identifier"  . ,a) (compiler/identifier a))
+    (`("Expr"        . ,a) (compiler/expr a))
+    (`("Expression"  . ,a) (compiler/expression a))
+    (`("IfStatement" . ,a) (compiler/if a))
+    ((pred listp)          (mapcar #'compiler/run tree))
+    (_ (message "NOENTIENDO: `%s`" tree))))
 
 
 
@@ -432,7 +565,7 @@
 (defun templatel-compile-string (input)
   "Compile INPUT to Lisp code."
   (let ((tree (templatel-parse-string input)))
-    (compiler/run tree)))
+    (compiler/wrap (compiler/run tree))))
 
 (defun templatel-render-code (code env)
   "Render CODE to final output with variables from ENV."
@@ -441,9 +574,9 @@
 (defun templatel-render-string (input env)
   "Render INPUT to final output with variables from ENV."
   (let ((code (templatel-compile-string input)))
-    (templatel-render-code code env)))
+   (templatel-render-code code env)))
 
-;; (let ((s (scanner/new "Hello, world!")))
+;; (let ((s (scanner/new "{% if x %}Stuff{{ x }}{% endif %}")))
 ;;   (message "%s" (compiler/run (parser/template s))))
 
 (provide 'templatel)

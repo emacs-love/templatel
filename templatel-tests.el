@@ -8,6 +8,15 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-template-if-true ()
+  (should
+   (equal
+    (templatel-render-string
+     "<h1>Hello {% if enabled %}{{ name }}{% endif %}</h1>"
+     '(("name" . "Emacs")
+       ("enabled" . t)))
+    "<h1>Hello Emacs</h1>")))
+
 (ert-deftest render-template-variable ()
   (should (equal
            (templatel-render-string "<h1>Hello {{ name }}</h1>" '(("name" . "Emacs")))
@@ -27,10 +36,7 @@
          (tree (parser/template s)))
     (should (equal
              (compiler/run tree)
-             '(lambda(env)
-                (with-temp-buffer
-                  (insert "<h1>Hello Emacs</h1>")
-                  (buffer-string)))))))
+             '((insert "<h1>Hello Emacs</h1>"))))))
 
 (ert-deftest compile-text ()
   (let* ((s (scanner/new "<h1>Hello Emacs</h1>"))
@@ -43,12 +49,21 @@
 
 ;; --- Parser & Scanner ---
 
+(ert-deftest template-if ()
+  (let* ((s (scanner/new "{% if show %}{{ show }}{% endif %}")))
+    (should (equal
+             (parser/template s)
+             '("Template"
+               ("IfStatement"
+                ("Expr" ("Identifier" . "show"))
+                ("Template" ("Expression" . ("Expr" ("Identifier" . "show"))))))))))
+
 (ert-deftest template-text ()
   (let ((s (scanner/new "Hello, {{ name }}!")))
     (should (equal
              (parser/template s)
              '("Template" . (("Text" . "Hello, ")
-                             ("Expr" . (("Identifier" . "name")))
+                             ("Expression" . ("Expr" . (("Identifier" . "name"))))
                              ("Text" . "!")))))))
 
 (ert-deftest expr-value-string ()
