@@ -8,6 +8,24 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-template-if-else-n ()
+  (should
+   (equal
+    (templatel-render-string
+     "<h1>Hello {% if enabled %}{{ name }}{% else %}Non-MX{% endif %}</h1>"
+     '(("name" . "Emacs")
+       ("enabled" . nil)))
+    "<h1>Hello Non-MX</h1>")))
+
+(ert-deftest render-template-if-else-t ()
+  (should
+   (equal
+    (templatel-render-string
+     "<h1>Hello {% if enabled %}{{ name }}{% else %}Non-Emacs{% endif %}</h1>"
+     '(("name" . "Emacs")
+       ("enabled" . t)))
+    "<h1>Hello Emacs</h1>")))
+
 (ert-deftest render-template-if-true ()
   (should
    (equal
@@ -16,6 +34,15 @@
      '(("name" . "Emacs")
        ("enabled" . t)))
     "<h1>Hello Emacs</h1>")))
+
+(ert-deftest render-template-if-false ()
+  (should
+   (equal
+    (templatel-render-string
+     "<h1>Hello {% if enabled %}{{ name }}{% endif %}</h1>"
+     '(("name" . "Emacs")
+       ("enabled" . nil)))
+    "<h1>Hello </h1>")))
 
 (ert-deftest render-template-variable ()
   (should (equal
@@ -49,21 +76,36 @@
 
 ;; --- Parser & Scanner ---
 
-(ert-deftest template-if ()
-  (let* ((s (scanner/new "{% if show %}{{ show }}{% endif %}")))
+(ert-deftest template-if-else ()
+  (let* ((s (scanner/new "{% if show %}{{ show }}{% else %}Hide{% endif %}"))
+         (txt (parser/template s)))
     (should (equal
-             (parser/template s)
+             txt
+             '("Template"
+               ("IfElse"
+                ("Expr"
+                 ("Identifier" . "show"))
+                ("Template"
+                 ("Expression" ("Expr" ("Identifier" . "show"))))
+                ("Else"
+                 ("Template" ("Text" . "Hide")))))))))
+
+(ert-deftest template-if ()
+  (let* ((s (scanner/new "{% if show %}{{ show }}{% endif %}"))
+         (txt (parser/template s)))
+    (should (equal
+             txt
              '("Template"
                ("IfStatement"
                 ("Expr" ("Identifier" . "show"))
-                ("Template" ("Expression" . ("Expr" ("Identifier" . "show"))))))))))
+                ("Template" ("Expression" ("Expr" ("Identifier" . "show"))))))))))
 
 (ert-deftest template-text ()
   (let ((s (scanner/new "Hello, {{ name }}!")))
     (should (equal
              (parser/template s)
              '("Template" . (("Text" . "Hello, ")
-                             ("Expression" . ("Expr" . (("Identifier" . "name"))))
+                             ("Expression" ("Expr" . (("Identifier" . "name"))))
                              ("Text" . "!")))))))
 
 (ert-deftest expr-value-string ()

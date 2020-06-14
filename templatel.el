@@ -216,7 +216,7 @@
   (scanner/or
    scanner
    (list ;#'(lambda() (parser/if-stm-elif scanner))
-         ;#'(lambda() (parser/if-stm-else scanner))
+         #'(lambda() (parser/if-stm-else scanner))
          #'(lambda() (parser/if-stm-endif scanner)))))
 
 ;; _If Expr _STM_CLOSE Template Elif
@@ -227,7 +227,7 @@
          (_ (token/stm-cl scanner))
          (tmpl (parser/template scanner))
          (elif (parser/elif scanner)))
-    (cons "Elif" (append expr tmpl elif))))
+    (cons "IfStatement" (append expr tmpl elif))))
 
 ;; _If Expr _STM_CLOSE Template Else
 (defun parser/if-stm-else (scanner)
@@ -237,7 +237,7 @@
          (_ (token/stm-cl scanner))
          (tmpl (parser/template scanner))
          (else (parser/else scanner)))
-    (cons "Else" (append expr tmpl else))))
+    (cons "IfElse" (list expr tmpl else))))
 
 ;; _If Expr _STM_CLOSE Template _EndIf
 (defun parser/if-stm-endif (scanner)
@@ -285,7 +285,7 @@
   (token/stm-cl scanner)
   (let ((tmpl (parser/template scanner)))
     (parser/endif scanner)
-    (cons "Else" tmpl)))
+    (cons "Else" (list tmpl))))
 
 ;; _EndIf        <- _STM_OPEN _endif _STM_CLOSE
 (defun parser/endif (scanner)
@@ -300,7 +300,7 @@
   (token/expr-op scanner)
   (let ((expr (parser/expr scanner)))
     (token/expr-cl scanner)
-    (cons "Expression" expr)))
+    (cons "Expression" (list expr))))
 
 ;; Expr          <- (Value / Identifier) Attribute*
 (defun parser/expr (scanner)
@@ -519,7 +519,7 @@
 
 (defun compiler/expression (tree)
   "Compile an expression from TREE."
-  `(insert ,(compiler/run tree)))
+  `(insert ,@(compiler/run tree)))
 
 (defun compiler/text (tree)
   "Compile text from TREE."
@@ -528,6 +528,19 @@
 (defun compiler/identifier (tree)
   "Compile identifier from TREE."
   `(cdr (assoc ,tree env)))
+
+(defun compiler/if-else (tree)
+  "Compile if/else statement off TREE."
+  ;; (message "ELSE: %s" tree)
+  (let ((expr (car tree))
+        (body (cadr tree))
+        (else (cadr (caddr tree))))
+    ;; (message "EXPR: %s" expr)
+    ;; (message "BODY: %s" body)
+    ;; (message "ELSE: %s" else)
+    `(if ,(compiler/run expr)
+         ,@(compiler/run body)
+       ,@(compiler/run else))))
 
 (defun compiler/if (tree)
   "Compile if statement off TREE."
@@ -547,6 +560,7 @@
     (`("Template"    . ,a) (compiler/run a))
     (`("Text"        . ,a) (compiler/text a))
     (`("Identifier"  . ,a) (compiler/identifier a))
+    (`("IfElse"      . ,a) (compiler/if-else a))
     (`("Expr"        . ,a) (compiler/expr a))
     (`("Expression"  . ,a) (compiler/expression a))
     (`("IfStatement" . ,a) (compiler/if a))
