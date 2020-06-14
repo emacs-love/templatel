@@ -6,6 +6,38 @@
 (require 'cl-lib)
 (require 'templatel)
 
+;; --- Renderer --
+
+(ert-deftest render-template ()
+  (should (equal
+           (templatel-render-string "<h1>Hello Emacs</h1>" nil)
+           "<h1>Hello Emacs</h1>")))
+
+
+
+;; --- Compiler ---
+
+(ert-deftest compile-template ()
+  (let* ((s (scanner/new "<h1>Hello Emacs</h1>"))
+         (tree (parser/template s)))
+    (should (equal
+             (compiler/run tree)
+             '(lambda(env)
+                (with-temp-buffer
+                  (insert "<h1>Hello Emacs</h1>")
+                  (buffer-string)))))))
+
+(ert-deftest compile-text ()
+  (let* ((s (scanner/new "<h1>Hello Emacs</h1>"))
+         (tree (parser/text s)))
+    (should (equal
+             (compiler/run tree)
+             '(insert "<h1>Hello Emacs</h1>")))))
+
+
+
+;; --- Parser & Scanner ---
+
 (ert-deftest template-text ()
   (let ((s (scanner/new "Hello, {{ name }}!")))
     (should (equal

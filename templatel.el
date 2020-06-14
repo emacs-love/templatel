@@ -6,6 +6,8 @@
 
 (define-error 'templatel-syntax-error "Syntax Error" 'templatel-error)
 
+;; --- Scanner ---
+
 (defun scanner/new (input)
   "Create scanner for INPUT."
   (list input 0))
@@ -138,6 +140,10 @@
 (defun parser/join-chars (chars)
   "Join all the CHARS forming a string."
   (string-join (mapcar 'byte-to-string chars) ""))
+
+
+
+;; --- Parser ---
 
 ;; Template      <- _ (Text / Statement / Expression)*
 (defun parser/template (scanner)
@@ -380,15 +386,52 @@
     (scanner/matchs scanner "#}")
     (cons "Comment" (parser/join-chars str))))
 
+
+
+;; --- Compiler ---
+
+
+(defun compiler/template (tree)
+  "Compile Template node into a function with TREE as body."
+  `(lambda(env)
+     (with-temp-buffer
+       ,@(compiler/run tree)
+       (buffer-string))))
+
+
+(defun compiler/run (tree)
+  "Compile TREE into bytecode."
+  (pcase tree
+    (`() nil)
+    (`("Template" . ,a) (compiler/template a))
+    (`("Text" . ,a) `(insert ,a))
+    ((pred listp) (mapcar #'compiler/run tree))))
+
+
+
+;; --- Public API ---
 
 (defun templatel-parse-string (input)
-  "Parse INPUT."
+  "Parse INPUT into a tree."
   (let ((s (scanner/new input)))
     (parser/template s)))
 
+(defun templatel-compile-string (input)
+  "Compile INPUT to Lisp code."
+  (let ((tree (templatel-parse-string input)))
+    (compiler/run tree)))
 
-;(message "%s" (templatel-parse-string "Hello, {{ name }}!"))
+(defun templatel-render-code (code env)
+  "Render CODE to final output with variables from ENV."
+  (funcall (eval code) env))
 
+(defun templatel-render-string (input env)
+  "Render INPUT to final output with variables from ENV."
+  (let ((code (templatel-compile-string input)))
+    (templatel-render-code code env)))
+
+;; (let ((s (scanner/new "Hello, world!")))
+;;   (message "%s" (compiler/run (parser/template s))))
 
 (provide 'templatel)
 ;;; templatel.el ends here
