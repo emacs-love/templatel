@@ -390,7 +390,6 @@
 
 ;; --- Compiler ---
 
-
 (defun compiler/template (tree)
   "Compile Template node into a function with TREE as body."
   `(lambda(env)
@@ -398,14 +397,28 @@
        ,@(compiler/run tree)
        (buffer-string))))
 
+(defun compiler/expr (tree)
+  "Compile an expression from TREE."
+  (compiler/run (car tree)))
+
+(defun compiler/text (tree)
+  "Compile text from TREE."
+  `(insert ,tree))
+
+(defun compiler/identifier (tree)
+  "Compile identifier from TREE."
+  `(insert (cdr (assoc ,tree env))))
 
 (defun compiler/run (tree)
   "Compile TREE into bytecode."
   (pcase tree
     (`() nil)
-    (`("Template" . ,a) (compiler/template a))
-    (`("Text" . ,a) `(insert ,a))
-    ((pred listp) (mapcar #'compiler/run tree))))
+    (`("Template"   . ,a) (compiler/template a))
+    (`("Text"       . ,a) (compiler/text a))
+    (`("Identifier" . ,a) (compiler/identifier a))
+    (`("Expr"       . ,a) (compiler/expr a))
+    ((pred listp)         (mapcar #'compiler/run tree))
+    (_ (message "NOENTIENDO: %s" tree))))
 
 
 
