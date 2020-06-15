@@ -86,6 +86,15 @@
          (progn (scanner/cursor/set scanner cursor)
                 (scanner/or scanner (cdr options))))))))
 
+(defun scanner/optional (scanner expr)
+  "SCANNER EXPR."
+  (let ((cursor (scanner/cursor scanner)))
+    (condition-case nil
+        (funcall expr)
+      (templatel-error
+       (scanner/cursor/set scanner cursor)
+       nil))))
+
 (defun scanner/not (scanner expr)
   "SCANNER EXPR."
   (let* ((cursor (scanner/cursor scanner))
@@ -225,19 +234,20 @@
   "SCANNER."
   (scanner/or
    scanner
-   (list ;#'(lambda() (parser/if-stm-elif scanner))
+   (list #'(lambda() (parser/if-stm-elif scanner))
          #'(lambda() (parser/if-stm-else scanner))
          #'(lambda() (parser/if-stm-endif scanner)))))
 
-;; _If Expr _STM_CLOSE Template Elif
+;; _If Expr _STM_CLOSE Template Elif+ Else?
 (defun parser/if-stm-elif (scanner)
   "Parse elif from SCANNER."
   (parser/if scanner)
   (let* ((expr (parser/expr scanner))
          (_ (token/stm-cl scanner))
          (tmpl (parser/template scanner))
-         (elif (parser/elif scanner)))
-    (cons "IfStatement" (append expr tmpl elif))))
+         (elif (scanner/one-or-more scanner #'(lambda() (parser/elif scanner))))
+         (else (scanner/optional scanner #'(lambda() (parser/else scanner)))))
+    (cons "IfElif" (list expr tmpl elif else))))
 
 ;; _If Expr _STM_CLOSE Template Else
 (defun parser/if-stm-else (scanner)
@@ -262,7 +272,7 @@
     ;; (message "---- A: %s: " (list expr tmpl))
     (cons "IfStatement" (list expr tmpl))))
 
-;; Elif          <- _STM_OPEN _elif Expr _STM_CLOSE Template (Else / _EndIf)
+;; Elif          <- _STM_OPEN _elif Expr _STM_CLOSE Template
 (defun parser/elif (scanner)
   "Parse elif expression off SCANNER."
   (token/stm-op scanner)
@@ -270,16 +280,7 @@
   (let ((expr (parser/expr scanner))
         (_    (token/stm-cl scanner))
         (tmpl (parser/template scanner)))
-    (cons
-     "Elif"
-     (append
-      expr
-      tmpl
-      (scanner/or
-       scanner
-       (list
-        #'(lambda() (parser/else scanner))
-        #'(lambda() (parser/endif scanner))))))))
+    (cons "Elif" (list expr tmpl))))
 
 ;; _If           <- _STM_OPEN _if
 (defun parser/if (scanner)

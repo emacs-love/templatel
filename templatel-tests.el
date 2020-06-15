@@ -76,6 +76,35 @@
 
 ;; --- Parser & Scanner ---
 
+(ert-deftest template-elif ()
+  (let* ((s (scanner/new "
+{% if one %}
+  One
+{% elif two %}
+  Two
+{% elif three %}
+  Three
+{% else %}
+  Four
+{% endif %}
+"))
+         (txt (parser/template s)))
+    (should (equal
+             txt
+             '("Template"
+               ("Text" . "\n")
+               ("IfElif"
+                ("Expr" ("Identifier" . "one"))
+                ("Template" ("Text" . "\n  One\n"))
+                (("Elif"
+                  ("Expr" ("Identifier" . "two"))
+                  ("Template" ("Text" . "\n  Two\n")))
+                 ("Elif" ("Expr" ("Identifier" . "three"))
+                  ("Template" ("Text" . "\n  Three\n"))))
+                ("Else" ("Template" ("Text" . "\n  Four\n"))))
+               ("Text" . "\n")
+               )))))
+
 (ert-deftest template-if-else ()
   (let* ((s (scanner/new "{% if show %}{{ show }}{% else %}Hide{% endif %}"))
          (txt (parser/template s)))

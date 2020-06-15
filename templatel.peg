@@ -6,11 +6,10 @@ Expression    <- _EXPR_OPEN Expr _EXPR_CLOSE
 
 Statement     <- IfStatement / ForStatement
 
-IfStatement   <- _If Expr _STM_CLOSE Template Elif
-               / _If Expr _STM_CLOSE Template Else
+IfStatement   <- _If Expr _STM_CLOSE Template (Elif / Else)+
                / _If Expr _STM_CLOSE Template _EndIf
 
-Elif          <- _STM_OPEN _elif Expr _STM_CLOSE Template (Else / _EndIf)
+Elif          <- _STM_OPEN _elif Expr _STM_CLOSE Template
 Else          <- _STM_OPEN _else _STM_CLOSE Template _EndIf
 _If           <- _STM_OPEN _if
 _EndIf        <- _STM_OPEN _endif _STM_CLOSE
