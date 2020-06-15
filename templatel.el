@@ -100,12 +100,12 @@
 
 (defun scanner/zero-or-more (scanner expr)
   "SCANNER EXPR."
-  (let ((item (condition-case nil
-                  (funcall expr)
-                (templatel-error nil))))
-    (if (null item)
-        item
-      (cons item (scanner/zero-or-more scanner expr)))))
+  (let ((cursor (scanner/cursor scanner)))
+    (condition-case nil
+        (cons (funcall expr) (scanner/zero-or-more scanner expr))
+      (templatel-error
+       (scanner/cursor/set scanner cursor)
+       nil))))
 
 (defun scanner/one-or-more (scanner expr)
   "SCANNER EXPR."
