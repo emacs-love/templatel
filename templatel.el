@@ -117,20 +117,30 @@
   (scanner/matchs scanner "{{")
   (parser/_ scanner))
 
-(defun token/expr-cl (scanner)
-  "Read '}}' off SCANNER's input."
-  (scanner/matchs scanner "}}")
-  (parser/_ scanner))
-
 (defun token/stm-op (scanner)
   "Read '{%' off SCANNER's input."
   (scanner/matchs scanner "{%")
   (parser/_ scanner))
 
+(defun token/comment-op (scanner)
+  "Read '{#' off SCANNER's input."
+  (scanner/matchs scanner "{#")
+  (parser/_ scanner))
+
+;; Notice these two tokens don't consume white spaces right after the
+;; closing tag. That gets us a little closer to preserving entirely
+;; the input provided to the parser.
+(defun token/expr-cl (scanner)
+  "Read '}}' off SCANNER's input."
+  (scanner/matchs scanner "}}"))
+
 (defun token/stm-cl (scanner)
   "Read '%}' off SCANNER's input."
-  (scanner/matchs scanner "%}")
-  (parser/_ scanner))
+  (scanner/matchs scanner "%}"))
+
+(defun token/comment-cl (scanner)
+  "Read '#}' off SCANNER's input."
+  (scanner/matchs scanner "#}"))
 
 (defun token/dot (scanner)
   "Read '.' off SCANNER's input."
@@ -165,10 +175,9 @@
 
 ;; --- Parser ---
 
-;; Template      <- _ (Text / Statement / Expression)*
+;; Template      <- (Text / Statement / Expression)*
 (defun parser/template (scanner)
   "Parse Template entry from SCANNER's input."
-  (parser/_ scanner)
   (cons
    "Template"
    (scanner/zero-or-more
@@ -179,7 +188,7 @@
                   #'(lambda() (parser/statement scanner))
                   #'(lambda() (parser/expression scanner))))))))
 
-;; Text <- (!(_EXPR_OPEN / _STM_OPEN) .)+
+;; Text <- (!(_EXPR_OPEN / _STM_OPEN / _COMMENT_OPEN) .)+
 (defun parser/text (scanner)
   "Parse Text entries from SCANNER's input."
   (cons
@@ -195,7 +204,8 @@
              scanner
              (list
               #'(lambda() (token/expr-op scanner))
-              #'(lambda() (token/stm-op scanner))))))
+              #'(lambda() (token/stm-op scanner))
+              #'(lambda() (token/comment-op scanner))))))
          (scanner/any scanner))))))
 
 ;; Statement     <- IfStatement / ForStatement
@@ -420,7 +430,6 @@
                    #'(lambda() (scanner/match scanner ?\")))
                   (scanner/any scanner)))))
     (scanner/match scanner ?\")
-    (parser/_ scanner)
     (cons "String" (parser/join-chars str))))
 
 ;; IdentStart    <- [a-zA-Z_]

@@ -1,6 +1,6 @@
-Template      <- _ (Text / Statement / Expression)*
+Template      <- (Text / Statement / Expression)*
 
-Text          <- (!(_EXPR_OPEN / _STM_OPEN) .)+
+Text          <- (!(_EXPR_OPEN / _STM_OPEN / _COMMENT_OPEN) .)+
 
 Expression    <- _EXPR_OPEN Expr _EXPR_CLOSE
 
@@ -38,8 +38,8 @@ _EXPR_OPEN     <- '{{' _
 _EXPR_CLOSE    <- '}}' _
 _STM_OPEN      <- '{%' _
 _STM_CLOSE     <- '%}' _
-_comment_open  <- '{#' _
-_comment_close <- '#}' _
+_COMMENT_OPEN  <- '{#' _
+_COMMENT_CLOSE <- '#}' _
 _QUOTE         <- '"'  _
 
 
@@ -56,7 +56,7 @@ _endfor         <- 'endfor' _
 
 # Whitespace Handling
 _               <- (Space / Comment)*
-Comment         <- _comment_open (!_comment_close .)* _comment_close
+Comment         <- _COMMENT_OPEN (!_COMMENT_CLOSE .)* _COMMENT_CLOSE
 Space           <- ' ' / '\t' / _EOL
 _EOL            <- '\r\n' / '\n' / '\r'
 _EndOfFile      <- !.
