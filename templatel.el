@@ -176,6 +176,21 @@
   (scanner/matchs scanner "endif")
   (parser/_ scanner))
 
+(defun token/for (scanner)
+  "Read 'for' off SCANNER's input."
+  (scanner/matchs scanner "for")
+  (parser/_ scanner))
+
+(defun token/endfor (scanner)
+  "Read 'endfor' off SCANNER's input."
+  (scanner/matchs scanner "endfor")
+  (parser/_ scanner))
+
+(defun token/in (scanner)
+  "Read 'in' off SCANNER's input."
+  (scanner/matchs scanner "in")
+  (parser/_ scanner))
+
 (defun parser/join-chars (chars)
   "Join all the CHARS forming a string."
   (string-join (mapcar 'byte-to-string chars) ""))
@@ -224,8 +239,7 @@
    scanner
    (list
     #'(lambda() (parser/if-stm scanner))
-    ;#'(lambda() (parser/for-stm scanner))
-    )))
+    #'(lambda() (parser/for-stm scanner)))))
 
 ;; IfStatement   <- _If Expr _STM_CLOSE Template Elif
 ;;                / _If Expr _STM_CLOSE Template Else
@@ -300,6 +314,27 @@
   "Parse endif tag off SCANNER."
   (token/stm-op scanner)
   (token/endif scanner)
+  (token/stm-cl scanner))
+
+;; ForStatement  <- _For Expr _in Expr _STM_CLOSE Template _EndFor
+;; _For          <- _STM_OPEN _for
+(defun parser/for-stm (scanner)
+  "Parse for statement from SCANNER."
+  (token/stm-op scanner)
+  (token/for scanner)
+  (let ((iter (parser/expr scanner))
+        (_ (token/in scanner))
+        (iterable (parser/expr scanner))
+        (_ (token/stm-cl scanner))
+        (tmpl (parser/template scanner))
+        (_ (parser/endfor scanner)))
+    (cons "ForStatement" (list iter iterable tmpl))))
+
+;; _EndFor       <- _STM_OPEN _endfor _STM_CLOSE
+(defun parser/endfor (scanner)
+  "Parse {% endfor %} statement from SCANNER."
+  (token/stm-op scanner)
+  (token/endfor scanner)
   (token/stm-cl scanner))
 
 ;; Expression    <- _EXPR_OPEN Expr _EXPR_CLOSE

@@ -97,6 +97,28 @@
 
 ;; --- Parser & Scanner ---
 
+(ert-deftest template-for ()
+  (let* ((s (scanner/new "
+{% for name in names %}
+  {{ name }}
+{% endfor %}
+"))
+         (txt (parser/template s)))
+    (should (equal
+             txt
+             '("Template"
+               ("Text" . "\n")
+               ("ForStatement"
+                ("Expr" ("Identifier" . "name"))
+                ("Expr" ("Identifier" . "names"))
+                ("Template"
+                 ("Text" . "\n  ")
+                 ("Expression"
+                  ("Expr"
+                   ("Identifier" . "name")))
+                 ("Text" . "\n")))
+               ("Text" . "\n"))))))
+
 (ert-deftest template-elif ()
   (let* ((s (scanner/new "
 {% if one %}
