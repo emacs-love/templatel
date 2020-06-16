@@ -76,7 +76,7 @@
       (scanner/error scanner (format "Expected %s-%s, got %s" a b c)))))
 
 (defun scanner/or (scanner options)
-  "SCANNER OPTIONS."
+  "Read the first one of OPTIONS that works SCANNER."
   (if (null options)
       (scanner/error scanner "No valid options")
     (let ((cursor (scanner/cursor scanner)))
@@ -87,7 +87,7 @@
                 (scanner/or scanner (cdr options))))))))
 
 (defun scanner/optional (scanner expr)
-  "SCANNER EXPR."
+  "Read EXPR from SCANNER returning nil if it fails."
   (let ((cursor (scanner/cursor scanner)))
     (condition-case nil
         (funcall expr)
@@ -96,7 +96,7 @@
        nil))))
 
 (defun scanner/not (scanner expr)
-  "SCANNER EXPR."
+  "Fail if EXPR succeed, succeed when EXPR fail using SCANNER."
   (let* ((cursor (scanner/cursor scanner))
          (succeeded (condition-case nil
                         (funcall expr)
@@ -108,7 +108,7 @@
       t)))
 
 (defun scanner/zero-or-more (scanner expr)
-  "SCANNER EXPR."
+  "Read EXPR zero or more time from SCANNER."
   (let ((cursor (scanner/cursor scanner)))
     (condition-case nil
         (cons (funcall expr) (scanner/zero-or-more scanner expr))
@@ -117,7 +117,7 @@
        nil))))
 
 (defun scanner/one-or-more (scanner expr)
-  "SCANNER EXPR."
+  "Read EXPR one or more time from SCANNER."
   (cons (funcall expr)
         (scanner/zero-or-more scanner expr)))
 
