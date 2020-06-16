@@ -267,9 +267,6 @@
          (_    (token/stm-cl scanner))
          (tmpl (parser/template scanner))
          (_    (parser/endif scanner)))
-    ;; (message "---- E: %s: " expr)
-    ;; (message "---- T: %s: " tmpl)
-    ;; (message "---- A: %s: " (list expr tmpl))
     (cons "IfStatement" (list expr tmpl))))
 
 ;; Elif          <- _STM_OPEN _elif Expr _STM_CLOSE Template
