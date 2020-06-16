@@ -557,30 +557,22 @@
 
 (defun compiler/if-else (tree)
   "Compile if/else statement off TREE."
-  ;; (message "ELSE: %s" tree)
   (let ((expr (car tree))
         (body (cadr tree))
         (else (cadr (caddr tree))))
-    ;; (message "EXPR: %s" expr)
-    ;; (message "BODY: %s" body)
-    ;; (message "ELSE: %s" else)
     `(if ,(compiler/run expr)
          ,@(compiler/run body)
        ,@(compiler/run else))))
 
 (defun compiler/if (tree)
   "Compile if statement off TREE."
-  ;; (message "IF: %s" tree)
   (let ((expr (car tree))
         (body (cadr tree)))
-    ;; (message "EXPR: %s" expr)
-    ;; (message "BODY: %s" body)
     `(if ,(compiler/run expr)
          ,@(compiler/run body))))
 
 (defun compiler/run (tree)
   "Compile TREE into bytecode."
-  ;; (message "THIS IS TREE: %s" tree)
   (pcase tree
     (`() nil)
     (`("Template"    . ,a) (compiler/run a))
