@@ -8,6 +8,27 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-template-elif0 ()
+  (should
+   (equal
+    (templatel-render-string
+"<h1>Hello
+{% if one %}
+  {{ name1 }}
+{% elif two %}
+  {{ name2 }}
+{% elif three %}
+  Three
+{% else %}
+  Four
+{% endif %}
+</h1>
+"
+     '(("name1" . "Emacs")
+       ("name2" . "Gnu")
+       ("two" . t)))
+    "<h1>Hello\n\n  Gnu\n\n</h1>\n")))
+
 (ert-deftest render-template-if-else-n ()
   (should
    (equal

@@ -539,6 +539,22 @@
   "Compile identifier from TREE."
   `(cdr (assoc ,tree env)))
 
+(defun compiler/if-elif-cond (tree)
+  "Compile cond from elif statements in TREE."
+  (let ((expr (cadr tree))
+        (tmpl (caddr tree)))
+    `((,@(compiler/run expr)) ,@(compiler/run tmpl))))
+
+(defun compiler/if-elif (tree)
+  "Compile if/elif/else statement off TREE."
+  (let ((expr (car tree))
+        (body (cadr tree))
+        (elif (caddr tree))
+        (else (cadr (cadddr tree))))
+    `(cond (,(compiler/run expr) ,@(compiler/run body))
+           ,@(mapcar #'compiler/if-elif-cond elif)
+           (t ,@(compiler/run else)))))
+
 (defun compiler/if-else (tree)
   "Compile if/else statement off TREE."
   ;; (message "ELSE: %s" tree)
@@ -570,9 +586,10 @@
     (`("Template"    . ,a) (compiler/run a))
     (`("Text"        . ,a) (compiler/text a))
     (`("Identifier"  . ,a) (compiler/identifier a))
-    (`("IfElse"      . ,a) (compiler/if-else a))
     (`("Expr"        . ,a) (compiler/expr a))
     (`("Expression"  . ,a) (compiler/expression a))
+    (`("IfElse"      . ,a) (compiler/if-else a))
+    (`("IfElif"      . ,a) (compiler/if-elif a))
     (`("IfStatement" . ,a) (compiler/if a))
     ((pred listp)          (mapcar #'compiler/run tree))
     (_ (message "NOENTIENDO: `%s`" tree))))
