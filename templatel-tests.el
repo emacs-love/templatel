@@ -8,6 +8,13 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-template-forloop ()
+  (should (equal
+           (templatel-render-string
+            "{% for name in names %}{{ name }} {% endfor %}"
+            '(("names" . ("One" "Two" "Three"))))
+           "One Two Three ")))
+
 (ert-deftest render-template-elif0 ()
   (should
    (equal
@@ -26,6 +33,7 @@
 "
      '(("name1" . "Emacs")
        ("name2" . "Gnu")
+       ("one" . nil)
        ("two" . t)))
     "<h1>Hello\n\n  Gnu\n\n</h1>\n")))
 

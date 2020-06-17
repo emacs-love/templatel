@@ -551,9 +551,10 @@
 (defun compiler/wrap (tree)
   "Compile Template node into a function with TREE as body."
   `(lambda(env)
-     (with-temp-buffer
-       ,@tree
-       (buffer-string))))
+     (let ((envstk (list env)))
+       (with-temp-buffer
+         ,@tree
+         (buffer-string)))))
 
 (defun compiler/expr (tree)
   "Compile an expr from TREE."
@@ -569,7 +570,12 @@
 
 (defun compiler/identifier (tree)
   "Compile identifier from TREE."
-  `(cdr (assoc ,tree env)))
+  `(catch '-brk
+     (dolist (ienv (reverse envstk))
+       (let ((value (assoc ,tree ienv)))
+         (when (not (null value))
+           (throw '-brk (cdr value)))))
+     (error (format "Variable `%s' not declared" ,tree))))
 
 (defun compiler/if-elif-cond (tree)
   "Compile cond from elif statements in TREE."
@@ -603,18 +609,32 @@
     `(if ,(compiler/run expr)
          ,@(compiler/run body))))
 
+(defun compiler/for (tree)
+  "Compile for statement off TREE."
+  (let ((id (cdr (cadar tree))))
+    `(let ((subenv '((,id . nil)))
+           (iterable ,(compiler/run (cadr tree))))
+       (push subenv envstk)
+       (mapcar
+        #'(lambda(id)
+            (setf (alist-get ,id subenv) id)
+            ,@(compiler/run (caddr tree)))
+        iterable)
+       (pop envstk))))
+
 (defun compiler/run (tree)
   "Compile TREE into bytecode."
   (pcase tree
     (`() nil)
-    (`("Template"    . ,a) (compiler/run a))
-    (`("Text"        . ,a) (compiler/text a))
-    (`("Identifier"  . ,a) (compiler/identifier a))
-    (`("Expr"        . ,a) (compiler/expr a))
-    (`("Expression"  . ,a) (compiler/expression a))
-    (`("IfElse"      . ,a) (compiler/if-else a))
-    (`("IfElif"      . ,a) (compiler/if-elif a))
-    (`("IfStatement" . ,a) (compiler/if a))
+    (`("Template"       . ,a) (compiler/run a))
+    (`("Text"           . ,a) (compiler/text a))
+    (`("Identifier"     . ,a) (compiler/identifier a))
+    (`("Expr"           . ,a) (compiler/expr a))
+    (`("Expression"     . ,a) (compiler/expression a))
+    (`("IfElse"         . ,a) (compiler/if-else a))
+    (`("IfElif"         . ,a) (compiler/if-elif a))
+    (`("IfStatement"    . ,a) (compiler/if a))
+    (`("ForStatement"   . ,a) (compiler/for a))
     ((pred listp)          (mapcar #'compiler/run tree))
     (_ (message "NOENTIENDO: `%s`" tree))))
 
