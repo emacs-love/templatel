@@ -641,7 +641,9 @@
     (`("IfElif"         . ,a) (compiler/if-elif a))
     (`("IfStatement"    . ,a) (compiler/if a))
     (`("ForStatement"   . ,a) (compiler/for a))
-    ((pred listp)          (mapcar #'compiler/run tree))
+    (`("Number"         . ,a) (number-to-string a))
+    (`("String"         . ,a) a)
+    ((pred listp)             (mapcar #'compiler/run tree))
     (_ (message "NOENTIENDO: `%s`" tree))))
 
 

@@ -8,6 +8,18 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-expr-string ()
+  (should (equal (templatel-render-string "{{ \"something\" }}" '()) "something")))
+
+(ert-deftest render-expr-number-bin ()
+  (should (equal (templatel-render-string "{{ 0b1010 }}" '()) "10")))
+
+(ert-deftest render-expr-number-hex ()
+  (should (equal (templatel-render-string "{{ 0xFF }}" '()) "255")))
+
+(ert-deftest render-expr-number ()
+  (should (equal (templatel-render-string "{{ 1280 }}" '()) "1280")))
+
 (ert-deftest render-template-forloop ()
   (should (equal
            (templatel-render-string
