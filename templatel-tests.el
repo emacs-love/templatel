@@ -192,24 +192,36 @@
   (let ((s (scanner/new "\"fun with Emacs\"")))
     (should (equal
              (parser/value s)
-             '("Value" . ("String" . "fun with Emacs"))))))
+             '("String" . "fun with Emacs")))))
 
 (ert-deftest expr-value-number ()
   (let ((s (scanner/new "325")))
     (should (equal
              (parser/value s)
-             '("Value" . ("Number" . "325"))))))
+             '("Number" . 325)))))
+
+(ert-deftest expr-value-number-bin ()
+  (let ((s (scanner/new "0b1010")))
+    (should (equal
+             (parser/value s)
+             '("Number" . 10)))))
+
+(ert-deftest expr-value-number-hex ()
+  (let ((s (scanner/new "0xff")))
+    (should (equal
+             (parser/value s)
+             '("Number" . 255)))))
 
 (ert-deftest expr-value-bool-true ()
   (let ((s (scanner/new "true")))
     (should (equal
              (parser/value s)
-             '("Value" . ("Bool" . t))))))
+             '("Bool" . t)))))
 
 (ert-deftest expr-value-bool-false-with-comment ()
   (let ((s (scanner/new "false {# not important #}")))
     (should (equal
              (parser/value s)
-             '("Value" . ("Bool" . nil))))))
+             '("Bool" . nil)))))
 
 ;;; templatel-tests.el ends here

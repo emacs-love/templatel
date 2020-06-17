@@ -377,32 +377,32 @@
 
 (defun parser/value (scanner)
   "Read Value from SCANNER."
-  (cons
-   "Value"
-   (let ((value (parser/-value scanner)))
+  (let ((value (parser/-value scanner)))
      (parser/_ scanner)
-     value)))
+     value))
 
 ;; Number        <- BIN / HEX / FLOAT / INT
 (defun parser/number (scanner)
   "Read Number off SCANNER."
   (cons
    "Number"
-   (parser/join-chars
-    (scanner/or
-     scanner
-     (list
-      #'(lambda() (parser/bin scanner))
-      #'(lambda() (parser/hex scanner))
-      #'(lambda() (parser/float scanner))
-      #'(lambda() (parser/int scanner)))))))
+   (scanner/or
+    scanner
+    (list
+     #'(lambda() (parser/bin scanner))
+     #'(lambda() (parser/hex scanner))
+     #'(lambda() (parser/float scanner))
+     #'(lambda() (parser/int scanner))))))
 
 ;; INT           <- [0-9]+                  _
 (defun parser/int (scanner)
   "Read integer off SCANNER."
-  (scanner/one-or-more
-   scanner
-   #'(lambda() (scanner/range scanner ?0 ?9))))
+  (string-to-number
+   (parser/join-chars
+    (scanner/one-or-more
+     scanner
+     #'(lambda() (scanner/range scanner ?0 ?9))))
+   10))
 
 ;; FLOAT         <- [0-9]* '.' [0-9]+       _
 (defun parser/float (scanner)
@@ -415,25 +415,31 @@
 ;; BIN           <- '0b' [0-1]+             _
 (defun parser/bin (scanner)
   "Read binary number from SCANNER."
-  (append
-   (scanner/matchs scanner "0b")
-   (scanner/one-or-more
-    scanner
-    #'(lambda() (scanner/range scanner ?0 ?1)))))
+  (scanner/matchs scanner "0b")
+  (string-to-number
+   (parser/join-chars
+    (append
+     (scanner/one-or-more
+      scanner
+      #'(lambda() (scanner/range scanner ?0 ?1)))))
+   2))
 
 ;; HEX           <- '0x' [0-9a-fA-F]+       _
 (defun parser/hex (scanner)
   "Read hex number from SCANNER."
-  (append
-   (scanner/matchs scanner "0x")
-   (scanner/one-or-more
-    scanner
-    #'(lambda()
-        (scanner/or
-         scanner
-         (list #'(lambda() (scanner/range scanner ?0 ?9))
-               #'(lambda() (scanner/range scanner ?a ?f))
-               #'(lambda() (scanner/range scanner ?A ?F))))))))
+  (scanner/matchs scanner "0x")
+  (string-to-number
+   (parser/join-chars
+    (append
+     (scanner/one-or-more
+      scanner
+      #'(lambda()
+          (scanner/or
+           scanner
+           (list #'(lambda() (scanner/range scanner ?0 ?9))
+                 #'(lambda() (scanner/range scanner ?a ?f))
+                 #'(lambda() (scanner/range scanner ?A ?F))))))))
+   16))
 
 ;; BOOL          <- ('true' / 'false')         _
 (defun parser/bool (scanner)
