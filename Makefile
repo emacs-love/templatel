@@ -17,7 +17,7 @@ $(TESTOBJ): $(OBJ) $(TESTSRC)
 clean:; rm -f $(ALLOBJS)
 
 check: $(TESTOBJ)
-	$(EMACS) -batch -Q -L . -l $(TESTOBJ) -f ert-run-tests-batch
+	$(EMACS) -batch -Q -L . -l $(TESTOBJ) -f ert-run-tests-batch-and-exit
 
 .SUFFIXES: .el .elc
 .el.elc:
