@@ -345,24 +345,31 @@
     (token/expr-cl scanner)
     (cons "Expression" (list expr))))
 
-;; Expr          <- (Value / Identifier) Attribute*
+;; Expr          <- Value / Attribute / Identifier
 (defun parser/expr (scanner)
   "Read an expression from SCANNER."
   (cons
    "Expr"
-   (cons (scanner/or
-          scanner
-          (list #'(lambda() (parser/value scanner))
-                #'(lambda() (parser/identifier scanner))))
-         (scanner/zero-or-more
-          scanner
-          #'(lambda() (parser/attribute scanner))))))
+   (list
+    (scanner/or
+     scanner
+     (list
+      #'(lambda() (parser/value scanner))
+      #'(lambda() (parser/attribute scanner))
+      #'(lambda() (parser/identifier scanner)))))))
 
-;; Attribute     <- _dot Expr
+;; Attribute     <- Identifier (_dot Identifier)+
 (defun parser/attribute (scanner)
   "Read an Attribute from SCANNER."
-  (token/dot scanner)
-  (cons "Attribute" (parser/expr scanner)))
+  (cons
+   "Attribute"
+   (cons
+    (parser/identifier scanner)
+    (progn
+      (token/dot scanner)
+      (scanner/one-or-more
+       scanner
+       #'(lambda() (parser/identifier scanner)))))))
 
 ;; Value         <- (Number / BOOL / NIL / String)
 (defun parser/-value (scanner)
@@ -555,7 +562,7 @@
 ;; --- Compiler ---
 
 (defun compiler/wrap (tree)
-  "Compile Template node into a function with TREE as body."
+  "Compile root node into a function with TREE as body."
   `(lambda(env)
      (let ((envstk (list env)))
        (with-temp-buffer
@@ -565,6 +572,16 @@
 (defun compiler/expr (tree)
   "Compile an expr from TREE."
   (compiler/run (car tree)))
+
+(defun compiler/-attr (tree)
+  "Walk through attributes on TREE."
+  (if (null (cdr tree))
+      (compiler/identifier (cdar tree))
+    `(cdr (assoc ,(cdar tree) ,(compiler/-attr (cdr tree))))))
+
+(defun compiler/attribute (tree)
+  "Compile attribute access from TREE."
+  (compiler/-attr (reverse tree)))
 
 (defun compiler/expression (tree)
   "Compile an expression from TREE."
@@ -635,6 +652,7 @@
     (`("Template"       . ,a) (compiler/run a))
     (`("Text"           . ,a) (compiler/text a))
     (`("Identifier"     . ,a) (compiler/identifier a))
+    (`("Attribute"      . ,a) (compiler/attribute a))
     (`("Expr"           . ,a) (compiler/expr a))
     (`("Expression"     . ,a) (compiler/expression a))
     (`("IfElse"         . ,a) (compiler/if-else a))

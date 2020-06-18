@@ -8,7 +8,6 @@ Statement     <- IfStatement / ForStatement
 
 IfStatement   <- _If Expr _STM_CLOSE Template (Elif / Else)+
                / _If Expr _STM_CLOSE Template _EndIf
-
 Elif          <- _STM_OPEN _elif Expr _STM_CLOSE Template
 Else          <- _STM_OPEN _else _STM_CLOSE Template _EndIf
 _If           <- _STM_OPEN _if
@@ -18,8 +17,8 @@ ForStatement  <- _For Expr _in Expr _STM_CLOSE Template _EndFor
 _For          <- _STM_OPEN _for
 _EndFor       <- _STM_OPEN _endfor _STM_CLOSE
 
-Attribute     <- (_dot Expr)
-Expr          <- (Value / Identifier) Attribute*
+Attribute     <- Identifier (_dot Identifier)+
+Expr          <- Value / Attribute / Identifier
 Value         <- (Number / BOOL / NIL / String)
 Number        <- BIN / HEX / FLOAT / INT
 String        <- _QUOTE (!_QUOTE .)* _QUOTE _

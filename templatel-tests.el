@@ -8,6 +8,13 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-expr-attr ()
+  (should (equal (templatel-render-string
+                  "Hi {{ user.name }}, happy {{ user.greeting }}"
+                  '(("user" . (("name" . "Gnu")
+                               ("greeting" . "Hacking")))))
+                 "Hi Gnu, happy Hacking")))
+
 (ert-deftest render-expr-string ()
   (should (equal (templatel-render-string "{{ \"something\" }}" '()) "something")))
 
@@ -193,12 +200,14 @@
                 ("Template" ("Expression" ("Expr" ("Identifier" . "show"))))))))))
 
 (ert-deftest template-text ()
-  (let ((s (scanner/new "Hello, {{ name }}!")))
+  (let* ((s (scanner/new "Hello, {{ name }}!"))
+         (tree (parser/template s)))
     (should (equal
-             (parser/template s)
-             '("Template" . (("Text" . "Hello, ")
-                             ("Expression" ("Expr" . (("Identifier" . "name"))))
-                             ("Text" . "!")))))))
+             tree
+             '("Template"
+               ("Text" . "Hello, ")
+               ("Expression" ("Expr" ("Identifier" . "name")))
+               ("Text" . "!"))))))
 
 (ert-deftest expr-value-string ()
   (let ((s (scanner/new "\"fun with Emacs\"")))
