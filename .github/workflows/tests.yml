@@ -1,15 +1,22 @@
 name: CI
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
-  tests:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        emacs_version:
+          - 25.3
+          - 26.3
+          - snapshot
     steps:
+    - uses: purcell/setup-emacs@master
+      with:
+        version: ${{ matrix.emacs_version }}
+
     - uses: actions/checkout@v2
+
     - name: Run tests
       run: make check
