@@ -17,9 +17,19 @@ ForStatement  <- _For Expr _in Expr _STM_CLOSE Template _EndFor
 _For          <- _STM_OPEN _for
 _EndFor       <- _STM_OPEN _endfor _STM_CLOSE
 
+Expr          <- Filter / Element
+
+Filter        <- Element _PIPE (Attribute / FnCall / Identifier)
+
 Attribute     <- Identifier (_dot Identifier)+
-Expr          <- Value / Attribute / Identifier
-Value         <- (Number / BOOL / NIL / String)
+
+Element       <- Value / Attribute / FnCall / Identifier
+
+FnCall        <- Identifier ParamList
+ParamList     <- _PAREN_OPEN Expr (_COMMA Expr)* _PAREN_CLOSE
+               / _PAREN_OPEN _PAREN_CLOSE
+
+Value         <- Number / BOOL / NIL / String
 Number        <- BIN / HEX / FLOAT / INT
 String        <- _QUOTE (!_QUOTE .)* _QUOTE _
 BOOL          <- ('true' / 'false')         _
@@ -38,8 +48,9 @@ _STM_OPEN      <- '{%' _
 _STM_CLOSE     <- '%}' _
 _COMMENT_OPEN  <- '{#' _
 _COMMENT_CLOSE <- '#}' _
+_PAREN_OPEN    <- '('  _
+_PAREN_CLOSE   <- ')'  _
 _QUOTE         <- '"'  _
-
 
 # Keywords
 _dot            <- '.'      _
@@ -51,6 +62,9 @@ _elif           <- 'elif'   _
 _endif          <- 'endif'  _
 _for            <- 'for'    _
 _endfor         <- 'endfor' _
+
+_COMMA          <- ','      _
+_PIPE           <- '|'      _
 
 # Whitespace Handling
 _               <- (Space / Comment)*

@@ -156,6 +156,11 @@
   (scanner/matchs scanner ".")
   (parser/_ scanner))
 
+(defun token/comma (scanner)
+  "Read ',' off SCANNER's input."
+  (scanner/matchs scanner ",")
+  (parser/_ scanner))
+
 (defun token/if (scanner)
   "Read 'if' off SCANNER's input."
   (scanner/matchs scanner "if")
@@ -189,6 +194,21 @@
 (defun token/in (scanner)
   "Read 'in' off SCANNER's input."
   (scanner/matchs scanner "in")
+  (parser/_ scanner))
+
+(defun token/pipe (scanner)
+  "Read '|' off SCANNER's input."
+  (scanner/matchs scanner "|")
+  (parser/_ scanner))
+
+(defun token/paren-op (scanner)
+  "Read '(' off SCANNER's input."
+  (scanner/matchs scanner "(")
+  (parser/_ scanner))
+
+(defun token/paren-cl (scanner)
+  "Read ')' off SCANNER's input."
+  (scanner/matchs scanner ")")
   (parser/_ scanner))
 
 (defun parser/join-chars (chars)
@@ -345,7 +365,7 @@
     (token/expr-cl scanner)
     (cons "Expression" (list expr))))
 
-;; Expr          <- Value / Attribute / Identifier
+;; Expr          <- Filter / Element
 (defun parser/expr (scanner)
   "Read an expression from SCANNER."
   (cons
@@ -354,9 +374,24 @@
     (scanner/or
      scanner
      (list
-      #'(lambda() (parser/value scanner))
-      #'(lambda() (parser/attribute scanner))
-      #'(lambda() (parser/identifier scanner)))))))
+      #'(lambda() (parser/filter scanner))
+      #'(lambda() (parser/element scanner)))))))
+
+;; Filter        <- Element _PIPE (Attribute / FnCall / Identifier)
+(defun parser/filter (scanner)
+  "Read a filter from SCANNER."
+  (cons
+   "Filter"
+   (let ((element (parser/element scanner))
+         (_       (token/pipe scanner)))
+     (list
+      element
+      (scanner/or
+       scanner
+       (list
+        #'(lambda() (parser/attribute scanner))
+        #'(lambda() (parser/fncall scanner))
+        #'(lambda() (parser/identifier scanner))))))))
 
 ;; Attribute     <- Identifier (_dot Identifier)+
 (defun parser/attribute (scanner)
@@ -371,22 +406,64 @@
        scanner
        #'(lambda() (parser/identifier scanner)))))))
 
-;; Value         <- (Number / BOOL / NIL / String)
-(defun parser/-value (scanner)
-  "Read value off SCANNER."
+;; Element       <- Value / Attribute / FnCall / Identifier
+(defun parser/element (scanner)
+  "Read Element off SCANNER."
   (scanner/or
    scanner
    (list
-    #'(lambda() (parser/number scanner))
-    #'(lambda() (parser/bool scanner))
-    #'(lambda() (parser/nil scanner))
-    #'(lambda() (parser/string scanner)))))
+    #'(lambda() (parser/value scanner))
+    #'(lambda() (parser/attribute scanner))
+    #'(lambda() (parser/fncall scanner))
+    #'(lambda() (parser/identifier scanner)))))
 
+;; FnCall        <- Identifier ParamList
+(defun parser/fncall (scanner)
+  "Read FnCall off SCANNER."
+  (cons
+   "FnCall"
+   (list
+    (parser/identifier scanner)
+    (parser/paramlist scanner))))
+
+;; -paramlist   <- _PAREN_OPEN Expr (_COMMA Expr)* _PAREN_CLOSE
+(defun parser/-paramlist (scanner)
+  "Read parameter list from SCANNER."
+  (token/paren-op scanner)
+  (let ((first (parser/expr scanner))
+        (rest (scanner/zero-or-more
+               scanner
+               #'(lambda()
+                   (token/comma scanner)
+                   (parser/expr scanner)))))
+    (token/paren-cl scanner)
+    (const first rest)))
+
+;; ParamList     <- -paramlist
+;;                / _PAREN_OPEN _PAREN_CLOSE
+(defun parser/paramlist (scanner)
+  "Read parameter list off SCANNER."
+  (scanner/or
+   scanner
+   (list
+    #'(lambda() (parser/-paramlist scanner))
+    #'(lambda()
+        (token/paren-op scanner)
+        (token/paren-cl scanner)
+        nil))))
+
+;; Value         <- Number / BOOL / NIL / String
 (defun parser/value (scanner)
   "Read Value from SCANNER."
-  (let ((value (parser/-value scanner)))
-     (parser/_ scanner)
-     value))
+  (let ((value (scanner/or
+                scanner
+                (list
+                 #'(lambda() (parser/number scanner))
+                 #'(lambda() (parser/bool scanner))
+                 #'(lambda() (parser/nil scanner))
+                 #'(lambda() (parser/string scanner))))))
+    (parser/_ scanner)
+    value))
 
 ;; Number        <- BIN / HEX / FLOAT / INT
 (defun parser/number (scanner)
