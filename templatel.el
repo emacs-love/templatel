@@ -641,7 +641,15 @@
 (defun compiler/wrap (tree)
   "Compile root node into a function with TREE as body."
   `(lambda(env)
-     (let ((envstk (list env)))
+     (let* ((envstk (list env))
+            (runtime/lookup-var
+             (lambda(name)
+               (catch '-brk
+                 (dolist (ienv (reverse envstk))
+                   (let ((value (assoc name ienv)))
+                     (when (not (null value))
+                       (throw '-brk (cdr value)))))
+                 (error (format "Variable `%s' not declared" name))))))
        (with-temp-buffer
          ,@tree
          (buffer-string)))))
@@ -670,12 +678,7 @@
 
 (defun compiler/identifier (tree)
   "Compile identifier from TREE."
-  `(catch '-brk
-     (dolist (ienv (reverse envstk))
-       (let ((value (assoc ,tree ienv)))
-         (when (not (null value))
-           (throw '-brk (cdr value)))))
-     (error (format "Variable `%s' not declared" ,tree))))
+  `(funcall runtime/lookup-var ,tree))
 
 (defun compiler/if-elif-cond (tree)
   "Compile cond from elif statements in TREE."
