@@ -19,6 +19,9 @@ clean:; rm -f $(ALLOBJS)
 check: $(TESTOBJ)
 	$(EMACS) -batch -Q -L . -l $(TESTOBJ) -f ert-run-tests-batch-and-exit
 
+check-one: $(TESTOBJ)
+	$(EMACS) -batch -Q -L . -l $(TESTOBJ) --eval "(ert-run-tests-batch-and-exit '(member ${TEST}))"
+
 .SUFFIXES: .el .elc
 .el.elc:
 	$(EMACS) -batch -Q -L . -f batch-byte-compile $<
