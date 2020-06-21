@@ -136,13 +136,14 @@
              '("Template"
                ("Text" . "\n")
                ("ForStatement"
-                ("Expr" ("Identifier" . "name"))
-                ("Expr" ("Identifier" . "names"))
+                ("Expr" ("Element" ("Identifier" . "name")))
+                ("Expr" ("Element" ("Identifier" . "names")))
                 ("Template"
                  ("Text" . "\n  ")
                  ("Expression"
                   ("Expr"
-                   ("Identifier" . "name")))
+                   ("Element"
+                    ("Identifier" . "name"))))
                  ("Text" . "\n")))
                ("Text" . "\n"))))))
 
@@ -164,12 +165,16 @@
              '("Template"
                ("Text" . "\n")
                ("IfElif"
-                ("Expr" ("Identifier" . "one"))
+                ("Expr"
+                 ("Element"
+                  ("Identifier" . "one")))
                 ("Template" ("Text" . "\n  One\n"))
                 (("Elif"
-                  ("Expr" ("Identifier" . "two"))
+                  ("Expr"
+                   ("Element"
+                    ("Identifier" . "two")))
                   ("Template" ("Text" . "\n  Two\n")))
-                 ("Elif" ("Expr" ("Identifier" . "three"))
+                 ("Elif" ("Expr" ("Element" ("Identifier" . "three")))
                   ("Template" ("Text" . "\n  Three\n"))))
                 ("Else" ("Template" ("Text" . "\n  Four\n"))))
                ("Text" . "\n")
@@ -183,9 +188,13 @@
              '("Template"
                ("IfElse"
                 ("Expr"
-                 ("Identifier" . "show"))
+                 ("Element"
+                  ("Identifier" . "show")))
                 ("Template"
-                 ("Expression" ("Expr" ("Identifier" . "show"))))
+                 ("Expression"
+                  ("Expr"
+                   ("Element"
+                    ("Identifier" . "show")))))
                 ("Else"
                  ("Template" ("Text" . "Hide")))))))))
 
@@ -196,8 +205,14 @@
              txt
              '("Template"
                ("IfStatement"
-                ("Expr" ("Identifier" . "show"))
-                ("Template" ("Expression" ("Expr" ("Identifier" . "show"))))))))))
+                ("Expr"
+                 ("Element"
+                  ("Identifier" . "show")))
+                ("Template"
+                 ("Expression"
+                  ("Expr"
+                   ("Element"
+                    ("Identifier" . "show")))))))))))
 
 (ert-deftest template-text ()
   (let* ((s (scanner/new "Hello, {{ name }}!"))
@@ -206,7 +221,10 @@
              tree
              '("Template"
                ("Text" . "Hello, ")
-               ("Expression" ("Expr" ("Identifier" . "name")))
+               ("Expression"
+                ("Expr"
+                 ("Element"
+                  ("Identifier" . "name"))))
                ("Text" . "!"))))))
 
 (ert-deftest expr-value-string ()

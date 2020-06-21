@@ -365,33 +365,29 @@
     (token/expr-cl scanner)
     (cons "Expression" (list expr))))
 
-;; Expr          <- Filter / Element
+;; Expr          <- Element Filter
 (defun parser/expr (scanner)
   "Read an expression from SCANNER."
-  (cons
-   "Expr"
-   (list
-    (scanner/or
-     scanner
-     (list
-      #'(lambda() (parser/filter scanner))
-      #'(lambda() (parser/element scanner)))))))
+  (let ((element (parser/element scanner))
+        (filters (parser/filter scanner)))
+    (cons
+     "Expr"
+     (if (null filters)
+         (list element)
+       (list element (cons "Filter" filters))))))
 
-;; Filter        <- Element _PIPE (Attribute / FnCall / Identifier)
+;; Filter        <- (_PIPE (FnCall / Identifier))*
 (defun parser/filter (scanner)
   "Read a filter from SCANNER."
-  (cons
-   "Filter"
-   (let ((element (parser/element scanner))
-         (_       (token/pipe scanner)))
-     (list
-      element
+  (scanner/zero-or-more
+   scanner
+   #'(lambda()
+      (token/pipe scanner)
       (scanner/or
        scanner
        (list
-        #'(lambda() (parser/attribute scanner))
         #'(lambda() (parser/fncall scanner))
-        #'(lambda() (parser/identifier scanner))))))))
+        #'(lambda() (parser/identifier scanner)))))))
 
 ;; Attribute     <- Identifier (_dot Identifier)+
 (defun parser/attribute (scanner)
@@ -409,13 +405,16 @@
 ;; Element       <- Value / Attribute / FnCall / Identifier
 (defun parser/element (scanner)
   "Read Element off SCANNER."
-  (scanner/or
-   scanner
+  (cons
+   "Element"
    (list
-    #'(lambda() (parser/value scanner))
-    #'(lambda() (parser/attribute scanner))
-    #'(lambda() (parser/fncall scanner))
-    #'(lambda() (parser/identifier scanner)))))
+    (scanner/or
+     scanner
+     (list
+      #'(lambda() (parser/value scanner))
+      #'(lambda() (parser/attribute scanner))
+      #'(lambda() (parser/fncall scanner))
+      #'(lambda() (parser/identifier scanner)))))))
 
 ;; FnCall        <- Identifier ParamList
 (defun parser/fncall (scanner)
@@ -437,7 +436,7 @@
                    (token/comma scanner)
                    (parser/expr scanner)))))
     (token/paren-cl scanner)
-    (const first rest)))
+    (cons first rest)))
 
 ;; ParamList     <- -paramlist
 ;;                / _PAREN_OPEN _PAREN_CLOSE
