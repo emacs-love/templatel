@@ -20,6 +20,12 @@
                   '(("user" . (("name" . "Gnu")))))
                  "Awww GNU.")))
 
+(ert-deftest render-expr-filter-int ()
+  (should (equal (templatel-render-string
+                  "You won {{ user.byte|int(16) }} in bars of gold"
+                  '(("user" . (("byte" . "0xFF")))))
+                 "You won 255 in bars of gold")))
+
 (ert-deftest render-expr-attr ()
   (should (equal (templatel-render-string
                   "Hi {{ user.name }}, happy {{ user.greeting }}"

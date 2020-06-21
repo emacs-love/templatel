@@ -696,8 +696,32 @@ If the filter exists, it must then call its associated handler."
          (push (funcall (cdr entry) (pop valstk)) valstk)))))
 
 (defun compiler/filter-fncall (item)
-  "ITEM."
-  (error 'not-implemented item))
+  "Compiler filter with params from ITEM.
+
+A filter can have multiple parameters.  In that case, the value
+piped into the filter becomes the first parameter and the other
+parameters are shifted to accommodate this change.  E.g.:
+
+  {{ number | int(16) }}
+
+Will be converted into the following:
+
+  (int number 16)
+
+Notice the paramter list is compiled before being passed to the
+function call."
+  (let ((fname (cdr (car (cdr item))))
+        (params (car (cdr (cdr item)))))
+    `(let ((entry (assoc ,fname filters)))
+       (if (null entry)
+           (signal
+            'templatel-syntax-error
+            (format "Filter `%s' doesn't exist" ,fname))
+         (push (apply
+                (cdr entry)
+                (cons (pop valstk)
+                      (list ,@(compiler/run params))))
+               valstk)))))
 
 (defun compiler/filter-item (item)
   "Handle compilation of single filter described by ITEM.
@@ -793,7 +817,7 @@ call `compiler/filter-item' on each entry."
     (`("IfElif"         . ,a) (compiler/if-elif a))
     (`("IfStatement"    . ,a) (compiler/if a))
     (`("ForStatement"   . ,a) (compiler/for a))
-    (`("Number"         . ,a) (number-to-string a))
+    (`("Number"         . ,a) a)
     (`("String"         . ,a) a)
     ((pred listp)             (mapcar #'compiler/run tree))
     (_ (message "NOENTIENDO: `%s`" tree))))
@@ -815,6 +839,11 @@ call `compiler/filter-item' on each entry."
 (defun filters/plus1 (s)
   "Add one to S."
   (1+ s))
+
+(defun filters/int (s base)
+  "Convert S into integer of base BASE."
+  (string-to-number
+   (replace-regexp-in-string "^0[xXbB]" "" s) base))
 
 ;; --- Public API ---
 
