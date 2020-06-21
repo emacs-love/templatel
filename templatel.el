@@ -864,10 +864,7 @@ call `compiler/filter-item' on each entry."
 (defun templatel-render-string (input env)
   "Render INPUT to final output with variables from ENV."
   (let ((code (templatel-compile-string input)))
-   (templatel-render-code code env)))
-
-;; (let ((s (scanner/new "{% if x %}Stuff{{ x }}{% endif %}")))
-;;   (message "%s" (compiler/run (parser/template s))))
+    (templatel-render-code code env)))
 
 (provide 'templatel)
 ;;; templatel.el ends here
