@@ -8,6 +8,18 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-expr-filter-pipe ()
+  (should (equal (templatel-render-string
+                  "Awww {{ qts|sum|plus1 }}."
+                  '(("qts" . (1 2 3 4 5))))
+                 "Awww 16.")))
+
+(ert-deftest render-expr-filter-upper ()
+  (should (equal (templatel-render-string
+                  "Awww {{ user.name|upper }}."
+                  '(("user" . (("name" . "Gnu")))))
+                 "Awww GNU.")))
+
 (ert-deftest render-expr-attr ()
   (should (equal (templatel-render-string
                   "Hi {{ user.name }}, happy {{ user.greeting }}"
@@ -101,6 +113,17 @@
   (should (equal
            (templatel-render-string "<h1>Hello Emacs</h1>" nil)
            "<h1>Hello Emacs</h1>")))
+
+
+
+;; --- Filters ---
+
+
+(ert-deftest filter-upper ()
+  (should (equal (filters/upper "stuff") "STUFF")))
+
+(ert-deftest filter-lower ()
+  (should (equal (filters/lower "STUFF") "stuff")))
 
 
 

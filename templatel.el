@@ -641,6 +641,12 @@
   "Compile root node into a function with TREE as body."
   `(lambda(env)
      (let* ((envstk (list env))
+            (valstk (list))
+            (filters '(("upper" . filters/upper)
+                       ("lower" . filters/lower)
+                       ("sum" . filters/sum)
+                       ("plus1" . filters/plus1)
+                       ("int" . filters/int)))
             (runtime/lookup-var
              (lambda(name)
                (catch '-brk
@@ -653,9 +659,16 @@
          ,@tree
          (buffer-string)))))
 
+(defun compiler/element (tree)
+  "Compile an element from TREE."
+  `(let ((value ,@(compiler/run tree)))
+     (push value valstk)
+     value))
+
 (defun compiler/expr (tree)
   "Compile an expr from TREE."
-  (compiler/run (car tree)))
+  `(progn
+     ,@(mapcar #'compiler/run tree)))
 
 (defun compiler/-attr (tree)
   "Walk through attributes on TREE."
@@ -667,9 +680,49 @@
   "Compile attribute access from TREE."
   (compiler/-attr (reverse tree)))
 
+(defun compiler/filter-identifier (item)
+  "Compile a filter without params from ITEM.
+
+This filter takes a single parameter: the value being piped into
+it.  The code generated must first ensure that such filter is
+registered in the local `filters' variable, failing if it isn't.
+If the filter exists, it must then call its associated handler."
+  (let ((fname (cdr item)))
+    `(let ((entry (assoc ,fname filters)))
+       (if (null entry)
+           (signal
+            'templatel-syntax-error
+            (format "Filter `%s' doesn't exist" ,fname))
+         (push (funcall (cdr entry) (pop valstk)) valstk)))))
+
+(defun compiler/filter-fncall (item)
+  "ITEM."
+  (error 'not-implemented item))
+
+(defun compiler/filter-item (item)
+  "Handle compilation of single filter described by ITEM.
+
+This function routes the item to be compiled to the appropriate
+function.  A filter could be either just an identifier or a
+function call."
+  (if (string= (car item) "Identifier")
+      (compiler/filter-identifier item)
+    (compiler/filter-fncall item)))
+
+(defun compiler/filter-list (tree)
+  "Compile filters from TREE.
+
+TREE contains a list of filters that can be either Identifiers or
+FnCalls.  This functions job is to iterate over the this list and
+call `compiler/filter-item' on each entry."
+  `(progn
+     ,@(mapcar #'compiler/filter-item tree)))
+
 (defun compiler/expression (tree)
   "Compile an expression from TREE."
-  `(insert ,@(compiler/run tree)))
+  `(progn
+     ,@(compiler/run tree)
+     (insert (format "%s" (pop valstk)))))
 
 (defun compiler/text (tree)
   "Compile text from TREE."
@@ -713,7 +766,7 @@
 
 (defun compiler/for (tree)
   "Compile for statement off TREE."
-  (let ((id (cdr (cadar tree))))
+  (let ((id (cdadr (cadar tree))))
     `(let ((subenv '((,id . nil)))
            (iterable ,(compiler/run (cadr tree))))
        (push subenv envstk)
@@ -732,8 +785,10 @@
     (`("Text"           . ,a) (compiler/text a))
     (`("Identifier"     . ,a) (compiler/identifier a))
     (`("Attribute"      . ,a) (compiler/attribute a))
+    (`("Filter"         . ,a) (compiler/filter-list a))
     (`("Expr"           . ,a) (compiler/expr a))
     (`("Expression"     . ,a) (compiler/expression a))
+    (`("Element"        . ,a) (compiler/element a))
     (`("IfElse"         . ,a) (compiler/if-else a))
     (`("IfElif"         . ,a) (compiler/if-elif a))
     (`("IfStatement"    . ,a) (compiler/if a))
@@ -744,6 +799,22 @@
     (_ (message "NOENTIENDO: `%s`" tree))))
 
 
+
+(defun filters/upper (s)
+  "Upper case all chars of S."
+  (upcase s))
+
+(defun filters/lower (s)
+  "Lowewr case all chars of S."
+  (downcase s))
+
+(defun filters/sum (s)
+  "Sum all entries in S."
+  (apply '+ s))
+
+(defun filters/plus1 (s)
+  "Add one to S."
+  (1+ s))
 
 ;; --- Public API ---
 
