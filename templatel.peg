@@ -17,15 +17,27 @@ ForStatement  <- _For Expr _in Expr _STM_CLOSE Template _EndFor
 _For          <- _STM_OPEN _for
 _EndFor       <- _STM_OPEN _endfor _STM_CLOSE
 
-Expr          <- Element Filter
-Filter        <- (_PIPE (FnCall / Identifier))*
+Expr          <- Filter
+Filter        <- Logical (_PIPE Logical)*
+Logical       <- BitLogical ((AND / OR) BitLogical)*
+BitLogical    <- Comparison ((BAND / BXOR / BOR) Comparison)*
+Comparison    <- BitShifting ((EQ / NEQ / LTE / GTE / LT / GT) BitShifting)*
+BitShifting   <- Term ((RSHIFT / LSHIFT) Term)*
+
+Term          <- Factor ((PLUS / MINUS) Factor)*
+Factor        <- Power ((STAR / DSLASH / SLASH) Power)*
+
+Power         <- Unary ((POWER / MOD) Unary)*
+Unary         <- (PLUS / MINUS / NOT)? Primary
+Primary       <- _PAREN_OPEN Expr _PAREN_CLOSE
+               / Element
+
 Attribute     <- Identifier (_dot Identifier)+
 Element       <- Value / Attribute / FnCall / Identifier
 
 FnCall        <- Identifier ParamList
 ParamList     <- _PAREN_OPEN Expr (_COMMA Expr)* _PAREN_CLOSE
                / _PAREN_OPEN _PAREN_CLOSE
-
 Value         <- Number / BOOL / NIL / String
 Number        <- BIN / HEX / FLOAT / INT
 String        <- _QUOTE (!_QUOTE .)* _QUOTE _
@@ -49,10 +61,41 @@ _PAREN_OPEN    <- '('  _
 _PAREN_CLOSE   <- ')'  _
 _QUOTE         <- '"'  _
 _COMMA         <- ','  _
-_PIPE          <- '|'  _
+_PIPE           <- '|'      _
+_dot            <- '.'      _
+
+## Arithmetic Operators
+PLUS            <- '+'      _
+MINUS           <- '-'      _
+STAR            <- '*'      _
+SLASH           <- '/'      _
+DSLASH          <- '//'     _
+MOD             <- '@'      _
+POWER           <- '**'     _
+
+## Comparison Operators
+EQ              <- '=='     _
+NEQ             <- '!='     _
+LT              <- '<'      _
+GT              <- '>'      _
+LTE             <- '<='     _
+GTE             <- '>='     _
+
+## Bit Shifting
+RSHIFT          <- '>>'     _
+LSHIFT          <- '<<'     _
+
+## Binary Bit Operators
+BAND            <- '&'      _
+BOR             <- '||'     _
+BXOR            <- '^'      _
+
+## Logic Operators
+AND             <- 'and'    _
+OR              <- 'or'     _
+NOT             <- 'not'    _
 
 # Keywords
-_dot            <- '.'      _
 _in             <- 'in'     _
 _is             <- 'is'     _
 _if             <- 'if'     _
