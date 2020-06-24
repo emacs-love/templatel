@@ -219,12 +219,12 @@
 
 ;; --- Parser ---
 
-;; Template      <- (Text / Statement / Expression)*
+;; Template      <- (Text / Statement / Expression)+
 (defun parser/template (scanner)
   "Parse Template entry from SCANNER's input."
   (cons
    "Template"
-   (scanner/zero-or-more
+   (scanner/one-or-more
     scanner
     #'(lambda() (scanner/or
             scanner
