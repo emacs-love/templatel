@@ -206,8 +206,7 @@
                  ("Elif" ("Expr" ("Element" ("Identifier" . "three")))
                   ("Template" ("Text" . "\n  Three\n"))))
                 ("Else" ("Template" ("Text" . "\n  Four\n"))))
-               ("Text" . "\n")
-               )))))
+               ("Text" . "\n"))))))
 
 (ert-deftest template-if-else ()
   (let* ((s (scanner/new "{% if show %}{{ show }}{% else %}Hide{% endif %}"))
@@ -243,7 +242,21 @@
                    ("Element"
                     ("Identifier" . "show")))))))))))
 
-(ert-deftest template-text ()
+(ert-deftest template-expr-binop ()
+  (let* ((s (scanner/new "Hello, {{ 1 * 2 }}!"))
+         (tree (parser/template s)))
+    (should (equal
+             tree
+             '("Template"
+               ("Text" . "Hello, ")
+               ("Expression"
+                ("Expr"
+                 ("Factor"
+                  ("Element" ("Number" . 1))
+                  ("Element" ("Number" . 2)))))
+               ("Text" . "!"))))))
+
+(ert-deftest template-variable ()
   (let* ((s (scanner/new "Hello, {{ name }}!"))
          (tree (parser/template s)))
     (should (equal

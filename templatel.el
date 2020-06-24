@@ -196,9 +196,24 @@
   (scanner/matchs scanner "in")
   (parser/_ scanner))
 
-(defun token/pipe (scanner)
+(defun token/and (scanner)
+  "Read 'and' off SCANNER's input."
+  (scanner/matchs scanner "and")
+  (parser/_ scanner))
+
+(defun token/or (scanner)
+  "Read 'or' off SCANNER's input."
+  (scanner/matchs scanner "or")
+  (parser/_ scanner))
+
+(defun token/| (scanner)
   "Read '|' off SCANNER's input."
   (scanner/matchs scanner "|")
+  (parser/_ scanner))
+
+(defun token/|| (scanner)
+  "Read '||' off SCANNER's input."
+  (scanner/matchs scanner "||")
   (parser/_ scanner))
 
 (defun token/paren-op (scanner)
@@ -209,6 +224,91 @@
 (defun token/paren-cl (scanner)
   "Read ')' off SCANNER's input."
   (scanner/matchs scanner ")")
+  (parser/_ scanner))
+
+(defun token/+ (scanner)
+  "Read '+' off SCANNER's input."
+  (scanner/matchs scanner "+")
+  (parser/_ scanner))
+
+(defun token/- (scanner)
+  "Read '-' off SCANNER's input."
+  (scanner/matchs scanner "-")
+  (parser/_ scanner))
+
+(defun token/* (scanner)
+  "Read '*' off SCANNER's input."
+  (scanner/matchs scanner "*")
+  (parser/_ scanner))
+
+(defun token/// (scanner)
+  "Read '//' off SCANNER's input."
+  (scanner/matchs scanner "//")
+  (parser/_ scanner))
+
+(defun token// (scanner)
+  "Read '/' off SCANNER's input."
+  (scanner/matchs scanner "/")
+  (parser/_ scanner))
+
+(defun token/** (scanner)
+  "Read '**' off SCANNER's input."
+  (scanner/matchs scanner "**")
+  (parser/_ scanner))
+
+(defun token/== (scanner)
+  "Read '==' off SCANNER's input."
+  (scanner/matchs scanner "==")
+  (parser/_ scanner))
+
+(defun token/!= (scanner)
+  "Read '!=' off SCANNER's input."
+  (scanner/matchs scanner "!=")
+  (parser/_ scanner))
+
+(defun token/> (scanner)
+  "Read '>' off SCANNER's input."
+  (scanner/matchs scanner ">")
+  (parser/_ scanner))
+
+(defun token/< (scanner)
+  "Read '<' off SCANNER's input."
+  (scanner/matchs scanner "<")
+  (parser/_ scanner))
+
+(defun token/>= (scanner)
+  "Read '>=' off SCANNER's input."
+  (scanner/matchs scanner ">=")
+  (parser/_ scanner))
+
+(defun token/<= (scanner)
+  "Read '<=' off SCANNER's input."
+  (scanner/matchs scanner "<=")
+  (parser/_ scanner))
+
+(defun token/<< (scanner)
+  "Read '<<' off SCANNER's input."
+  (scanner/matchs scanner "<<")
+  (parser/_ scanner))
+
+(defun token/>> (scanner)
+  "Read '>>' off SCANNER's input."
+  (scanner/matchs scanner ">>")
+  (parser/_ scanner))
+
+(defun token/& (scanner)
+  "Read '&' off SCANNER's input."
+  (scanner/matchs scanner "&")
+  (parser/_ scanner))
+
+(defun token/% (scanner)
+  "Read '%' off SCANNER's input."
+  (scanner/matchs scanner "@")
+  (parser/_ scanner))
+
+(defun token/^ (scanner)
+  "Read '^' off SCANNER's input."
+  (scanner/matchs scanner "^")
   (parser/_ scanner))
 
 (defun parser/join-chars (chars)
@@ -365,29 +465,171 @@
     (token/expr-cl scanner)
     (cons "Expression" (list expr))))
 
-;; Expr          <- Element Filter
+
+;; Expr          <- Filter
 (defun parser/expr (scanner)
   "Read an expression from SCANNER."
-  (let ((element (parser/element scanner))
-        (filters (parser/filter scanner)))
-    (cons
-     "Expr"
-     (if (null filters)
-         (list element)
-       (list element (cons "Filter" filters))))))
+  (cons
+   "Expr"
+   (list (parser/filter scanner))))
 
-;; Filter        <- (_PIPE (FnCall / Identifier))*
+(defun parser/--ioc (name first rest)
+  "NAME FIRST REST."
+  (if (null rest)
+      first
+    (cons name (cons first rest))))
+
+(defun parser/--binop (scanner name randfn ratorfn)
+  "SCANNER NAME RATORFN RANDFN."
+  (parser/--ioc
+   name
+   (funcall randfn scanner)
+   (scanner/zero-or-more
+    scanner
+    #'(lambda()
+        (funcall ratorfn scanner)
+        (funcall randfn scanner)))))
+
+;; Filter        <- Logical (_PIPE Logical)*
 (defun parser/filter (scanner)
-  "Read a filter from SCANNER."
-  (scanner/zero-or-more
+  "Read Filter from SCANNER."
+  (parser/--binop scanner "Filter" #'parser/logical #'token/|))
+
+;; Logical       <- BitLogical ((AND / OR) BitLogical)*
+(defun parser/logical (scanner)
+  "Read Logical from SCANNER."
+  (parser/--binop
    scanner
-   #'(lambda()
-      (token/pipe scanner)
-      (scanner/or
-       scanner
-       (list
-        #'(lambda() (parser/fncall scanner))
-        #'(lambda() (parser/identifier scanner)))))))
+   "Logical"
+   #'parser/bit-logical
+   #'(lambda(s)
+       (scanner/or
+        s
+        (list
+         #'(lambda() (token/and s))
+         #'(lambda() (token/or s)))))))
+
+;; BitLogical    <- Comparison ((BAND / BXOR / BOR) Comparison)*
+(defun parser/bit-logical (scanner)
+  "Read BitLogical from SCANNER."
+  (parser/--binop
+   scanner
+   "BitLogical"
+   #'parser/comparison
+   #'(lambda(s)
+       (scanner/or
+        s
+        (list
+         #'(lambda() (token/& s))
+         #'(lambda() (token/^ s))
+         #'(lambda() (token/|| s)))))))
+
+;; Comparison    <- BitShifting ((EQ / NEQ / LTE / GTE / LT / GT) BitShifting)*
+(defun parser/comparison (scanner)
+  "Read a Comparison from SCANNER."
+  (parser/--binop
+   scanner
+   "Comparison"
+   #'parser/bit-shifting
+   #'(lambda(s)
+       (scanner/or
+        s
+        (list
+         #'(lambda() (token/== s))
+         #'(lambda() (token/!= s))
+         #'(lambda() (token/<= s))
+         #'(lambda() (token/>= s))
+         #'(lambda() (token/< s))
+         #'(lambda() (token/> s)))))))
+
+;; BitShifting   <- Term ((RSHIFT / LSHIFT) Term)*
+(defun parser/bit-shifting (scanner)
+  "Read a BitShifting from SCANNER."
+  (parser/--binop
+   scanner
+   "BitShifting"
+   #'parser/term
+   #'(lambda(s)
+       (scanner/or
+        s
+        (list
+         #'(lambda() (token/>> s))
+         #'(lambda() (token/<< s)))))))
+
+;; Term          <- Factor ((PLUS / MINUS) Factor)*
+(defun parser/term (scanner)
+  "Read Term from SCANNER."
+  (parser/--binop
+   scanner
+   "Term"
+   #'parser/factor
+   #'(lambda(s)
+       (scanner/or
+        s
+        (list
+         #'(lambda() (token/+ s))
+         #'(lambda() (token/- s)))))))
+
+;; Factor        <- Power ((STAR / DSLASH / SLASH) Power)*
+(defun parser/factor (scanner)
+  "Read Factor from SCANNER."
+  (parser/--binop
+   scanner
+   "Factor"
+   #'parser/power
+   #'(lambda(s)
+       (scanner/or
+        s
+        (list
+         #'(lambda() (token/* s))
+         #'(lambda() (token/// s))
+         #'(lambda() (token// s)))))))
+
+;; Power         <- Unary ((POWER / MOD) Unary)*
+(defun parser/power (scanner)
+  "Read Power from SCANNER."
+  (parser/--binop
+   scanner
+   "Power"
+   #'parser/unary
+   #'(lambda(s)
+       (scanner/or
+        s
+        (list
+         #'(lambda() (token/** s))
+         #'(lambda() (token/% s)))))))
+
+;; Unary         <- (PLUS / MINUS / NOT)? Primary
+(defun parser/unary (scanner)
+  "Read Unary from SCANNER."
+  (let ((leftside (scanner/optional
+                   scanner
+                   #'(lambda()
+                       (scanner/or
+                        scanner
+                        (list
+                         #'(lambda() (token/** scanner))
+                         #'(lambda() (token/% scanner)))))))
+        (prim (parser/primary scanner)))
+    (if (null leftside)
+        prim
+      (cons
+       "Unary"
+       (list leftside prim)))))
+
+;; Primary       <- _PAREN_OPEN Expr _PAREN_CLOSE
+;;                / Element
+(defun parser/primary (scanner)
+  "Read Primary from SCANNER."
+  (scanner/or
+   scanner
+   (list
+    #'(lambda()
+        (token/paren-op scanner)
+        (let ((expr (parser/expr scanner)))
+          (token/paren-cl scanner)
+          expr))
+    #'(lambda() (parser/element scanner)))))
 
 ;; Attribute     <- Identifier (_dot Identifier)+
 (defun parser/attribute (scanner)
