@@ -206,16 +206,6 @@
   (scanner/matchs scanner "or")
   (parser/_ scanner))
 
-(defun token/| (scanner)
-  "Read '|' off SCANNER's input."
-  (scanner/matchs scanner "|")
-  (parser/_ scanner))
-
-(defun token/|| (scanner)
-  "Read '||' off SCANNER's input."
-  (scanner/matchs scanner "||")
-  (parser/_ scanner))
-
 (defun token/paren-op (scanner)
   "Read '(' off SCANNER's input."
   (scanner/matchs scanner "(")
@@ -226,90 +216,119 @@
   (scanner/matchs scanner ")")
   (parser/_ scanner))
 
+(defun token/| (scanner)
+  "Read '|' off SCANNER's input."
+  (let ((m (scanner/matchs scanner "|")))
+    (parser/_ scanner)
+    m))
+
+(defun token/|| (scanner)
+  "Read '||' off SCANNER's input."
+  (let ((m (scanner/matchs scanner "||")))
+    (parser/_ scanner)
+    m))
+
 (defun token/+ (scanner)
   "Read '+' off SCANNER's input."
-  (scanner/matchs scanner "+")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "+")))
+    (parser/_ scanner)
+    m))
 
 (defun token/- (scanner)
   "Read '-' off SCANNER's input."
-  (scanner/matchs scanner "-")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "-")))
+    (parser/_ scanner)
+    m))
 
 (defun token/* (scanner)
   "Read '*' off SCANNER's input."
-  (scanner/matchs scanner "*")
-  (parser/_ scanner))
-
-(defun token/// (scanner)
-  "Read '//' off SCANNER's input."
-  (scanner/matchs scanner "//")
-  (parser/_ scanner))
-
-(defun token// (scanner)
-  "Read '/' off SCANNER's input."
-  (scanner/matchs scanner "/")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "*")))
+    (parser/_ scanner)
+    m))
 
 (defun token/** (scanner)
   "Read '**' off SCANNER's input."
-  (scanner/matchs scanner "**")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "**")))
+    (parser/_ scanner)
+    m))
+
+(defun token// (scanner)
+  "Read '/' off SCANNER's input."
+  (let ((m (scanner/matchs scanner "/")))
+    (parser/_ scanner)
+    m))
+
+(defun token/// (scanner)
+  "Read '//' off SCANNER's input."
+  (let ((m (scanner/matchs scanner "//")))
+    (parser/_ scanner)
+    m))
 
 (defun token/== (scanner)
   "Read '==' off SCANNER's input."
-  (scanner/matchs scanner "==")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "==")))
+    (parser/_ scanner)
+    m))
 
 (defun token/!= (scanner)
   "Read '!=' off SCANNER's input."
-  (scanner/matchs scanner "!=")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "!=")))
+    (parser/_ scanner)
+    m))
 
 (defun token/> (scanner)
   "Read '>' off SCANNER's input."
-  (scanner/matchs scanner ">")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner ">")))
+    (parser/_ scanner)
+    m))
 
 (defun token/< (scanner)
   "Read '<' off SCANNER's input."
-  (scanner/matchs scanner "<")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "<")))
+    (parser/_ scanner)
+    m))
 
 (defun token/>= (scanner)
   "Read '>=' off SCANNER's input."
-  (scanner/matchs scanner ">=")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner ">=")))
+    (parser/_ scanner)
+    m))
 
 (defun token/<= (scanner)
   "Read '<=' off SCANNER's input."
-  (scanner/matchs scanner "<=")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "<=")))
+    (parser/_ scanner)
+    m))
 
 (defun token/<< (scanner)
   "Read '<<' off SCANNER's input."
-  (scanner/matchs scanner "<<")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "<<")))
+    (parser/_ scanner)
+    m))
 
 (defun token/>> (scanner)
   "Read '>>' off SCANNER's input."
-  (scanner/matchs scanner ">>")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner ">>")))
+    (parser/_ scanner)
+    m))
 
 (defun token/& (scanner)
   "Read '&' off SCANNER's input."
-  (scanner/matchs scanner "&")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "&")))
+    (parser/_ scanner)
+    m))
 
 (defun token/% (scanner)
   "Read '%' off SCANNER's input."
-  (scanner/matchs scanner "@")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "%")))
+    (parser/_ scanner)
+    m))
 
 (defun token/^ (scanner)
   "Read '^' off SCANNER's input."
-  (scanner/matchs scanner "^")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "^")))
+    (parser/_ scanner)
+    m))
 
 (defun parser/join-chars (chars)
   "Join all the CHARS forming a string."
@@ -464,7 +483,6 @@
   (let ((expr (parser/expr scanner)))
     (token/expr-cl scanner)
     (cons "Expression" (list expr))))
-
 
 ;; Expr          <- Filter
 (defun parser/expr (scanner)
@@ -663,7 +681,7 @@
   "Read FnCall off SCANNER."
   (cons
    "FnCall"
-   (list
+   (cons
     (parser/identifier scanner)
     (parser/paramlist scanner))))
 
@@ -952,8 +970,8 @@ Will be converted into the following:
 
 Notice the paramter list is compiled before being passed to the
 function call."
-  (let ((fname (cdr (car (cdr item))))
-        (params (car (cdr (cdr item)))))
+  (let ((fname (cdr (cadr (cadr item))))
+        (params (cddr (cadr item))))
     `(let ((entry (assoc ,fname filters)))
        (if (null entry)
            (signal
@@ -971,8 +989,8 @@ function call."
 This function routes the item to be compiled to the appropriate
 function.  A filter could be either just an identifier or a
 function call."
-  (if (string= (car item) "Identifier")
-      (compiler/filter-identifier item)
+  (if (string= (caadr item) "Identifier")
+      (compiler/filter-identifier (cadr item))
     (compiler/filter-fncall item)))
 
 (defun compiler/filter-list (tree)
@@ -982,7 +1000,8 @@ TREE contains a list of filters that can be either Identifiers or
 FnCalls.  This functions job is to iterate over the this list and
 call `compiler/filter-item' on each entry."
   `(progn
-     ,@(mapcar #'compiler/filter-item tree)))
+     ,(compiler/run (car tree))
+     ,@(mapcar #'compiler/filter-item (cdr tree))))
 
 (defun compiler/expression (tree)
   "Compile an expression from TREE."
