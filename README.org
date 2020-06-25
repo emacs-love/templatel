@@ -1,0 +1,158 @@
+* templatel
+
+  A templating language for Emacs-Lisp deeply inspired by [[https://jinja.palletsprojects.com/][Jinja]].  This
+  project doesn't exactly aim to be a clone of it for Emacs, but to be
+  a good alternative if anyone needs a template language.
+
+  This is what it looks like in action:
+
+  #+begin_src web
+  <h1>{{ title }}</h1>
+  <ul>
+  {% for user in users %}
+    <li><a href="{{ user.url }}">{{ user.name }}</a></li>
+  {% endfor %}
+  </ul>
+  #+end_src
+
+  That can be rendered with the following Emacs Lisp code:
+
+  #+begin_src emacs-lisp
+  (templatel-render-file "tmpl.html.jinja"
+                         '(("title" . "A nice web page")
+                           ("users" . ((("url" . "http://clarete.li")
+                                        ("name" . "link"))
+                                       (("url" . "http://gnu.org")
+                                        ("name" . "Gnu!!"))))))
+  #+end_src
+
+** Text
+
+   Everting that isn't either an expression or a statement, is just
+   text.
+
+** Expressions
+
+*** Literals
+
+    The string representation of literal expressions is emitted in
+    when they're encountered within expression blocks.
+
+    1. Numbers
+
+       #+BEGIN_SRC web
+       {{ 1 }}
+       #+END_SRC
+
+    2. Strings
+
+       #+BEGIN_SRC web
+       {{ "a string" }}
+       #+END_SRC
+
+*** Variables
+
+    #+BEGIN_SRC web
+    Hi {{ name }}!
+    #+END_SRC
+
+*** Filters
+
+    * [ ] batch
+    * [ ] default
+    * [ ] escape
+    * [ ] first
+    * [ ] groupby
+    * [ ] indent
+    * [X] int
+    * [ ] join
+    * [ ] last
+    * [ ] length
+    * [X] lower
+    * [ ] max
+    * [ ] min
+    * [ ] random
+    * [ ] replace
+    * [ ] reverse
+    * [ ] round
+    * [X] sum
+    * [ ] title
+    * [ ] trim
+    * [ ] truncate
+    * [ ] unique
+    * [X] upper
+    * [ ] wordcount
+
+** Statements
+
+*** If
+
+**** Simple case
+
+     #+BEGIN_SRC web
+     {% if user %}
+       <h2>{{ user.name }}</h2>
+     {% endif %}
+     #+END_SRC
+
+**** Multiple conditions
+
+     #+BEGIN_SRC web
+     {% if user.anonymous %}
+       <a href="/login"></a>
+     {% elif user.admin %}
+       <a href="/admin"></a>
+     {% else %}
+       <a href="/profile"></a>
+     {% endif %}
+     #+END_SRC
+
+*** For
+
+**** Support iterating over lists
+
+     #+BEGIN_SRC emacs-lisp
+     (templatel-render-file "forloops.html"
+      '(("users" . ("Moe" "Larry" "Curly"))))
+     #+END_SRC
+
+     #+BEGIN_SRC web
+     <ul>
+     {% for name in names %}
+       <li>{{ name }}</li>
+     {% endfor %}
+     </ul>
+     #+END_SRC
+
+**** Support iterating over pairs
+
+     #+BEGIN_SRC emacs-lisp
+     (templatel-render-file "forloops-with-pairs.html"
+      '(("users" . ((10 "Moe") (20 "Larry") (30 "Curly")))))
+     #+END_SRC
+
+     #+BEGIN_SRC web
+     <ul>
+     {% for id, name in users %}
+       <li>{{ user[0] }}: {{ user[1] }}</li>
+     {% endfor %}
+     </ul>
+     #+END_SRC
+
+*** Include
+
+    #+BEGIN_SRC web
+    {% include "file.html" %}
+    #+END_SRC
+    
+** A TODO list
+   * Include external files
+   * For loop variables
+     * idex, index0, revindex, revindex0
+     * first, last, length, cycle
+     * previtem, nextitem
+   * Template Inheritannce
+     * extends
+     * block
+     * super
+   * Whitespace control
