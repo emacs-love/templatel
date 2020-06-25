@@ -8,6 +8,42 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-expr-math-paren ()
+  (should (equal (templatel-render-string
+                  "{{ (2 + 3) * 4 }}"
+                  '())
+                 "20")))
+
+(ert-deftest render-expr-math-mix ()
+  (should (equal (templatel-render-string
+                  "{{ 2 + 3 * 4 }}"
+                  '())
+                 "14")))
+
+(ert-deftest render-expr-math-div ()
+  (should (equal (templatel-render-string
+                  "{{ 150 / 3 }}"
+                  '())
+                 "50")))
+
+(ert-deftest render-expr-math-mul ()
+  (should (equal (templatel-render-string
+                  "{{ 2 * 3 * 4 }}"
+                  '())
+                 "24")))
+
+(ert-deftest render-expr-math-sub ()
+  (should (equal (templatel-render-string
+                  "{{ 150 - 3 }}"
+                  '())
+                 "147")))
+
+(ert-deftest render-expr-math-sub ()
+  (should (equal (templatel-render-string
+                  "{{ 150 + 3 }}"
+                  '())
+                 "153")))
+
 (ert-deftest render-expr-filter-pipe ()
   (should (equal (templatel-render-string
                   "Awww {{ qts|sum|plus1 }}."
@@ -253,7 +289,7 @@
                 ("Expr"
                  ("Factor"
                   ("Element" ("Number" . 1))
-                  ("Element" ("Number" . 2)))))
+                  (?* "Element" ("Number" . 2)))))
                ("Text" . "!"))))))
 
 (ert-deftest template-variable ()

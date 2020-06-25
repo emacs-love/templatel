@@ -505,8 +505,9 @@
    (scanner/zero-or-more
     scanner
     #'(lambda()
-        (funcall ratorfn scanner)
-        (funcall randfn scanner)))))
+        (cons
+         (car (funcall ratorfn scanner))
+         (funcall randfn scanner))))))
 
 ;; Filter        <- Logical (_PIPE Logical)*
 (defun parser/filter (scanner)
@@ -947,7 +948,7 @@ This filter takes a single parameter: the value being piped into
 it.  The code generated must first ensure that such filter is
 registered in the local `filters' variable, failing if it isn't.
 If the filter exists, it must then call its associated handler."
-  (let ((fname (cdr item)))
+  (let ((fname (cdar (cdr item))))
     `(let ((entry (assoc ,fname filters)))
        (if (null entry)
            (signal
@@ -989,9 +990,9 @@ function call."
 This function routes the item to be compiled to the appropriate
 function.  A filter could be either just an identifier or a
 function call."
-  (if (string= (caadr item) "Identifier")
-      (compiler/filter-identifier (cadr item))
-    (compiler/filter-fncall item)))
+  (if (string= (caar (cddr item)) "Identifier")
+      (compiler/filter-identifier (cdr item))
+    (compiler/filter-fncall (cdr item))))
 
 (defun compiler/filter-list (tree)
   "Compile filters from TREE.
@@ -1062,6 +1063,29 @@ call `compiler/filter-item' on each entry."
         iterable)
        (pop envstk))))
 
+(defun compiler/binop-item (tree)
+  "TREE."
+  (if (not (null tree))
+      (let* ((tag (caar tree))
+             (val (compiler/run (cdr (car tree))))
+             (op (cadr (assoc tag '((?* *)
+                                    (?/ /)
+                                    (?+ +)
+                                    (?- -))))))
+        (if (not (null val))
+            `(progn
+               ,val
+               ,(compiler/binop-item (cdr tree))
+               (let ((b (pop valstk))
+                     (a (pop valstk)))
+                 (push (,op a b) valstk)))))))
+
+(defun compiler/binop (tree)
+  "TREE."
+  `(progn
+     ,(compiler/run (car tree))
+     ,(compiler/binop-item (cdr tree))))
+
 (defun compiler/run (tree)
   "Compile TREE into bytecode."
   (pcase tree
@@ -1078,6 +1102,8 @@ call `compiler/filter-item' on each entry."
     (`("IfElif"         . ,a) (compiler/if-elif a))
     (`("IfStatement"    . ,a) (compiler/if a))
     (`("ForStatement"   . ,a) (compiler/for a))
+    (`("Factor"         . ,a) (compiler/binop a))
+    (`("Term"           . ,a) (compiler/binop a))
     (`("Number"         . ,a) a)
     (`("String"         . ,a) a)
     ((pred listp)             (mapcar #'compiler/run tree))
