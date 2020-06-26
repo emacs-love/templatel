@@ -1153,5 +1153,12 @@ call `compiler/filter-item' on each entry."
   (let ((code (templatel-compile-string input)))
     (templatel-render-code code env)))
 
+(defun templatel-render-file (path env)
+  "Render file at PATH into a tree with variables from ENV."
+  (with-temp-buffer
+    (insert-file-contents path)
+    (let ((code (templatel-compile-string (buffer-string))))
+      (templatel-render-code code env))))
+
 (provide 'templatel)
 ;;; templatel.el ends here
