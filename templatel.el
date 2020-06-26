@@ -1078,6 +1078,7 @@ call `compiler/filter-item' on each entry."
                                     ;; Comparison
                                     ("<" <)
                                     (">" >)
+                                    ("!=" (lambda(a b) (not (equal a b))))
                                     ("==" equal)
                                     (">=" >=)
                                     ("<=" <=))))))
