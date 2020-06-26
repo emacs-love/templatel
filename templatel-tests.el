@@ -8,6 +8,36 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-if-elif-expr-cmp ()
+  (should (equal (templatel-render-string
+                  "{% if a > 10 %}Big{% elif a > 5 %}Med{% else %}Small{% endif %}"
+                  '(("a" . 11)))
+                 "Big"))
+  (should (equal (templatel-render-string
+                  "{% if a > 10 %}Big{% elif a > 5 %}Med{% else %}Small{% endif %}"
+                  '(("a" . 7)))
+                 "Med"))
+  (should (equal (templatel-render-string
+                  "{% if a > 10 %}Big{% elif a > 5 %}Med{% else %}Small{% endif %}"
+                  '(("a" . 4)))
+                 "Small")))
+
+(ert-deftest render-if-else-expr-cmp ()
+  (should (equal (templatel-render-string
+                  "{% if a > 3 %}{{ (2 + 3) * a }}{% else %}ecase{% endif %}"
+                  '(("a" . 2)))
+                 "ecase")))
+
+(ert-deftest render-if-expr-cmp ()
+  (should (equal (templatel-render-string
+                  "{% if a > 3 %}{{ (2 + 3) * a }}{% endif %}"
+                  '(("a" . 2)))
+                 ""))
+  (should (equal (templatel-render-string
+                  "{% if a > 3 %}{{ (2 + 3) * a }}{% endif %}"
+                  '(("a" . 10)))
+                 "50")))
+
 (ert-deftest render-expr-math-paren ()
   (should (equal (templatel-render-string
                   "{{ (2 + 3) * 4 }}"
@@ -287,9 +317,9 @@
                ("Text" . "Hello, ")
                ("Expression"
                 ("Expr"
-                 ("Factor"
+                 ("BinOp"
                   ("Element" ("Number" . 1))
-                  (?* "Element" ("Number" . 2)))))
+                  ("*" "Element" ("Number" . 2)))))
                ("Text" . "!"))))))
 
 (ert-deftest template-variable ()

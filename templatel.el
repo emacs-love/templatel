@@ -1022,7 +1022,8 @@ call `compiler/filter-item' on each entry."
   "Compile cond from elif statements in TREE."
   (let ((expr (cadr tree))
         (tmpl (caddr tree)))
-    `((,@(compiler/run expr)) ,@(compiler/run tmpl))))
+    `((progn ,(compiler/run expr) (pop valstk))
+      ,@(compiler/run tmpl))))
 
 (defun compiler/if-elif (tree)
   "Compile if/elif/else statement off TREE."
@@ -1030,7 +1031,8 @@ call `compiler/filter-item' on each entry."
         (body (cadr tree))
         (elif (caddr tree))
         (else (cadr (cadddr tree))))
-    `(cond (,(compiler/run expr) ,@(compiler/run body))
+    `(cond ((progn ,(compiler/run expr) (pop valstk))
+            ,@(compiler/run body))
            ,@(mapcar #'compiler/if-elif-cond elif)
            (t ,@(compiler/run else)))))
 
@@ -1039,7 +1041,7 @@ call `compiler/filter-item' on each entry."
   (let ((expr (car tree))
         (body (cadr tree))
         (else (cadr (caddr tree))))
-    `(if ,(compiler/run expr)
+    `(if (progn ,(compiler/run expr) (pop valstk))
          ,@(compiler/run body)
        ,@(compiler/run else))))
 
