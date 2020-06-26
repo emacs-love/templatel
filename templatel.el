@@ -1047,7 +1047,7 @@ call `compiler/filter-item' on each entry."
   "Compile if statement off TREE."
   (let ((expr (car tree))
         (body (cadr tree)))
-    `(if ,(compiler/run expr)
+    `(if (progn ,(compiler/run expr) (pop valstk))
          ,@(compiler/run body))))
 
 (defun compiler/for (tree)
