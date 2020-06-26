@@ -1066,7 +1066,7 @@ call `compiler/filter-item' on each entry."
        (pop envstk))))
 
 (defun compiler/binop-item (tree)
-  "TREE."
+  "Compile item from list of binary operator/operand in TREE."
   (if (not (null tree))
       (let* ((tag (caar tree))
              (val (compiler/run (cdr (car tree))))
@@ -1091,7 +1091,7 @@ call `compiler/filter-item' on each entry."
                  (push (,op a b) valstk)))))))
 
 (defun compiler/binop (tree)
-  "TREE."
+  "Compile a binary operator from the TREE."
   `(progn
      ,(compiler/run (car tree))
      ,(compiler/binop-item (cdr tree))))
