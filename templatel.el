@@ -500,13 +500,13 @@
 (defun parser/--binop (scanner name randfn ratorfn)
   "SCANNER NAME RATORFN RANDFN."
   (parser/--ioc
-   name
+   (if (null name) "BinOp" name)
    (funcall randfn scanner)
    (scanner/zero-or-more
     scanner
     #'(lambda()
         (cons
-         (car (funcall ratorfn scanner))
+         (funcall ratorfn scanner)
          (funcall randfn scanner))))))
 
 ;; Filter        <- Logical (_PIPE Logical)*
@@ -519,7 +519,7 @@
   "Read Logical from SCANNER."
   (parser/--binop
    scanner
-   "Logical"
+   nil ; "Logical"
    #'parser/bit-logical
    #'(lambda(s)
        (scanner/or
@@ -533,7 +533,7 @@
   "Read BitLogical from SCANNER."
   (parser/--binop
    scanner
-   "BitLogical"
+   nil ; "BitLogical"
    #'parser/comparison
    #'(lambda(s)
        (scanner/or
@@ -548,7 +548,7 @@
   "Read a Comparison from SCANNER."
   (parser/--binop
    scanner
-   "Comparison"
+   nil ; "Comparison"
    #'parser/bit-shifting
    #'(lambda(s)
        (scanner/or
@@ -566,7 +566,7 @@
   "Read a BitShifting from SCANNER."
   (parser/--binop
    scanner
-   "BitShifting"
+   nil ; "BitShifting"
    #'parser/term
    #'(lambda(s)
        (scanner/or
@@ -580,7 +580,7 @@
   "Read Term from SCANNER."
   (parser/--binop
    scanner
-   "Term"
+   nil ; "Term"
    #'parser/factor
    #'(lambda(s)
        (scanner/or
@@ -594,7 +594,7 @@
   "Read Factor from SCANNER."
   (parser/--binop
    scanner
-   "Factor"
+   nil ; "Factor"
    #'parser/power
    #'(lambda(s)
        (scanner/or
@@ -609,7 +609,7 @@
   "Read Power from SCANNER."
   (parser/--binop
    scanner
-   "Power"
+   nil ; "Power"
    #'parser/unary
    #'(lambda(s)
        (scanner/or
@@ -1068,10 +1068,17 @@ call `compiler/filter-item' on each entry."
   (if (not (null tree))
       (let* ((tag (caar tree))
              (val (compiler/run (cdr (car tree))))
-             (op (cadr (assoc tag '((?* *)
-                                    (?/ /)
-                                    (?+ +)
-                                    (?- -))))))
+             (op (cadr (assoc tag '(;; Arithmetic
+                                    ("*" *)
+                                    ("/" /)
+                                    ("+" +)
+                                    ("-" -)
+                                    ;; Comparison
+                                    ("<" <)
+                                    (">" >)
+                                    ("==" equal)
+                                    (">=" >=)
+                                    ("<=" <=))))))
         (if (not (null val))
             `(progn
                ,val
@@ -1102,8 +1109,7 @@ call `compiler/filter-item' on each entry."
     (`("IfElif"         . ,a) (compiler/if-elif a))
     (`("IfStatement"    . ,a) (compiler/if a))
     (`("ForStatement"   . ,a) (compiler/for a))
-    (`("Factor"         . ,a) (compiler/binop a))
-    (`("Term"           . ,a) (compiler/binop a))
+    (`("BinOp"          . ,a) (compiler/binop a))
     (`("Number"         . ,a) a)
     (`("String"         . ,a) a)
     ((pred listp)             (mapcar #'compiler/run tree))
