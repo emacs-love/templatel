@@ -220,115 +220,115 @@
   "Read '|' off SCANNER's input."
   (let ((m (scanner/matchs scanner "|")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/|| (scanner)
   "Read '||' off SCANNER's input."
   (let ((m (scanner/matchs scanner "||")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/+ (scanner)
   "Read '+' off SCANNER's input."
   (let ((m (scanner/matchs scanner "+")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/- (scanner)
   "Read '-' off SCANNER's input."
   (let ((m (scanner/matchs scanner "-")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/* (scanner)
   "Read '*' off SCANNER's input."
   (let ((m (scanner/matchs scanner "*")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/** (scanner)
   "Read '**' off SCANNER's input."
   (let ((m (scanner/matchs scanner "**")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token// (scanner)
   "Read '/' off SCANNER's input."
   (let ((m (scanner/matchs scanner "/")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/// (scanner)
   "Read '//' off SCANNER's input."
   (let ((m (scanner/matchs scanner "//")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/== (scanner)
   "Read '==' off SCANNER's input."
   (let ((m (scanner/matchs scanner "==")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/!= (scanner)
   "Read '!=' off SCANNER's input."
   (let ((m (scanner/matchs scanner "!=")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/> (scanner)
   "Read '>' off SCANNER's input."
   (let ((m (scanner/matchs scanner ">")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/< (scanner)
   "Read '<' off SCANNER's input."
   (let ((m (scanner/matchs scanner "<")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/>= (scanner)
   "Read '>=' off SCANNER's input."
   (let ((m (scanner/matchs scanner ">=")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/<= (scanner)
   "Read '<=' off SCANNER's input."
   (let ((m (scanner/matchs scanner "<=")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/<< (scanner)
   "Read '<<' off SCANNER's input."
   (let ((m (scanner/matchs scanner "<<")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/>> (scanner)
   "Read '>>' off SCANNER's input."
   (let ((m (scanner/matchs scanner ">>")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/& (scanner)
   "Read '&' off SCANNER's input."
   (let ((m (scanner/matchs scanner "&")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/% (scanner)
   "Read '%' off SCANNER's input."
   (let ((m (scanner/matchs scanner "%")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun token/^ (scanner)
   "Read '^' off SCANNER's input."
   (let ((m (scanner/matchs scanner "^")))
     (parser/_ scanner)
-    m))
+    (parser/join-chars m)))
 
 (defun parser/join-chars (chars)
   "Join all the CHARS forming a string."
