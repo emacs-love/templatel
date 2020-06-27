@@ -1190,6 +1190,7 @@ call `compiler/filter-item' on each entry."
     (`("Unary"          . ,a) (compiler/unary a))
     (`("Number"         . ,a) a)
     (`("String"         . ,a) a)
+    (`("Bool"           . ,a) a)
     ((pred listp)             (mapcar #'compiler/run tree))
     (_ (message "NOENTIENDO: `%s`" tree))))
 

@@ -28,11 +28,16 @@
 
 ;; --- Error ---
 
-
-
 ;; --- Renderer --
 
 (ert-deftest render-expr-logic ()
+  (should (equal (templatel-render-string "{{ true }}" '()) "t"))
+  (should (equal (templatel-render-string "{{ false }}" '()) "nil"))
+  (should (equal (templatel-render-string "{{ false or true }}" '()) "t"))
+  (should (equal (templatel-render-string "{{ false and true }}" '()) "nil"))
+  (should (equal (templatel-render-string "{{ true and true }}" '()) "t"))
+  (should (equal (templatel-render-string "{{ true or false }}" '()) "t"))
+  (should (equal (templatel-render-string "{{ false or true }}" '()) "t"))
   (should (equal (templatel-render-string "{{ not not a }}" '(("a" . t))) "t"))
   (should (equal (templatel-render-string "{{ a or b }}" '(("a" . nil) ("b" . t))) "t"))
   (should (equal (templatel-render-string "{{ a or b }}" '(("a" . t) ("b" . nil))) "t"))
