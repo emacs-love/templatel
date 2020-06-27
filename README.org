@@ -1,8 +1,12 @@
 * templatel
 
-  A templating language for Emacs-Lisp deeply inspired by [[https://jinja.palletsprojects.com/][Jinja]].  This
-  project doesn't exactly aim to be a clone of it for Emacs, but to be
-  a good alternative if anyone needs a template language.
+  A templating language for Emacs-Lisp.
+
+  Although deeply inspired by [[https://jinja.palletsprojects.com/][Jinja]], this project doesn't exactly aim
+  to be a clone of it for Emacs, but to be a good alternative if
+  anyone needs a template language.  That being said, contributions to
+  increase compatibility between ~templatel~ and ~Jinja~ will be
+  certainly welcome.
 
   This is what it looks like in action:
 
@@ -25,6 +29,10 @@
                                        (("url" . "http://gnu.org")
                                         ("name" . "Gnu!!"))))))
   #+end_src
+
+  Right about now, the environment (or the variable bag) needs to be
+  an assoc list.  There are plans to make it easy to switch to other
+  lookup methods.
 
 ** Text
 
@@ -146,6 +154,12 @@
     #+END_SRC
     
 ** A TODO list
+   * compile to elc
+   * operators:
+     * in, lshift, rshift
+     * slash vs dslash
+   * more filters
+   * work with hash-tables and other data structures
    * Include external files
    * For loop variables
      * idex, index0, revindex, revindex0
