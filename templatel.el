@@ -210,8 +210,9 @@
 
 (defun token/or (scanner)
   "Read 'or' off SCANNER's input."
-  (scanner/matchs scanner "or")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "or")))
+    (parser/_ scanner)
+    (parser/join-chars m)))
 
 (defun token/paren-op (scanner)
   "Read '(' off SCANNER's input."
@@ -1103,6 +1104,7 @@ call `compiler/filter-item' on each entry."
                                     ("-" -)
                                     ;; Logic
                                     ("and" and)
+                                    ("or" or)
                                     ;; Bit Logic
                                     ("&" logand)
                                     ("||" logior)
