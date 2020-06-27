@@ -11,6 +11,17 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-expr-and-not ()
+  (should (equal (templatel-render-string "{% if not a %}kaboom{% endif %}" '(("a" . nil))) "kaboom"))
+  (should (equal (templatel-render-string "{% if not a and not b %}kaboom{% endif %}"
+                                          '(("a" . nil)
+                                            ("b" . t)))
+                 ""))
+  (should (equal (templatel-render-string "{% if not a and not b %}kaboom{% endif %}"
+                                          '(("a" . nil)
+                                            ("b" . nil)))
+                 "kaboom")))
+
 (ert-deftest render-expr-unary ()
   (should (equal (templatel-render-string "{{ +a }}" '(("a" . -10))) "10"))
   (should (equal (templatel-render-string "{{ +a }}" '(("a" . 10))) "10"))

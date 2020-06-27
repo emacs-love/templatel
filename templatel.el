@@ -198,13 +198,15 @@
 
 (defun token/and (scanner)
   "Read 'and' off SCANNER's input."
-  (scanner/matchs scanner "and")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "and")))
+    (parser/_ scanner)
+    (parser/join-chars m)))
 
 (defun token/not (scanner)
   "Read 'not' off SCANNER's input."
-  (scanner/matchs scanner "not")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "not")))
+    (parser/_ scanner)
+    (parser/join-chars m)))
 
 (defun token/or (scanner)
   "Read 'or' off SCANNER's input."
@@ -1088,6 +1090,8 @@ call `compiler/filter-item' on each entry."
                                     ("/" /)
                                     ("+" +)
                                     ("-" -)
+                                    ;; Logic
+                                    ("and" and)
                                     ;; Bit Logic
                                     ("&" logand)
                                     ("||" logior)
@@ -1119,7 +1123,8 @@ call `compiler/filter-item' on each entry."
          (val (cadr tree))
          (op (cadr (assoc tag '(("+" (lambda(x) (if (< x 0) (- x) x)))
                                 ("-" -)
-                                ("~" lognot))))))
+                                ("~" lognot)
+                                ("not" not))))))
     `(progn
        ,(compiler/run val)
        (push (,op (pop valstk)) valstk))))
