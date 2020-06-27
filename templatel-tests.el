@@ -11,16 +11,21 @@
 
 ;; --- Renderer --
 
-(ert-deftest render-expr-and-not ()
-  (should (equal (templatel-render-string "{% if not a %}kaboom{% endif %}" '(("a" . nil))) "kaboom"))
-  (should (equal (templatel-render-string "{% if not a and not b %}kaboom{% endif %}"
+(ert-deftest render-expr-logic ()
+  (should (equal (templatel-render-string "{{ not not a }}" '(("a" . t))) "t"))
+  (should (equal (templatel-render-string "{{ a or b }}" '(("a" . nil) ("b" . t))) "t"))
+  (should (equal (templatel-render-string "{{ a or b }}" '(("a" . t) ("b" . nil))) "t"))
+  (should (equal (templatel-render-string "{{ a or b }}" '(("a" . nil) ("b" . nil))) "nil"))
+  (should (equal (templatel-render-string "{{ not a }}" '(("a" . nil))) "t"))
+  (should (equal (templatel-render-string "{{ not not a }}" '(("a" . t))) "t"))
+  (should (equal (templatel-render-string "{{ not a and not b }}"
                                           '(("a" . nil)
                                             ("b" . t)))
-                 ""))
-  (should (equal (templatel-render-string "{% if not a and not b %}kaboom{% endif %}"
+                 "nil"))
+  (should (equal (templatel-render-string "{{ not a and not b }}"
                                           '(("a" . nil)
                                             ("b" . nil)))
-                 "kaboom")))
+                 "t")))
 
 (ert-deftest render-expr-unary ()
   (should (equal (templatel-render-string "{{ +a }}" '(("a" . -10))) "10"))
