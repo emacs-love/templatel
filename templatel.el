@@ -631,25 +631,36 @@
          #'(lambda() (token/** s))
          #'(lambda() (token/% s)))))))
 
-;; Unary         <- (PLUS / MINUS / NOT / BNOT)? Primary
+;; UnaryOp       <- PLUS / MINUS / NOT / BNOT
+(defun parser/unary-op (scanner)
+  "Read an Unary operator from SCANNER."
+  (scanner/or
+   scanner
+   (list
+    #'(lambda() (token/+ scanner))
+    #'(lambda() (token/- scanner))
+    #'(lambda() (token/~ scanner))
+    #'(lambda() (token/not scanner)))))
+
+;; Unary         <- UnaryOp Unary / UnaryOp Primary / Primary
 (defun parser/unary (scanner)
   "Read Unary from SCANNER."
-  (let ((leftside (scanner/optional
-                   scanner
-                   #'(lambda()
-                       (scanner/or
-                        scanner
-                        (list
-                         #'(lambda() (token/+ scanner))
-                         #'(lambda() (token/- scanner))
-                         #'(lambda() (token/~ scanner))
-                         #'(lambda() (token/not scanner)))))))
-        (prim (parser/primary scanner)))
-    (if (null leftside)
-        prim
-      (cons
-       "Unary"
-       (list leftside prim)))))
+  (scanner/or
+   scanner
+   (list
+    #'(lambda()
+        (cons
+         "Unary"
+         (list
+          (parser/unary-op scanner)
+          (parser/unary scanner))))
+    #'(lambda()
+        (cons
+         "Unary"
+         (list
+          (parser/unary-op scanner)
+          (parser/primary scanner))))
+    #'(lambda() (parser/primary scanner)))))
 
 ;; Primary       <- _PAREN_OPEN Expr _PAREN_CLOSE
 ;;                / Element

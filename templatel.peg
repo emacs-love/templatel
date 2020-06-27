@@ -28,7 +28,9 @@ Term          <- Factor ((PLUS / MINUS) Factor)*
 Factor        <- Power ((STAR / DSLASH / SLASH) Power)*
 
 Power         <- Unary ((POWER / MOD) Unary)*
-Unary         <- (PLUS / MINUS / NOT / BNOT)? Primary
+
+UnaryOp       <- PLUS / MINUS / NOT / BNOT
+Unary         <- UnaryOp Unary / UnaryOp Primary / Primary
 Primary       <- _PAREN_OPEN Expr _PAREN_CLOSE
                / Element
 
