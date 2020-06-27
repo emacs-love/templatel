@@ -201,6 +201,11 @@
   (scanner/matchs scanner "and")
   (parser/_ scanner))
 
+(defun token/not (scanner)
+  "Read 'not' off SCANNER's input."
+  (scanner/matchs scanner "not")
+  (parser/_ scanner))
+
 (defun token/or (scanner)
   "Read 'or' off SCANNER's input."
   (scanner/matchs scanner "or")
@@ -315,6 +320,12 @@
 (defun token/& (scanner)
   "Read '&' off SCANNER's input."
   (let ((m (scanner/matchs scanner "&")))
+    (parser/_ scanner)
+    (parser/join-chars m)))
+
+(defun token/~ (scanner)
+  "Read '~' off SCANNER's input."
+  (let ((m (scanner/matchs scanner "~")))
     (parser/_ scanner)
     (parser/join-chars m)))
 
@@ -618,7 +629,7 @@
          #'(lambda() (token/** s))
          #'(lambda() (token/% s)))))))
 
-;; Unary         <- (PLUS / MINUS / NOT)? Primary
+;; Unary         <- (PLUS / MINUS / NOT / BNOT)? Primary
 (defun parser/unary (scanner)
   "Read Unary from SCANNER."
   (let ((leftside (scanner/optional
@@ -627,8 +638,10 @@
                        (scanner/or
                         scanner
                         (list
-                         #'(lambda() (token/** scanner))
-                         #'(lambda() (token/% scanner)))))))
+                         #'(lambda() (token/+ scanner))
+                         #'(lambda() (token/- scanner))
+                         #'(lambda() (token/~ scanner))
+                         #'(lambda() (token/not scanner)))))))
         (prim (parser/primary scanner)))
     (if (null leftside)
         prim
@@ -1075,6 +1088,10 @@ call `compiler/filter-item' on each entry."
                                     ("/" /)
                                     ("+" +)
                                     ("-" -)
+                                    ;; Bit Logic
+                                    ("&" logand)
+                                    ("||" logior)
+                                    ("^" logxor)
                                     ;; Comparison
                                     ("<" <)
                                     (">" >)
@@ -1096,6 +1113,17 @@ call `compiler/filter-item' on each entry."
      ,(compiler/run (car tree))
      ,(compiler/binop-item (cdr tree))))
 
+(defun compiler/unary (tree)
+  "Compile a unary operator from the TREE."
+  (let* ((tag (car tree))
+         (val (cadr tree))
+         (op (cadr (assoc tag '(("+" (lambda(x) (if (< x 0) (- x) x)))
+                                ("-" -)
+                                ("~" lognot))))))
+    `(progn
+       ,(compiler/run val)
+       (push (,op (pop valstk)) valstk))))
+
 (defun compiler/run (tree)
   "Compile TREE into bytecode."
   (pcase tree
@@ -1113,6 +1141,7 @@ call `compiler/filter-item' on each entry."
     (`("IfStatement"    . ,a) (compiler/if a))
     (`("ForStatement"   . ,a) (compiler/for a))
     (`("BinOp"          . ,a) (compiler/binop a))
+    (`("Unary"          . ,a) (compiler/unary a))
     (`("Number"         . ,a) a)
     (`("String"         . ,a) a)
     ((pred listp)             (mapcar #'compiler/run tree))

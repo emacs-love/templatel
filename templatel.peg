@@ -28,7 +28,7 @@ Term          <- Factor ((PLUS / MINUS) Factor)*
 Factor        <- Power ((STAR / DSLASH / SLASH) Power)*
 
 Power         <- Unary ((POWER / MOD) Unary)*
-Unary         <- (PLUS / MINUS / NOT)? Primary
+Unary         <- (PLUS / MINUS / NOT / BNOT)? Primary
 Primary       <- _PAREN_OPEN Expr _PAREN_CLOSE
                / Element
 
@@ -89,6 +89,7 @@ LSHIFT          <- '<<'     _
 BAND            <- '&'      _
 BOR             <- '||'     _
 BXOR            <- '^'      _
+BNOT            <- '~'      _
 
 ## Logic Operators
 AND             <- 'and'    _

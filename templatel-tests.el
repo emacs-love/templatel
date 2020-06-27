@@ -6,7 +6,22 @@
 (require 'cl-lib)
 (require 'templatel)
 
+;; --- Error ---
+
+
 ;; --- Renderer --
+
+(ert-deftest render-expr-unary ()
+  (should (equal (templatel-render-string "{{ +a }}" '(("a" . -10))) "10"))
+  (should (equal (templatel-render-string "{{ +a }}" '(("a" . 10))) "10"))
+  (should (equal (templatel-render-string "{{ -a }}" '(("a" . -10))) "10"))
+  (should (equal (templatel-render-string "{{ -a }}" '(("a" . 10))) "-10")))
+
+(ert-deftest render-expr-all-bitlogic ()
+  (should (equal (templatel-render-string "{{ a & 0b11 }}" '(("a" . 10))) "2"))
+  (should (equal (templatel-render-string "{{ a || 0b1 }}" '(("a" . 10))) "11"))
+  (should (equal (templatel-render-string "{{ a ^ 0b11 }}" '(("a" . 10))) "9"))
+  (should (equal (templatel-render-string "{{ ~a }}" '(("a" . 10))) "-11")))
 
 (ert-deftest render-expr-all-cmp ()
   (should (equal (templatel-render-string "{{ a == 10 }}" '(("a" . 10))) "t"))
