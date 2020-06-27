@@ -13,7 +13,7 @@ Else          <- _STM_OPEN _else _STM_CLOSE Template _EndIf
 _If           <- _STM_OPEN _if
 _EndIf        <- _STM_OPEN _endif _STM_CLOSE
 
-ForStatement  <- _For Expr _in Expr _STM_CLOSE Template _EndFor
+ForStatement  <- _For Identifier _in Expr _STM_CLOSE Template _EndFor
 _For          <- _STM_OPEN _for
 _EndFor       <- _STM_OPEN _endfor _STM_CLOSE
 
@@ -21,7 +21,7 @@ Expr          <- Filter
 Filter        <- Logical (_PIPE Logical)*
 Logical       <- BitLogical ((AND / OR) BitLogical)*
 BitLogical    <- Comparison ((BAND / BXOR / BOR) Comparison)*
-Comparison    <- BitShifting ((EQ / NEQ / LTE / GTE / LT / GT) BitShifting)*
+Comparison    <- BitShifting ((EQ / NEQ / LTE / GTE / LT / GT / IN) BitShifting)*
 BitShifting   <- Term ((RSHIFT / LSHIFT) Term)*
 
 Term          <- Factor ((PLUS / MINUS) Factor)*
@@ -82,6 +82,7 @@ LT              <- '<'      _
 GT              <- '>'      _
 LTE             <- '<='     _
 GTE             <- '>='     _
+IN              <- 'in'     _
 
 ## Bit Shifting
 RSHIFT          <- '>>'     _
@@ -99,7 +100,7 @@ OR              <- 'or'     _
 NOT             <- 'not'    _
 
 # Keywords
-_in             <- 'in'     _
+_in             <- IN
 _is             <- 'is'     _
 _if             <- 'if'     _
 _else           <- 'else'   _

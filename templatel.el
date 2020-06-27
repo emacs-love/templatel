@@ -218,8 +218,9 @@
 
 (defun token/in (scanner)
   "Read 'in' off SCANNER's input."
-  (scanner/matchs scanner "in")
-  (parser/_ scanner))
+  (let ((m (scanner/matchs scanner "in")))
+    (parser/_ scanner)
+    (parser/join-chars m)))
 
 (defun token/and (scanner)
   "Read 'and' off SCANNER's input."
@@ -500,7 +501,7 @@
   "Parse for statement from SCANNER."
   (token/stm-op scanner)
   (token/for scanner)
-  (let ((iter (parser/expr scanner))
+  (let ((iter (parser/identifier scanner))
         (_ (token/in scanner))
         (iterable (parser/expr scanner))
         (_ (token/stm-cl scanner))
@@ -582,7 +583,7 @@
          #'(lambda() (token/^ s))
          #'(lambda() (token/|| s)))))))
 
-;; Comparison    <- BitShifting ((EQ / NEQ / LTE / GTE / LT / GT) BitShifting)*
+;; Comparison    <- BitShifting ((EQ / NEQ / LTE / GTE / LT / GT / IN) BitShifting)*
 (defun parser/comparison (scanner)
   "Read a Comparison from SCANNER."
   (parser/--binop
@@ -598,7 +599,8 @@
          #'(lambda() (token/<= s))
          #'(lambda() (token/>= s))
          #'(lambda() (token/< s))
-         #'(lambda() (token/> s)))))))
+         #'(lambda() (token/> s))
+         #'(lambda() (token/in s)))))))
 
 ;; BitShifting   <- Term ((RSHIFT / LSHIFT) Term)*
 (defun parser/bit-shifting (scanner)
@@ -1106,7 +1108,7 @@ call `compiler/filter-item' on each entry."
 
 (defun compiler/for (tree)
   "Compile for statement off TREE."
-  (let ((id (cdadr (cadar tree))))
+  (let ((id (cdar tree)))
     `(let ((subenv '((,id . nil)))
            (iterable ,(compiler/run (cadr tree))))
        (push subenv envstk)
@@ -1140,7 +1142,8 @@ call `compiler/filter-item' on each entry."
                                     ("!=" (lambda(a b) (not (equal a b))))
                                     ("==" equal)
                                     (">=" >=)
-                                    ("<=" <=))))))
+                                    ("<=" <=)
+                                    ("in" (lambda(a b) (not (null (member a b))))))))))
         (if (not (null val))
             `(progn
                ,val

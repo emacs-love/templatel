@@ -29,6 +29,7 @@
 ;; --- Error ---
 
 
+
 ;; --- Renderer --
 
 (ert-deftest render-expr-logic ()
@@ -71,7 +72,11 @@
   (should (equal (templatel-render-string "{{ a  < 11 }}" '(("a" . 10))) "t"))
   (should (equal (templatel-render-string "{{ a  < 10 }}" '(("a" . 10))) "nil"))
   (should (equal (templatel-render-string "{{ a  >  9 }}" '(("a" . 10))) "t"))
-  (should (equal (templatel-render-string "{{ a  > 10 }}" '(("a" . 10))) "nil")))
+  (should (equal (templatel-render-string "{{ a  > 10 }}" '(("a" . 10))) "nil"))
+  (should (equal (templatel-render-string "{{ a in b }}" '(("a" . 10)
+                                                           ("b" . (0 5 10)))) "t"))
+  (should (equal (templatel-render-string "{{ a in b }}" '(("a" . 10)
+                                                           ("b" . (0 5 15)))) "nil")))
 
 (ert-deftest render-if-elif-expr-cmp ()
   (should (equal (templatel-render-string
@@ -296,7 +301,7 @@
              '("Template"
                ("Text" . "\n")
                ("ForStatement"
-                ("Expr" ("Element" ("Identifier" . "name")))
+                ("Identifier" . "name")
                 ("Expr" ("Element" ("Identifier" . "names")))
                 ("Template"
                  ("Text" . "\n  ")
