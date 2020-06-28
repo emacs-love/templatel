@@ -31,11 +31,13 @@
 
 (define-error 'templatel-syntax-error "Syntax Error" 'templatel-error)
 
+(define-error 'templatel-backtracking "Backtracking" 'templatel-internal)
+
 ;; --- Scanner ---
 
 (defun scanner/new (input)
   "Create scanner for INPUT."
-  (list input 0))
+  (list input 0 0 0))
 
 (defun scanner/input (scanner)
   "Input that SCANNER is operating on."
@@ -53,6 +55,41 @@
   "Increment SCANNER's cursor."
   (scanner/cursor/set scanner (+ 1 (scanner/cursor scanner))))
 
+(defun scanner/line (scanner)
+  "Line the SCANNER's cursor is in."
+  (caddr scanner))
+
+(defun scanner/line/set (scanner value)
+  "Set SCANNER's line to VALUE."
+  (setf (caddr scanner) value))
+
+(defun scanner/line/incr (scanner)
+  "Increment SCANNER's line and reset col."
+  (scanner/col/set scanner 0)
+  (scanner/line/set scanner (+ 1 (scanner/line scanner))))
+
+(defun scanner/col (scanner)
+  "Column the SCANNER's cursor is in."
+  (cadddr scanner))
+
+(defun scanner/col/set (scanner value)
+  "Set column of the SCANNER as VALUE."
+  (setf (cadddr scanner) value))
+
+(defun scanner/col/incr (scanner)
+  "Increment SCANNER's col."
+  (scanner/col/set scanner (+ 1 (scanner/col scanner))))
+
+(defun scanner/state (scanner)
+  "SCANNER."
+  (copy-sequence (cdr scanner)))
+
+(defun scanner/state/set (scanner state)
+  "SCANNER STATE."
+  (scanner/cursor/set scanner (car state))
+  (scanner/line/set scanner (cadr state))
+  (scanner/col/set scanner (caddr state)))
+
 (defun scanner/current (scanner)
   "Peak the nth cursor of SCANNER's input."
   (if (scanner/eos scanner)
@@ -62,7 +99,7 @@
 
 (defun scanner/error (_scanner msg)
   "Generate error in SCANNER and document with MSG."
-  (signal 'templatel-syntax-error msg))
+  (signal 'templatel-backtracking msg))
 
 (defun scanner/eos (scanner)
   "Return t if cursor is at the end of SCANNER's input."
@@ -73,7 +110,9 @@
   "Push SCANNER's cursor one character."
   (if (scanner/eos scanner)
       (scanner/error scanner "EOF")
-    (scanner/cursor/incr scanner)))
+    (progn
+      (scanner/col/incr scanner)
+      (scanner/cursor/incr scanner))))
 
 (defun scanner/any (scanner)
   "Match any character on SCANNER's input minus EOF."
@@ -104,20 +143,20 @@
   "Read the first one of OPTIONS that works SCANNER."
   (if (null options)
       (scanner/error scanner "No valid options")
-    (let ((cursor (scanner/cursor scanner)))
+    (let ((state (scanner/state scanner)))
       (condition-case nil
           (funcall (car options))
-        (templatel-error
-         (progn (scanner/cursor/set scanner cursor)
+        (templatel-internal
+         (progn (scanner/state/set scanner state)
                 (scanner/or scanner (cdr options))))))))
 
 (defun scanner/optional (scanner expr)
   "Read EXPR from SCANNER returning nil if it fails."
-  (let ((cursor (scanner/cursor scanner)))
+  (let ((state (scanner/state scanner)))
     (condition-case nil
         (funcall expr)
-      (templatel-error
-       (scanner/cursor/set scanner cursor)
+      (templatel-internal
+       (scanner/state/set scanner state)
        nil))))
 
 (defun scanner/not (scanner expr)
@@ -125,7 +164,7 @@
   (let* ((cursor (scanner/cursor scanner))
          (succeeded (condition-case nil
                         (funcall expr)
-                      (templatel-error
+                      (templatel-internal
                        nil))))
     (scanner/cursor/set scanner cursor)
     (if succeeded
@@ -134,11 +173,11 @@
 
 (defun scanner/zero-or-more (scanner expr)
   "Read EXPR zero or more time from SCANNER."
-  (let ((cursor (scanner/cursor scanner)))
+  (let ((state (scanner/state scanner)))
     (condition-case nil
         (cons (funcall expr) (scanner/zero-or-more scanner expr))
-      (templatel-error
-       (scanner/cursor/set scanner cursor)
+      (templatel-internal
+       (scanner/state/set scanner state)
        nil))))
 
 (defun scanner/one-or-more (scanner expr)
@@ -360,6 +399,9 @@
 
 (defun token/% (scanner)
   "Read '%' off SCANNER's input."
+  ;; This is needed or allowing a cutting point to be introduced right
+  ;; after the operator of a binary expression.
+  (scanner/not scanner #'(lambda() (token/stm-cl scanner)))
   (let ((m (scanner/matchs scanner "%")))
     (parser/_ scanner)
     (parser/join-chars m)))
@@ -521,7 +563,10 @@
   "SCANNER."
   (token/expr-op scanner)
   (let ((expr (parser/expr scanner)))
-    (token/expr-cl scanner)
+    (parser/cut
+     scanner
+     #'(lambda() (token/expr-cl scanner))
+     "Unclosed bracket")
     (cons "Expression" (list expr))))
 
 ;; Expr          <- Filter
@@ -531,33 +576,61 @@
    "Expr"
    (list (parser/filter scanner))))
 
-(defun parser/--ioc (name first rest)
+(defun parser/cut (scanner fn msg)
+  "Try to parse FN off SCANNER or error with MSG.
+
+There are two types of errors emitted by this parser:
+ 1. Backtracking (internal), which is caught by most scanner
+    functions, like scanner/or and scanner/zero-or-more.
+ 2. Syntax Error (public), which signals an unrecoverable parsing
+    error.
+
+This function catches backtracking errors and transform them in
+syntax errors.  It must be carefully explicitly on places where
+backtracking should be interrupted earlier."
+  (condition-case nil
+      (funcall fn)
+    (templatel-internal
+     (signal 'templatel-syntax-error
+             (format "%s at %s:%s"
+                     msg
+                     (scanner/line scanner)
+                     (scanner/col scanner))))))
+
+(defun parser/item-or-named-collection (name first rest)
   "NAME FIRST REST."
   (if (null rest)
       first
     (cons name (cons first rest))))
 
-(defun parser/--binop (scanner name randfn ratorfn)
-  "SCANNER NAME RATORFN RANDFN."
-  (parser/--ioc
+(defun parser/binary (scanner name randfn ratorfn)
+  "Parse binary operator NAME from SCANNER.
+
+A binary operator needs two functions: one for reading the
+operands (RANDFN) and another one to read the
+operator (RATORFN)."
+  (parser/item-or-named-collection
    (if (null name) "BinOp" name)
    (funcall randfn scanner)
    (scanner/zero-or-more
     scanner
     #'(lambda()
         (cons
-         (funcall ratorfn scanner)
-         (funcall randfn scanner))))))
+           (funcall ratorfn scanner)
+           (parser/cut
+            scanner
+            #'(lambda() (funcall randfn scanner))
+            "Missing operand after binary operator"))))))
 
 ;; Filter        <- Logical (_PIPE Logical)*
 (defun parser/filter (scanner)
   "Read Filter from SCANNER."
-  (parser/--binop scanner "Filter" #'parser/logical #'token/|))
+  (parser/binary scanner "Filter" #'parser/logical #'token/|))
 
 ;; Logical       <- BitLogical ((AND / OR) BitLogical)*
 (defun parser/logical (scanner)
   "Read Logical from SCANNER."
-  (parser/--binop
+  (parser/binary
    scanner
    nil ; "Logical"
    #'parser/bit-logical
@@ -571,7 +644,7 @@
 ;; BitLogical    <- Comparison ((BAND / BXOR / BOR) Comparison)*
 (defun parser/bit-logical (scanner)
   "Read BitLogical from SCANNER."
-  (parser/--binop
+  (parser/binary
    scanner
    nil ; "BitLogical"
    #'parser/comparison
@@ -586,7 +659,7 @@
 ;; Comparison    <- BitShifting ((EQ / NEQ / LTE / GTE / LT / GT / IN) BitShifting)*
 (defun parser/comparison (scanner)
   "Read a Comparison from SCANNER."
-  (parser/--binop
+  (parser/binary
    scanner
    nil ; "Comparison"
    #'parser/bit-shifting
@@ -605,7 +678,7 @@
 ;; BitShifting   <- Term ((RSHIFT / LSHIFT) Term)*
 (defun parser/bit-shifting (scanner)
   "Read a BitShifting from SCANNER."
-  (parser/--binop
+  (parser/binary
    scanner
    nil ; "BitShifting"
    #'parser/term
@@ -619,7 +692,7 @@
 ;; Term          <- Factor ((PLUS / MINUS) Factor)*
 (defun parser/term (scanner)
   "Read Term from SCANNER."
-  (parser/--binop
+  (parser/binary
    scanner
    nil ; "Term"
    #'parser/factor
@@ -633,7 +706,7 @@
 ;; Factor        <- Power ((STAR / DSLASH / SLASH) Power)*
 (defun parser/factor (scanner)
   "Read Factor from SCANNER."
-  (parser/--binop
+  (parser/binary
    scanner
    nil ; "Factor"
    #'parser/power
@@ -648,7 +721,7 @@
 ;; Power         <- Unary ((POWER / MOD) Unary)*
 (defun parser/power (scanner)
   "Read Power from SCANNER."
-  (parser/--binop
+  (parser/binary
    scanner
    nil ; "Power"
    #'parser/unary
@@ -687,7 +760,10 @@
          "Unary"
          (list
           (parser/unary-op scanner)
-          (parser/primary scanner))))
+          (parser/cut
+            scanner
+            #'(lambda() (parser/primary scanner))
+            "Missing operand after unary operator"))))
     #'(lambda() (parser/primary scanner)))))
 
 ;; Primary       <- _PAREN_OPEN Expr _PAREN_CLOSE
@@ -927,12 +1003,14 @@
 ;; _EOL            <- '\r\n' / '\n' / '\r'
 (defun parser/eol (scanner)
   "Read end of line from SCANNER."
-  (scanner/or
-   scanner
-   (list
-    #'(lambda() (scanner/matchs scanner "\r\n"))
-    #'(lambda() (scanner/matchs scanner "\n"))
-    #'(lambda() (scanner/matchs scanner "\r")))))
+  (let ((eol (scanner/or
+              scanner
+              (list
+               #'(lambda() (scanner/matchs scanner "\r\n"))
+               #'(lambda() (scanner/matchs scanner "\n"))
+               #'(lambda() (scanner/matchs scanner "\r"))))))
+    (scanner/line/incr scanner)
+    eol))
 
 ;; Comment         <- "{#" (!"#}" .)* "#}"
 (defun parser/comment (scanner)

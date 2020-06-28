@@ -28,6 +28,27 @@
 
 ;; --- Error ---
 
+(ert-deftest err-parse-incomplete ()
+  (condition-case err
+      (templatel-render-string "{{ a + }}" '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Missing operand after binary operator at 0:7")))))
+
+  (condition-case err
+      (templatel-render-string "{{ - }}" '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Missing operand after unary operator at 0:5")))))
+
+  (condition-case err
+      (templatel-render-string "{{ -a " '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Unclosed bracket at 0:6")))))
+
+  (condition-case err
+      (templatel-render-string "{{ -a }" '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Unclosed bracket at 0:7"))))))
+
 ;; --- Renderer --
 
 (ert-deftest render-expr-logic ()
