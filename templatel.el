@@ -31,6 +31,8 @@
 
 (define-error 'templatel-syntax-error "Syntax Error" 'templatel-error)
 
+(define-error 'templatel-runtime-error "Runtime Error" 'templatel-error)
+
 (define-error 'templatel-backtracking "Backtracking" 'templatel-internal)
 
 ;; --- Scanner ---
@@ -1047,7 +1049,9 @@ operator (RATORFN)."
                    (let ((value (assoc name ienv)))
                      (when (not (null value))
                        (throw '-brk (cdr value)))))
-                 (error (format "Variable `%s' not declared" name))))))
+                 (signal
+                  'templatel-runtime-error
+                  (format "Variable `%s' not declared" name))))))
        (with-temp-buffer
          ,@tree
          (buffer-string)))))
@@ -1084,7 +1088,7 @@ If the filter exists, it must then call its associated handler."
     `(let ((entry (assoc ,fname filters)))
        (if (null entry)
            (signal
-            'templatel-syntax-error
+            'templatel-runtime-error
             (format "Filter `%s' doesn't exist" ,fname))
          (push (funcall (cdr entry) (pop valstk)) valstk)))))
 
