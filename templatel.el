@@ -1194,7 +1194,7 @@ call `compiler/filter-item' on each entry."
     `(let ((subenv '((,id . nil)))
            (iterable ,(compiler/run (cadr tree))))
        (push subenv envstk)
-       (mapcar
+       (mapc
         #'(lambda(id)
             (setf (alist-get ,id subenv) id)
             ,@(compiler/run (caddr tree)))
