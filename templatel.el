@@ -81,11 +81,11 @@
   (scanner/col/set scanner (+ 1 (scanner/col scanner))))
 
 (defun scanner/state (scanner)
-  "SCANNER."
+  "Return a copy o SCANNER's state."
   (copy-sequence (cdr scanner)))
 
 (defun scanner/state/set (scanner state)
-  "SCANNER STATE."
+  "Set SCANNER's state with STATE."
   (scanner/cursor/set scanner (car state))
   (scanner/line/set scanner (cadr state))
   (scanner/col/set scanner (caddr state)))
