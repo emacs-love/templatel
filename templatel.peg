@@ -4,7 +4,7 @@ Text          <- (!(_EXPR_OPEN / _STM_OPEN / _COMMENT_OPEN) .)+
 
 Expression    <- _EXPR_OPEN Expr _EXPR_CLOSE
 
-Statement     <- IfStatement / ForStatement / BlockStatement
+Statement     <- IfStatement / ForStatement / BlockStatement / ExtendsStatement
 
 IfStatement   <- _If Expr _STM_CLOSE Template (Elif / Else)+
                / _If Expr _STM_CLOSE Template _EndIf
@@ -20,6 +20,8 @@ _EndFor       <- _STM_OPEN _endfor _STM_CLOSE
 BlockStatement <- _Block String _STM_CLOSE Template _EndBlock
 _Block         <- _STM_OPEN _block
 _EndBlock      <- _STM_OPEN _endblock _STM_CLOSE
+
+ExtendsStatement <- _STM_OPEN _extends String _STM_CLOSE
 
 Expr          <- Filter
 Filter        <- Logical (_PIPE Logical)*
@@ -114,6 +116,8 @@ _for            <- 'for'    _
 _endfor         <- 'endfor' _
 _block          <- 'block'    _
 _endblock       <- 'endblock' _
+_extends        <- 'extends'  _
+
 
 # Whitespace Handling
 _               <- (Space / Comment)*

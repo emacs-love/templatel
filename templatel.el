@@ -267,6 +267,11 @@
   (scanner/matchs scanner "endblock")
   (parser/_ scanner))
 
+(defun token/extends (scanner)
+  "Read 'extends' off SCANNER's input."
+  (scanner/matchs scanner "extends")
+  (parser/_ scanner))
+
 (defun token/in (scanner)
   "Read 'in' off SCANNER's input."
   (let ((m (scanner/matchs scanner "in")))
@@ -465,7 +470,7 @@
               #'(lambda() (token/comment-op scanner))))))
          (scanner/any scanner))))))
 
-;; Statement     <- IfStatement / ForStatement / BlockStatement
+;; Statement     <- IfStatement / ForStatement / BlockStatement / ExtendsStatement
 (defun parser/statement (scanner)
   "Parse a statement from SCANNER."
   (scanner/or
@@ -473,7 +478,8 @@
    (list
     #'(lambda() (parser/if-stm scanner))
     #'(lambda() (parser/for-stm scanner))
-    #'(lambda() (parser/block-stm scanner)))))
+    #'(lambda() (parser/block-stm scanner))
+    #'(lambda() (parser/extends-stm scanner)))))
 
 ;; IfStatement   <- _If Expr _STM_CLOSE Template Elif
 ;;                / _If Expr _STM_CLOSE Template Else
@@ -589,6 +595,16 @@
   (token/stm-op scanner)
   (token/endblock scanner)
   (token/stm-cl scanner))
+
+;; ExtendsStatement <- _STM_OPEN _extends String _STM_CLOSE
+(defun parser/extends-stm (scanner)
+  "Parse extends statement from SCANNER."
+  (token/stm-op scanner)
+  (token/extends scanner)
+  (let ((name (parser/string scanner)))
+    (parser/_ scanner)
+    (token/stm-cl scanner)
+    (cons "ExtendsStatement" (list name))))
 
 ;; Expression    <- _EXPR_OPEN Expr _EXPR_CLOSE
 (defun parser/expression (scanner)

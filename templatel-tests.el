@@ -315,6 +315,15 @@
 
 ;; --- Parser & Scanner ---
 
+(ert-deftest template-extends ()
+  (let* ((s (scanner/new "{% extends \"layout.html\" %}"))
+         (tree (parser/template s)))
+    (should (equal
+             tree
+             '("Template"
+               ("ExtendsStatement"
+                ("String" . "layout.html")))))))
+
 (ert-deftest template-block ()
   (let* ((s (scanner/new "{% block \"stuff\" %}default{% endblock %}"))
          (tree (parser/template s)))
