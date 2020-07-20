@@ -163,11 +163,11 @@
 
 (defun scanner/not (scanner expr)
   "Fail if EXPR succeed, succeed when EXPR fail using SCANNER."
-  (let* ((cursor (scanner/cursor scanner))
-         (succeeded (condition-case nil
-                        (funcall expr)
-                      (templatel-internal
-                       nil))))
+  (let ((cursor (scanner/cursor scanner))
+        (succeeded (condition-case nil
+                       (funcall expr)
+                     (templatel-internal
+                      nil))))
     (scanner/cursor/set scanner cursor)
     (if succeeded
         (scanner/error scanner "Not meant to succeed")
