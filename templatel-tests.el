@@ -325,13 +325,13 @@
                 ("String" . "layout.html")))))))
 
 (ert-deftest template-block ()
-  (let* ((s (scanner/new "{% block \"stuff\" %}default{% endblock %}"))
+  (let* ((s (scanner/new "{% block stuff %}default{% endblock %}"))
          (tree (parser/template s)))
     (should (equal
              tree
              '("Template"
                ("BlockStatement"
-                ("String" . "stuff")
+                ("Identifier" . "stuff")
                 ("Template"
                  ("Text" . "default"))))))))
 

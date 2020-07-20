@@ -582,7 +582,7 @@
   "Parse block statement from SCANNER."
   (token/stm-op scanner)
   (token/block scanner)
-  (let ((name (parser/string scanner))
+  (let ((name (parser/identifier scanner))
         (_ (parser/_ scanner))
         (_ (token/stm-cl scanner))
         (tmpl (parser/template scanner)))
