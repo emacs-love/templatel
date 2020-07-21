@@ -1080,19 +1080,19 @@ operator (RATORFN)."
 
 (defun compiler/wrap (tree)
   "Compile root node into a function with TREE as body."
-  `(lambda(env)
-     (let* ((envstk (list env))
-            (valstk (list))
-            (filters '(("upper" . filters/upper)
-                       ("lower" . filters/lower)
-                       ("sum" . filters/sum)
-                       ("plus1" . filters/plus1)
-                       ("int" . filters/int)))
-            (runtime/lookup-var
+  `(lambda(vars &optional env)
+     (let* ((rt/varstk (list vars))
+            (rt/valstk (list))
+            (rt/filters '(("upper" . filters/upper)
+                          ("lower" . filters/lower)
+                          ("sum" . filters/sum)
+                          ("plus1" . filters/plus1)
+                          ("int" . filters/int)))
+            (rt/lookup-var
              (lambda(name)
                (catch '-brk
-                 (dolist (ienv (reverse envstk))
-                   (let ((value (assoc name ienv)))
+                 (dolist (ivars (reverse rt/varstk))
+                   (let ((value (assoc name ivars)))
                      (when (not (null value))
                        (throw '-brk (cdr value)))))
                  (signal
@@ -1105,7 +1105,7 @@ operator (RATORFN)."
 (defun compiler/element (tree)
   "Compile an element from TREE."
   `(let ((value ,@(compiler/run tree)))
-     (push value valstk)
+     (push value rt/valstk)
      value))
 
 (defun compiler/expr (tree)
@@ -1131,12 +1131,12 @@ it.  The code generated must first ensure that such filter is
 registered in the local `filters' variable, failing if it isn't.
 If the filter exists, it must then call its associated handler."
   (let ((fname (cdar (cdr item))))
-    `(let ((entry (assoc ,fname filters)))
+    `(let ((entry (assoc ,fname rt/filters)))
        (if (null entry)
            (signal
             'templatel-runtime-error
             (format "Filter `%s' doesn't exist" ,fname))
-         (push (funcall (cdr entry) (pop valstk)) valstk)))))
+         (push (funcall (cdr entry) (pop rt/valstk)) rt/valstk)))))
 
 (defun compiler/filter-fncall (item)
   "Compiler filter with params from ITEM.
@@ -1155,16 +1155,16 @@ Notice the paramter list is compiled before being passed to the
 function call."
   (let ((fname (cdr (cadr (cadr item))))
         (params (cddr (cadr item))))
-    `(let ((entry (assoc ,fname filters)))
+    `(let ((entry (assoc ,fname rt/filters)))
        (if (null entry)
            (signal
             'templatel-syntax-error
             (format "Filter `%s' doesn't exist" ,fname))
          (push (apply
                 (cdr entry)
-                (cons (pop valstk)
+                (cons (pop rt/valstk)
                       (list ,@(compiler/run params))))
-               valstk)))))
+               rt/valstk)))))
 
 (defun compiler/filter-item (item)
   "Handle compilation of single filter described by ITEM.
@@ -1190,7 +1190,7 @@ call `compiler/filter-item' on each entry."
   "Compile an expression from TREE."
   `(progn
      ,@(compiler/run tree)
-     (insert (format "%s" (pop valstk)))))
+     (insert (format "%s" (pop rt/valstk)))))
 
 (defun compiler/text (tree)
   "Compile text from TREE."
@@ -1198,13 +1198,13 @@ call `compiler/filter-item' on each entry."
 
 (defun compiler/identifier (tree)
   "Compile identifier from TREE."
-  `(funcall runtime/lookup-var ,tree))
+  `(funcall rt/lookup-var ,tree))
 
 (defun compiler/if-elif-cond (tree)
   "Compile cond from elif statements in TREE."
   (let ((expr (cadr tree))
         (tmpl (caddr tree)))
-    `((progn ,(compiler/run expr) (pop valstk))
+    `((progn ,(compiler/run expr) (pop rt/valstk))
       ,@(compiler/run tmpl))))
 
 (defun compiler/if-elif (tree)
@@ -1213,7 +1213,7 @@ call `compiler/filter-item' on each entry."
         (body (cadr tree))
         (elif (caddr tree))
         (else (cadr (cadddr tree))))
-    `(cond ((progn ,(compiler/run expr) (pop valstk))
+    `(cond ((progn ,(compiler/run expr) (pop rt/valstk))
             ,@(compiler/run body))
            ,@(mapcar #'compiler/if-elif-cond elif)
            (t ,@(compiler/run else)))))
@@ -1223,7 +1223,7 @@ call `compiler/filter-item' on each entry."
   (let ((expr (car tree))
         (body (cadr tree))
         (else (cadr (caddr tree))))
-    `(if (progn ,(compiler/run expr) (pop valstk))
+    `(if (progn ,(compiler/run expr) (pop rt/valstk))
          ,@(compiler/run body)
        ,@(compiler/run else))))
 
@@ -1231,7 +1231,7 @@ call `compiler/filter-item' on each entry."
   "Compile if statement off TREE."
   (let ((expr (car tree))
         (body (cadr tree)))
-    `(if (progn ,(compiler/run expr) (pop valstk))
+    `(if (progn ,(compiler/run expr) (pop rt/valstk))
          ,@(compiler/run body))))
 
 (defun compiler/for (tree)
@@ -1239,13 +1239,13 @@ call `compiler/filter-item' on each entry."
   (let ((id (cdar tree)))
     `(let ((subenv '((,id . nil)))
            (iterable ,(compiler/run (cadr tree))))
-       (push subenv envstk)
+       (push subenv rt/varstk)
        (mapc
         #'(lambda(id)
             (setf (alist-get ,id subenv) id)
             ,@(compiler/run (caddr tree)))
         iterable)
-       (pop envstk))))
+       (pop rt/varstk))))
 
 (defun compiler/binop-item (tree)
   "Compile item from list of binary operator/operand in TREE."
@@ -1276,9 +1276,9 @@ call `compiler/filter-item' on each entry."
             `(progn
                ,val
                ,(compiler/binop-item (cdr tree))
-               (let ((b (pop valstk))
-                     (a (pop valstk)))
-                 (push (,op a b) valstk)))))))
+               (let ((b (pop rt/valstk))
+                     (a (pop rt/valstk)))
+                 (push (,op a b) rt/valstk)))))))
 
 (defun compiler/binop (tree)
   "Compile a binary operator from the TREE."
@@ -1296,7 +1296,7 @@ call `compiler/filter-item' on each entry."
                                 ("not" not))))))
     `(progn
        ,(compiler/run val)
-       (push (,op (pop valstk)) valstk))))
+       (push (,op (pop rt/valstk)) rt/valstk))))
 
 (defun compiler/run (tree)
   "Compile TREE into bytecode."
