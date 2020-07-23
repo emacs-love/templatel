@@ -1080,8 +1080,10 @@ operator (RATORFN)."
 
 (defun compiler/wrap (tree)
   "Compile root node into a function with TREE as body."
-  `(lambda(vars &optional env)
-     (let* ((rt/varstk (list vars))
+  `(lambda(vars &optional env blocks)
+     (let* ((rt/blocks (make-hash-table :test 'equal))
+            (rt/parent-template nil)
+            (rt/varstk (list vars))
             (rt/valstk (list))
             (rt/filters '(("upper" . filters/upper)
                           ("lower" . filters/lower)
@@ -1097,10 +1099,15 @@ operator (RATORFN)."
                        (throw '-brk (cdr value)))))
                  (signal
                   'templatel-runtime-error
-                  (format "Variable `%s' not declared" name))))))
-       (with-temp-buffer
-         ,@tree
-         (buffer-string)))))
+                  (format "Variable `%s' not declared" name)))))
+            ;; The rendering of the template
+            (rt/data
+             (with-temp-buffer
+               ,@tree
+               (buffer-string))))
+       (if (null rt/parent-template)
+           rt/data
+         (funcall (templatel-env-source env rt/parent-template) vars env rt/blocks)))))
 
 (defun compiler/element (tree)
   "Compile an element from TREE."
@@ -1298,6 +1305,22 @@ call `compiler/filter-item' on each entry."
        ,(compiler/run val)
        (push (,op (pop rt/valstk)) rt/valstk))))
 
+(defun compiler/block (tree)
+  "Compile a block statement from TREE."
+  `(if (null rt/parent-template)
+       (if (null blocks)
+           ,@(compiler/run (cadr tree))
+         (let* ((super-code ',(compiler/wrap (compiler/run (cadr tree))))
+                  (subenv (cons "super" (funcall super-code vars env))))
+             (push subenv vars)
+             (insert (funcall (gethash ,(cdar tree) blocks) vars env rt/blocks))
+             (pop vars)))
+     (puthash ,(cdar tree) ',(compiler/wrap (compiler/run (cadr tree))) rt/blocks)))
+
+(defun compiler/extends (tree)
+  "Compile an extends statement from TREE."
+  `(setq rt/parent-template ,(cdar tree)))
+
 (defun compiler/run (tree)
   "Compile TREE into bytecode."
   (pcase tree
@@ -1314,6 +1337,8 @@ call `compiler/filter-item' on each entry."
     (`("IfElif"         . ,a) (compiler/if-elif a))
     (`("IfStatement"    . ,a) (compiler/if a))
     (`("ForStatement"   . ,a) (compiler/for a))
+    (`("BlockStatement" . ,a) (compiler/block a))
+    (`("ExtendsStatement" . ,a) (compiler/extends a))
     (`("BinOp"          . ,a) (compiler/binop a))
     (`("Unary"          . ,a) (compiler/unary a))
     (`("Number"         . ,a) a)
@@ -1345,7 +1370,30 @@ call `compiler/filter-item' on each entry."
   (string-to-number
    (replace-regexp-in-string "^0[xXbB]" "" s) base))
 
-;; --- Public API ---
+;; --- Public Environment API ---
+
+(defun templatel-env-new ()
+  "Multiple template manager."
+  (make-hash-table :test 'equal))
+
+(defun templatel-env-add-template (env name template)
+  "Add TEMPLATE to ENV under key NAME."
+  (puthash name template env))
+
+(defun templatel-env-source (env name)
+  "Get source code of template NAME within ENV."
+  (let ((entry (gethash name env)))
+    (cdr (assoc 'source entry))))
+
+(defun templatel-env-render (env name vars)
+  "Render template NAME within ENV with VARS as parameters."
+  (funcall (eval (templatel-env-source env name)) vars env))
+
+(defun templatel-new (source)
+  "Create a template off SOURCE."
+  `((source . ,(templatel-compile-string source))))
+
+;; ------ Public API without Environment
 
 (defun templatel-parse-string (input)
   "Parse INPUT into a tree."

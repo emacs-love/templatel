@@ -51,6 +51,33 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-block-extends ()
+  (let ((env (templatel-env-new)))
+    ;; Base template define the block
+    (templatel-env-add-template
+     env "layout.html"
+     (templatel-new "Always {% block stuff %}default{% endblock %}"))
+    ;; Template that extends the layout and override the block
+    (templatel-env-add-template
+     env "page.html"
+     (templatel-new "{% extends \"layout.html\" %}{% block stuff %}look at the bright side{% endblock %}"))
+    (should (equal (templatel-env-render env "page.html" '()) "Always look at the bright side"))))
+
+(ert-deftest render-block-extends-super ()
+  (let ((env (templatel-env-new)))
+    ;; Base template define the block
+    (templatel-env-add-template
+     env "nav.html"
+     (templatel-new "{% block greeting %}Hello{% endblock %}"))
+    ;; Template that extends the layout and override the block
+    (templatel-env-add-template
+     env "page.html"
+     (templatel-new "{% extends \"nav.html\" %}{% block greeting %}{{ super }} world{% endblock %}"))
+    (should (equal (templatel-env-render env "page.html" '()) "Hello world"))))
+
+(ert-deftest render-block-default ()
+  (should (equal (templatel-render-string "{% block stuff %}default{% endblock %}" '()) "default")))
+
 (ert-deftest render-expr-logic ()
   (should (equal (templatel-render-string "{{ true }}" '()) "t"))
   (should (equal (templatel-render-string "{{ false }}" '()) "nil"))

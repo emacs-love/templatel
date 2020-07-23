@@ -153,6 +153,67 @@
     {% include "file.html" %}
     #+END_SRC
     
+*** Extends
+    #+BEGIN_SRC web
+    {% extends "parent.html" %}
+    #+END_SRC
+
+    The ~extends~ statement mostly only makes sense when used in
+    conjunction with one or more ~block~ statements.  The most basic
+    use case of this feature is to create a layout and share it among
+    different pages. E.g.:
+
+    *layout.html*
+    #+begin_src html
+<html>
+  <head>
+    <title>{% block title %}Home{% endblock %}</title>
+  </head>
+  <body>
+  {% block body %}Content{% endblock %}
+  </body>
+</html>
+    #+end_src
+
+    *post.html*
+    #+begin_src html
+    {% extends "layout.html" %}
+    {% block body %}
+    <h1>{{ post.title }}</h1>
+    <span class="date">{{ post.pub_date }}</span>
+    <hr>
+    <p>{{ post.html_content|safe_html }}</p>
+    {% endblock %}
+    #+end_src
+
+    When *post.html* is rendered, it will start rendering it from
+    *layout.html*, filling in the blocks overridden in *post.html* or
+    its default value.
+
+    This functionality happens to be recursive, one could extend a
+    template that extends another template. E.g.:
+
+    #+begin_src text
+    root.html
+      +--section1.html        ; inherit from root.html
+      |   +--posts-sec1.html  ; inherit from section1.html
+      |   +--slides-sec1.html ; inherit from section1.html
+      +--section2.html        ; inherit from root.html
+          +--posts-sec2.html  ; inherit from section2.html
+          +--slides-sec2.html ; inherit from section2.html
+    #+end_src
+
+    In that scenario, child templates can only override blocks of
+    their immediate parent.  eg.: ~{posts,slides}-sec{1,2}.html~ can
+    override blocks in ~section{1,2}.html~ and ~section{1,2}.html~ can
+    override blocks in ~root.html~.
+
+*** Block
+    #+BEGIN_SRC web
+    {% block header %}{{ title }}{% endblock %}
+    {% block body %}<h1>{{ title }}</h1><p>{{ text }}</p>{% endblock %}
+    #+END_SRC
+
 ** A TODO list
    * compile to elc
    * operators:
@@ -165,8 +226,4 @@
      * idex, index0, revindex, revindex0
      * first, last, length, cycle
      * previtem, nextitem
-   * Template Inheritannce
-     * extends
-     * block
-     * super
    * Whitespace control
