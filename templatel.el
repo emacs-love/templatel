@@ -1396,6 +1396,13 @@ call `compiler/filter-item' on each entry."
   "Create a template off SOURCE."
   `((source . ,(templatel-compile-string source))))
 
+(defun templatel-new-from-file (path)
+  "Create a template from file at PATH."
+  (with-temp-buffer
+    (insert-file-contents path)
+    (let ((code (templatel-compile-string (buffer-string))))
+      `((source . ,code)))))
+
 ;; ------ Public API without Environment
 
 (defun templatel-parse-string (input)
