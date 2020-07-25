@@ -17,7 +17,7 @@ ForStatement  <- _For Identifier _in Expr _STM_CLOSE Template _EndFor
 _For          <- _STM_OPEN _for
 _EndFor       <- _STM_OPEN _endfor _STM_CLOSE
 
-BlockStatement <- _Block String _STM_CLOSE Template _EndBlock
+BlockStatement <- _Block String _STM_CLOSE Template? _EndBlock
 _Block         <- _STM_OPEN _block
 _EndBlock      <- _STM_OPEN _endblock _STM_CLOSE
 

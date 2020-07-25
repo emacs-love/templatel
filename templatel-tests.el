@@ -51,6 +51,18 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-block-extends-override-some-empty-blocks ()
+  (let ((env (templatel-env-new)))
+    ;; Base template define the block
+    (templatel-env-add-template
+     env "layout.html"
+     (templatel-new "{% block first %}{% endblock %} {% block second %}second-default{% endblock %}"))
+    ;; Template that extends the layout and override the block
+    (templatel-env-add-template
+     env "page.html"
+     (templatel-new "{% extends \"layout.html\" %}{% block second %}brand new{% endblock %}"))
+    (should (equal (templatel-env-render env "page.html" '()) " brand new"))))
+
 (ert-deftest render-block-extends-override-some ()
   (let ((env (templatel-env-new)))
     ;; Base template define the block

@@ -580,7 +580,7 @@
   (token/endfor scanner)
   (token/stm-cl scanner))
 
-;; BlockStatement <- _Block String _STM_CLOSE Template _EndBlock
+;; BlockStatement <- _Block String _STM_CLOSE Template? _EndBlock
 (defun parser/block-stm (scanner)
   "Parse block statement from SCANNER."
   (token/stm-op scanner)
@@ -588,7 +588,7 @@
   (let ((name (parser/identifier scanner))
         (_ (parser/_ scanner))
         (_ (token/stm-cl scanner))
-        (tmpl (parser/template scanner)))
+        (tmpl (scanner/optional scanner #'(lambda() (parser/template scanner)))))
     (parser/endblock scanner)
     (cons "BlockStatement" (list name tmpl))))
 
