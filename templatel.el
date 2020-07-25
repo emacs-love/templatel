@@ -1314,10 +1314,15 @@ call `compiler/filter-item' on each entry."
        (if (null blocks)
            ,@(compiler/run (cadr tree))
          (let* ((super-code ',(compiler/wrap (compiler/run (cadr tree))))
-                  (subenv (cons "super" (funcall super-code vars env))))
-             (push subenv vars)
-             (insert (funcall (gethash ,(cdar tree) blocks) vars env rt/blocks))
-             (pop vars)))
+                (subenv (cons "super" (funcall super-code vars env)))
+                (code (gethash ,(cdar tree) blocks)))
+           ;; There isn't a substitute
+           (if (not (null code))
+               (progn
+                 (push subenv vars)
+                 (insert (funcall code vars env rt/blocks))
+                 (pop vars))
+             ,@(compiler/run (cadr tree)))))
      (puthash ,(cdar tree) ',(compiler/wrap (compiler/run (cadr tree))) rt/blocks)))
 
 (defun compiler/extends (tree)
