@@ -1310,21 +1310,19 @@ call `compiler/filter-item' on each entry."
 
 (defun compiler/block (tree)
   "Compile a block statement from TREE."
-  (let ((body (compiler/run (cadr tree))))
+  (let ((name (cdar tree))
+        (body (compiler/run (cadr tree))))
     `(if (null rt/parent-template)
-         (if (null blocks)
-             ,@body
-           (let* ((super-code ',(compiler/wrap body))
-                  (subenv (cons "super" (funcall super-code vars env)))
-                  (code (gethash ,(cdar tree) blocks)))
-             ;; There isn't a substitute
-             (if (not (null code))
-                 (progn
-                   (push subenv vars)
-                   (insert (funcall code vars env rt/blocks))
-                   (pop vars))
-               ,@body)))
-       (puthash ,(cdar tree) ',(compiler/wrap body) rt/blocks))))
+         (let* ((super-code ',(compiler/wrap body))
+                (subenv (cons "super" (funcall super-code vars env)))
+                (code (and blocks (gethash ,name blocks))))
+           (if (not (null code))
+               (progn
+                 (push subenv vars)
+                 (insert (funcall code vars env rt/blocks))
+                 (pop vars))
+             ,@body))
+       (puthash ,name ',(compiler/wrap body) rt/blocks))))
 
 (defun compiler/extends (tree)
   "Compile an extends statement from TREE."
