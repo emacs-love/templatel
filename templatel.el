@@ -1063,15 +1063,15 @@ operator (RATORFN)."
 ;; Comment         <- "{#" (!"#}" .)* "#}"
 (defun parser/comment (scanner)
   "Read comment from SCANNER."
-  (scanner/matchs scanner "{#")
+  (token/comment-op scanner)
   (let ((str (scanner/zero-or-more
               scanner
               #'(lambda()
                   (scanner/not
                    scanner
-                   #'(lambda() (scanner/matchs scanner "#}")))
+                   #'(lambda() (token/comment-cl scanner)))
                   (scanner/any scanner)))))
-    (scanner/matchs scanner "#}")
+    (token/comment-cl scanner)
     (cons "Comment" (parser/join-chars str))))
 
 
