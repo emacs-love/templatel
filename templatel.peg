@@ -1,4 +1,4 @@
-Template      <- Comment* (Text / Statement / Expression)+
+Template      <- Comment* (Text Comment* / Statement Comment* / Expression Comment*)+
 
 Text          <- (!(_EXPR_OPEN / _STM_OPEN / _COMMENT_OPEN) .)+
 

@@ -437,7 +437,15 @@
 
 ;; --- Parser ---
 
-;; Template      <- Comment* (Text / Statement / Expression)+
+(defun parser/rstrip-comment (scanner thing)
+  "SCANNER THING."
+  (let ((value (funcall thing scanner)))
+    (scanner/zero-or-more
+     scanner
+     #'(lambda() (parser/comment scanner)))
+    value))
+
+;; Template      <- Comment* (Text Comment* / Statement Comment* / Expression Comment*)+
 (defun parser/template (scanner)
   "Parse Template entry from SCANNER's input."
   (scanner/zero-or-more
@@ -448,10 +456,10 @@
    (scanner/one-or-more
     scanner
     #'(lambda() (scanner/or
-            scanner
-            (list #'(lambda() (parser/text scanner))
-                  #'(lambda() (parser/statement scanner))
-                  #'(lambda() (parser/expression scanner))))))))
+                 scanner
+                 (list #'(lambda() (parser/rstrip-comment scanner #'parser/text))
+                       #'(lambda() (parser/rstrip-comment scanner #'parser/statement))
+                       #'(lambda() (parser/rstrip-comment scanner #'parser/expression))))))))
 
 ;; Text <- (!(_EXPR_OPEN / _STM_OPEN / _COMMENT_OPEN) .)+
 (defun parser/text (scanner)
