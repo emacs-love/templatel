@@ -147,7 +147,7 @@
      </ul>
      #+END_SRC
 
-*** Include
+*** Include (not working)
 
     #+BEGIN_SRC web
     {% include "file.html" %}
@@ -226,4 +226,5 @@
      * idex, index0, revindex, revindex0
      * first, last, length, cycle
      * previtem, nextitem
+   * For loop destructuring key & value
    * Whitespace control
