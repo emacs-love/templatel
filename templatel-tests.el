@@ -30,6 +30,34 @@
 
 (ert-deftest err-parse-incomplete ()
   (condition-case err
+      (templatel-render-string "{% for i in a %}stuff" '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Missing endfor statement at 1:22")))))
+  (condition-case err
+      (templatel-render-string "{% for i in a }{% endfor %}" '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Statement not closed with \"%}\" at 1:15")))))
+
+  (condition-case err
+      (templatel-render-string "{% if true %}stuff" '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Missing endif statement at 1:19")))))
+  (condition-case err
+      (templatel-render-string "{% if true }{% endif %}" '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Statement not closed with \"%}\" at 1:12")))))
+
+  (condition-case err
+      (templatel-render-string "{% extends \"stuff.html\" }" '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Statement not closed with \"%}\" at 1:25")))))
+
+  (condition-case err
+      (templatel-render-string "{% extends %}" '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Missing template name in extends statement at 1:12")))))
+
+  (condition-case err
       (templatel-render-string "{% block %}stuff{% endblock %}" '())
     (templatel-error
      (should (equal err '(templatel-syntax-error . "Missing block name at 1:10")))))

@@ -506,12 +506,19 @@
          #'(lambda() (parser/if-stm-else scanner))
          #'(lambda() (parser/if-stm-endif scanner)))))
 
+(defun parser/stm-cl (scanner)
+  "Read stm-cl off SCANNER or error out if it's not there."
+  (parser/cut
+   scanner
+   #'(lambda() (token/stm-cl scanner))
+   "Statement not closed with \"%}\""))
+
 ;; _If Expr _STM_CLOSE Template Elif+ Else?
 (defun parser/if-stm-elif (scanner)
   "Parse elif from SCANNER."
   (parser/if scanner)
   (let* ((expr (parser/expr scanner))
-         (_ (token/stm-cl scanner))
+         (_ (parser/stm-cl scanner))
          (tmpl (parser/template scanner))
          (elif (scanner/one-or-more scanner #'(lambda() (parser/elif scanner))))
          (else (scanner/optional scanner #'(lambda() (parser/else scanner)))))
@@ -522,7 +529,7 @@
   "Parse else from SCANNER."
   (parser/if scanner)
   (let* ((expr (parser/expr scanner))
-         (_ (token/stm-cl scanner))
+         (_ (parser/stm-cl scanner))
          (tmpl (parser/template scanner))
          (else (parser/else scanner)))
     (cons "IfElse" (list expr tmpl else))))
@@ -532,7 +539,7 @@
   "Parse endif from SCANNER."
   (parser/if scanner)
   (let* ((expr (parser/expr scanner))
-         (_    (token/stm-cl scanner))
+         (_    (parser/stm-cl scanner))
          (tmpl (parser/template scanner))
          (_    (parser/endif scanner)))
     (cons "IfStatement" (list expr tmpl))))
@@ -543,7 +550,7 @@
   (token/stm-op scanner)
   (token/elif scanner)
   (let ((expr (parser/expr scanner))
-        (_    (token/stm-cl scanner))
+        (_    (parser/stm-cl scanner))
         (tmpl (parser/template scanner)))
     (cons "Elif" (list expr tmpl))))
 
@@ -558,7 +565,7 @@
   "Parse else expression off SCANNER."
   (token/stm-op scanner)
   (token/else scanner)
-  (token/stm-cl scanner)
+  (parser/stm-cl scanner)
   (let ((tmpl (parser/template scanner)))
     (parser/endif scanner)
     (cons "Else" (list tmpl))))
@@ -566,9 +573,13 @@
 ;; _EndIf        <- _STM_OPEN _endif _STM_CLOSE
 (defun parser/endif (scanner)
   "Parse endif tag off SCANNER."
-  (token/stm-op scanner)
-  (token/endif scanner)
-  (token/stm-cl scanner))
+  (parser/cut
+   scanner
+   #'(lambda()
+       (token/stm-op scanner)
+       (token/endif scanner)
+       (parser/stm-cl scanner))
+   "Missing endif statement"))
 
 ;; ForStatement  <- _For Expr _in Expr _STM_CLOSE Template _EndFor
 ;; _For          <- _STM_OPEN _for
@@ -579,7 +590,7 @@
   (let ((iter (parser/identifier scanner))
         (_ (token/in scanner))
         (iterable (parser/expr scanner))
-        (_ (token/stm-cl scanner))
+        (_ (parser/stm-cl scanner))
         (tmpl (parser/template scanner))
         (_ (parser/endfor scanner)))
     (cons "ForStatement" (list iter iterable tmpl))))
@@ -587,9 +598,13 @@
 ;; _EndFor       <- _STM_OPEN _endfor _STM_CLOSE
 (defun parser/endfor (scanner)
   "Parse {% endfor %} statement from SCANNER."
-  (token/stm-op scanner)
-  (token/endfor scanner)
-  (token/stm-cl scanner))
+  (parser/cut
+   scanner
+   #'(lambda()
+       (token/stm-op scanner)
+       (token/endfor scanner)
+       (parser/stm-cl scanner))
+   "Missing endfor statement"))
 
 ;; BlockStatement <- _Block String _STM_CLOSE Template? _EndBlock
 (defun parser/block-stm (scanner)
@@ -601,29 +616,35 @@
                #'(lambda() (parser/identifier scanner))
                "Missing block name"))
         (_ (parser/_ scanner))
-        (_ (token/stm-cl scanner))
-        (tmpl (scanner/optional scanner #'(lambda() (parser/template scanner)))))
-    (parser/cut
-     scanner
-     #'(lambda() (parser/endblock scanner))
-     "Missing endblock statement")
+        (_ (parser/stm-cl scanner))
+        (tmpl (scanner/optional
+               scanner
+               #'(lambda() (parser/template scanner)))))
+    (parser/endblock scanner)
     (cons "BlockStatement" (list name tmpl))))
 
 ;; _EndBlock       <- _STM_OPEN _endblock _STM_CLOSE
 (defun parser/endblock (scanner)
   "Parse {% endblock %} statement from SCANNER."
-  (token/stm-op scanner)
-  (token/endblock scanner)
-  (token/stm-cl scanner))
+  (parser/cut
+     scanner
+     #'(lambda()
+         (token/stm-op scanner)
+         (token/endblock scanner)
+         (parser/stm-cl scanner))
+     "Missing endblock statement"))
 
 ;; ExtendsStatement <- _STM_OPEN _extends String _STM_CLOSE
 (defun parser/extends-stm (scanner)
   "Parse extends statement from SCANNER."
   (token/stm-op scanner)
   (token/extends scanner)
-  (let ((name (parser/string scanner)))
+  (let ((name (parser/cut
+               scanner
+               #'(lambda() (parser/string scanner))
+               "Missing template name in extends statement")))
     (parser/_ scanner)
-    (token/stm-cl scanner)
+    (parser/stm-cl scanner)
     (cons "ExtendsStatement" (list name))))
 
 ;; Expression    <- _EXPR_OPEN Expr _EXPR_CLOSE
