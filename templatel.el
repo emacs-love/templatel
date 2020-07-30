@@ -479,7 +479,10 @@
               #'(lambda() (token/expr-op scanner))
               #'(lambda() (token/stm-op scanner))
               #'(lambda() (token/comment-op scanner))))))
-         (scanner/any scanner))))))
+         (let ((chr (scanner/any scanner)))
+           (if (eq chr ?\n)
+               (scanner/line/incr scanner))
+           chr))))))
 
 ;; Statement     <- IfStatement / ForStatement / BlockStatement / ExtendsStatement
 (defun parser/statement (scanner)
@@ -659,8 +662,8 @@ backtracking should be interrupted earlier."
      (signal 'templatel-syntax-error
              (format "%s at %s:%s"
                      msg
-                     (scanner/line scanner)
-                     (scanner/col scanner))))))
+                     (1+ (scanner/line scanner))
+                     (1+ (scanner/col scanner)))))))
 
 (defun parser/item-or-named-collection (name first rest)
   "NAME FIRST REST."

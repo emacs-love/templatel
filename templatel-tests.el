@@ -32,32 +32,32 @@
   (condition-case err
       (templatel-render-string "{% block %}stuff{% endblock %}" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Missing block name at 0:9")))))
+     (should (equal err '(templatel-syntax-error . "Missing block name at 1:10")))))
 
   (condition-case err
-      (templatel-render-string "{% block blah %}stuff" '())
+      (templatel-render-string "\n\n{% block blah %}\n\nstuff" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Missing endblock statement at 0:21")))))
+     (should (equal err '(templatel-syntax-error . "Missing endblock statement at 5:6")))))
 
   (condition-case err
       (templatel-render-string "{{ a + }}" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Missing operand after binary operator at 0:7")))))
+     (should (equal err '(templatel-syntax-error . "Missing operand after binary operator at 1:8")))))
 
   (condition-case err
       (templatel-render-string "{{ - }}" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Missing operand after unary operator at 0:5")))))
+     (should (equal err '(templatel-syntax-error . "Missing operand after unary operator at 1:6")))))
 
   (condition-case err
       (templatel-render-string "{{ -a " '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Unclosed bracket at 0:6")))))
+     (should (equal err '(templatel-syntax-error . "Unclosed bracket at 1:7")))))
 
   (condition-case err
       (templatel-render-string "{{ -a }" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Unclosed bracket at 0:7"))))))
+     (should (equal err '(templatel-syntax-error . "Unclosed bracket at 1:8"))))))
 
 ;; --- Renderer --
 
