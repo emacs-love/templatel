@@ -30,6 +30,16 @@
 
 (ert-deftest err-parse-incomplete ()
   (condition-case err
+      (templatel-render-string "{% block %}stuff{% endblock %}" '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Missing block name at 0:9")))))
+
+  (condition-case err
+      (templatel-render-string "{% block blah %}stuff" '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Missing endblock statement at 0:21")))))
+
+  (condition-case err
       (templatel-render-string "{{ a + }}" '())
     (templatel-error
      (should (equal err '(templatel-syntax-error . "Missing operand after binary operator at 0:7")))))

@@ -593,11 +593,17 @@
   "Parse block statement from SCANNER."
   (token/stm-op scanner)
   (token/block scanner)
-  (let ((name (parser/identifier scanner))
+  (let ((name (parser/cut
+               scanner
+               #'(lambda() (parser/identifier scanner))
+               "Missing block name"))
         (_ (parser/_ scanner))
         (_ (token/stm-cl scanner))
         (tmpl (scanner/optional scanner #'(lambda() (parser/template scanner)))))
-    (parser/endblock scanner)
+    (parser/cut
+     scanner
+     #'(lambda() (parser/endblock scanner))
+     "Missing endblock statement")
     (cons "BlockStatement" (list name tmpl))))
 
 ;; _EndBlock       <- _STM_OPEN _endblock _STM_CLOSE
