@@ -38,9 +38,9 @@
 
 ;; --- Scanner ---
 
-(defun scanner/new (input)
-  "Create scanner for INPUT."
-  (list input 0 0 0))
+(defun scanner/new (input file-name)
+  "Create scanner for INPUT named FILE-NAME."
+  (list input 0 0 0 file-name))
 
 (defun scanner/input (scanner)
   "Input that SCANNER is operating on."
@@ -57,6 +57,10 @@
 (defun scanner/cursor/incr (scanner)
   "Increment SCANNER's cursor."
   (scanner/cursor/set scanner (+ 1 (scanner/cursor scanner))))
+
+(defun scanner/file (scanner)
+  "Line the SCANNER's cursor is in."
+  (elt scanner 4))
 
 (defun scanner/line (scanner)
   "Line the SCANNER's cursor is in."
@@ -682,10 +686,11 @@ backtracking should be interrupted earlier."
       (funcall fn)
     (templatel-internal
      (signal 'templatel-syntax-error
-             (format "%s at %s:%s"
-                     msg
+             (format "%s at %s,%s: %s"
+                     (or (scanner/file scanner) "<string>")
                      (1+ (scanner/line scanner))
-                     (1+ (scanner/col scanner)))))))
+                     (1+ (scanner/col scanner))
+                     msg)))))
 
 (defun parser/item-or-named-collection (name first rest)
   "NAME FIRST REST."
@@ -1464,14 +1469,16 @@ call `compiler/filter-item' on each entry."
   "Create a template from file at PATH."
   (with-temp-buffer
     (insert-file-contents path)
-    (let ((code (templatel-compile-string (buffer-string))))
+    (let* ((scanner (scanner/new (buffer-string) path))
+           (tree (parser/template scanner))
+           (code (compiler/wrap (compiler/run tree))))
       `((source . ,code)))))
 
 ;; ------ Public API without Environment
 
 (defun templatel-parse-string (input)
   "Parse INPUT into a tree."
-  (let ((s (scanner/new input)))
+  (let ((s (scanner/new input "<string>")))
     (parser/template s)))
 
 (defun templatel-compile-string (input)

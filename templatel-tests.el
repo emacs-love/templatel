@@ -32,60 +32,60 @@
   (condition-case err
       (templatel-render-string "{% for i in a %}stuff" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Missing endfor statement at 1:22")))))
+     (should (equal err '(templatel-syntax-error . "<string> at 1,22: Missing endfor statement")))))
   (condition-case err
       (templatel-render-string "{% for i in a }{% endfor %}" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Statement not closed with \"%}\" at 1:15")))))
+     (should (equal err '(templatel-syntax-error . "<string> at 1,15: Statement not closed with \"%}\"")))))
 
   (condition-case err
       (templatel-render-string "{% if true %}stuff" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Missing endif statement at 1:19")))))
+     (should (equal err '(templatel-syntax-error . "<string> at 1,19: Missing endif statement")))))
   (condition-case err
       (templatel-render-string "{% if true }{% endif %}" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Statement not closed with \"%}\" at 1:12")))))
+     (should (equal err '(templatel-syntax-error . "<string> at 1,12: Statement not closed with \"%}\"")))))
 
   (condition-case err
       (templatel-render-string "{% extends \"stuff.html\" }" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Statement not closed with \"%}\" at 1:25")))))
+     (should (equal err '(templatel-syntax-error . "<string> at 1,25: Statement not closed with \"%}\"")))))
 
   (condition-case err
       (templatel-render-string "{% extends %}" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Missing template name in extends statement at 1:12")))))
+     (should (equal err '(templatel-syntax-error . "<string> at 1,12: Missing template name in extends statement")))))
 
   (condition-case err
       (templatel-render-string "{% block %}stuff{% endblock %}" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Missing block name at 1:10")))))
+     (should (equal err '(templatel-syntax-error . "<string> at 1,10: Missing block name")))))
 
   (condition-case err
       (templatel-render-string "\n\n{% block blah %}\n\nstuff" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Missing endblock statement at 5:6")))))
+     (should (equal err '(templatel-syntax-error . "<string> at 5,6: Missing endblock statement")))))
 
   (condition-case err
       (templatel-render-string "{{ a + }}" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Missing operand after binary operator at 1:8")))))
+     (should (equal err '(templatel-syntax-error . "<string> at 1,8: Missing operand after binary operator")))))
 
   (condition-case err
       (templatel-render-string "{{ - }}" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Missing operand after unary operator at 1:6")))))
+     (should (equal err '(templatel-syntax-error . "<string> at 1,6: Missing operand after unary operator")))))
 
   (condition-case err
       (templatel-render-string "{{ -a " '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Unclosed bracket at 1:7")))))
+     (should (equal err '(templatel-syntax-error . "<string> at 1,7: Unclosed bracket")))))
 
   (condition-case err
       (templatel-render-string "{{ -a }" '())
     (templatel-error
-     (should (equal err '(templatel-syntax-error . "Unclosed bracket at 1:8"))))))
+     (should (equal err '(templatel-syntax-error . "<string> at 1,8: Unclosed bracket"))))))
 
 ;; --- Renderer --
 
@@ -391,14 +391,14 @@
 ;; --- Compiler ---
 
 (ert-deftest compile-template ()
-  (let* ((s (scanner/new "<h1>Hello Emacs</h1>"))
+  (let* ((s (scanner/new "<h1>Hello Emacs</h1>" "<string>"))
          (tree (parser/template s)))
     (should (equal
              (compiler/run tree)
              '((insert "<h1>Hello Emacs</h1>"))))))
 
 (ert-deftest compile-text ()
-  (let* ((s (scanner/new "<h1>Hello Emacs</h1>"))
+  (let* ((s (scanner/new "<h1>Hello Emacs</h1>" "<string>"))
          (tree (parser/text s)))
     (should (equal
              (compiler/run tree)
@@ -409,7 +409,7 @@
 ;; --- Parser & Scanner ---
 
 (ert-deftest template-extends ()
-  (let* ((s (scanner/new "{% extends \"layout.html\" %}"))
+  (let* ((s (scanner/new "{% extends \"layout.html\" %}" "<string>"))
          (tree (parser/template s)))
     (should (equal
              tree
@@ -418,7 +418,7 @@
                 ("String" . "layout.html")))))))
 
 (ert-deftest template-block ()
-  (let* ((s (scanner/new "{% block stuff %}default{% endblock %}"))
+  (let* ((s (scanner/new "{% block stuff %}default{% endblock %}" "<string>"))
          (tree (parser/template s)))
     (should (equal
              tree
@@ -433,7 +433,7 @@
 {% for name in names %}
   {{ name }}
 {% endfor %}
-"))
+" "<string>"))
          (txt (parser/template s)))
     (should (equal
              txt
@@ -462,7 +462,7 @@
 {% else %}
   Four
 {% endif %}
-"))
+" "<string>"))
          (txt (parser/template s)))
     (should (equal
              txt
@@ -484,7 +484,7 @@
                ("Text" . "\n"))))))
 
 (ert-deftest template-if-else ()
-  (let* ((s (scanner/new "{% if show %}{{ show }}{% else %}Hide{% endif %}"))
+  (let* ((s (scanner/new "{% if show %}{{ show }}{% else %}Hide{% endif %}" "<string>"))
          (txt (parser/template s)))
     (should (equal
              txt
@@ -502,7 +502,7 @@
                  ("Template" ("Text" . "Hide")))))))))
 
 (ert-deftest template-if ()
-  (let* ((s (scanner/new "{% if show %}{{ show }}{% endif %}"))
+  (let* ((s (scanner/new "{% if show %}{{ show }}{% endif %}" "<string>"))
          (txt (parser/template s)))
     (should (equal
              txt
@@ -518,7 +518,7 @@
                     ("Identifier" . "show")))))))))))
 
 (ert-deftest template-expr-binop ()
-  (let* ((s (scanner/new "Hello, {{ 1 * 2 }}!"))
+  (let* ((s (scanner/new "Hello, {{ 1 * 2 }}!" "<string>"))
          (tree (parser/template s)))
     (should (equal
              tree
@@ -532,7 +532,7 @@
                ("Text" . "!"))))))
 
 (ert-deftest template-variable ()
-  (let* ((s (scanner/new "Hello, {{ name }}!"))
+  (let* ((s (scanner/new "Hello, {{ name }}!" "<string>"))
          (tree (parser/template s)))
     (should (equal
              tree
@@ -545,37 +545,37 @@
                ("Text" . "!"))))))
 
 (ert-deftest expr-value-string ()
-  (let ((s (scanner/new "\"fun with Emacs\"")))
+  (let ((s (scanner/new "\"fun with Emacs\"" "<string>")))
     (should (equal
              (parser/value s)
              '("String" . "fun with Emacs")))))
 
 (ert-deftest expr-value-number ()
-  (let ((s (scanner/new "325")))
+  (let ((s (scanner/new "325" "<string>")))
     (should (equal
              (parser/value s)
              '("Number" . 325)))))
 
 (ert-deftest expr-value-number-bin ()
-  (let ((s (scanner/new "0b1010")))
+  (let ((s (scanner/new "0b1010" "<string>")))
     (should (equal
              (parser/value s)
              '("Number" . 10)))))
 
 (ert-deftest expr-value-number-hex ()
-  (let ((s (scanner/new "0xff")))
+  (let ((s (scanner/new "0xff" "<string>")))
     (should (equal
              (parser/value s)
              '("Number" . 255)))))
 
 (ert-deftest expr-value-bool-true ()
-  (let ((s (scanner/new "true")))
+  (let ((s (scanner/new "true" "<string>")))
     (should (equal
              (parser/value s)
              '("Bool" . t)))))
 
 (ert-deftest expr-value-bool-false-with-comment ()
-  (let ((s (scanner/new "false {# not important #}")))
+  (let ((s (scanner/new "false {# not important #}" "<string>")))
     (should (equal
              (parser/value s)
              '("Bool" . nil)))))
