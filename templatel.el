@@ -27,6 +27,7 @@
 ;;
 ;;; Code:
 
+(require 'seq)
 (require 'subr-x)
 
 (define-error 'templatel-syntax-error "Syntax Error" 'templatel-error)
@@ -1364,7 +1365,10 @@ call `compiler/filter-item' on each entry."
 
 (defun compiler/extends (tree)
   "Compile an extends statement from TREE."
-  `(setq rt/parent-template ,(cdar tree)))
+  `(progn
+     (setq rt/parent-template ,(cdar tree))
+     (if env
+         (templatel-env-run-importfn env rt/parent-template))))
 
 (defun compiler/run (tree)
   "Compile TREE into bytecode."
@@ -1415,20 +1419,38 @@ call `compiler/filter-item' on each entry."
   (string-to-number
    (replace-regexp-in-string "^0[xXbB]" "" s) base))
 
+(defun --templatel-get (lst sym default)
+  "Pick SYM from LST or return DEFAULT."
+  (let ((val (assoc sym lst)))
+    (if val
+        (cadr val)
+      default)))
+
 ;; --- Public Environment API ---
 
-(defun templatel-env-new ()
-  "Multiple template manager."
-  (make-hash-table :test 'equal))
+(defun templatel-env-new (&rest options)
+  "Multiple template manager setup with OPTIONS."
+  (let* ((opt (seq-partition options 2)))
+    ;; where we keep the templates
+    `[,(make-hash-table :test 'equal)
+      ;; Function used by extends
+      ,(--templatel-get opt :importfn
+                        #'(lambda(_e _n) (error "Import function not defined")))]))
 
 (defun templatel-env-add-template (env name template)
   "Add TEMPLATE to ENV under key NAME."
-  (puthash name template env))
+  (puthash name template (elt env 0)))
 
 (defun templatel-env-source (env name)
   "Get source code of template NAME within ENV."
-  (let ((entry (gethash name env)))
+  (let ((entry (gethash name (elt env 0))))
     (cdr (assoc 'source entry))))
+
+(defun templatel-env-run-importfn (env name)
+  "Run import with NAME within ENV."
+  (let ((importfn (elt env 1)))
+    (if importfn
+        (funcall importfn env name))))
 
 (defun templatel-env-render (env name vars)
   "Render template NAME within ENV with VARS as parameters."

@@ -90,11 +90,12 @@
 ;; --- Renderer --
 
 (ert-deftest render-block-extends-override-some-empty-blocks ()
-  (let ((env (templatel-env-new)))
-    ;; Base template define the block
-    (templatel-env-add-template
-     env "layout.html"
-     (templatel-new "{% block first %}{% endblock %} {% block second %}second-default{% endblock %}"))
+  (let ((env (templatel-env-new
+              :importfn #'(lambda(e name)
+                            ;; Base template define the block
+                            (templatel-env-add-template
+                             e name
+                             (templatel-new "{% block first %}{% endblock %} {% block second %}second-default{% endblock %}"))))))
     ;; Template that extends the layout and override the block
     (templatel-env-add-template
      env "page.html"
@@ -102,11 +103,12 @@
     (should (equal (templatel-env-render env "page.html" '()) " brand new"))))
 
 (ert-deftest render-block-extends-override-some ()
-  (let ((env (templatel-env-new)))
-    ;; Base template define the block
-    (templatel-env-add-template
-     env "layout.html"
-     (templatel-new "{% block first %}first-default{% endblock %} {% block second %}second-default{% endblock %}"))
+  (let ((env (templatel-env-new
+              :importfn #'(lambda(e name)
+                             ;; Base template define the block
+                             (templatel-env-add-template
+                              e name
+                              (templatel-new "{% block first %}first-default{% endblock %} {% block second %}second-default{% endblock %}"))))))
     ;; Template that extends the layout and override the block
     (templatel-env-add-template
      env "page.html"
@@ -114,11 +116,12 @@
     (should (equal (templatel-env-render env "page.html" '()) "first-default brand new"))))
 
 (ert-deftest render-block-extends ()
-  (let ((env (templatel-env-new)))
-    ;; Base template define the block
-    (templatel-env-add-template
-     env "layout.html"
-     (templatel-new "Always {% block stuff %}default{% endblock %}"))
+  (let* ((env (templatel-env-new
+               :importfn #'(lambda(e name)
+                             ;; Base template define the block
+                             (templatel-env-add-template
+                              e name
+                              (templatel-new "Always {% block stuff %}default{% endblock %}"))))))
     ;; Template that extends the layout and override the block
     (templatel-env-add-template
      env "page.html"
@@ -126,11 +129,12 @@
     (should (equal (templatel-env-render env "page.html" '()) "Always look at the bright side"))))
 
 (ert-deftest render-block-extends-super ()
-  (let ((env (templatel-env-new)))
-    ;; Base template define the block
-    (templatel-env-add-template
-     env "nav.html"
-     (templatel-new "{% block greeting %}Hello{% endblock %}"))
+  (let ((env (templatel-env-new
+               :importfn #'(lambda(e name)
+                             ;; Base template define the block
+                             (templatel-env-add-template
+                              e name
+                              (templatel-new "{% block greeting %}Hello{% endblock %}"))))))
     ;; Template that extends the layout and override the block
     (templatel-env-add-template
      env "page.html"
