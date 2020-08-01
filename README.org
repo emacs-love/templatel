@@ -208,6 +208,58 @@
     override blocks in ~section{1,2}.html~ and ~section{1,2}.html~ can
     override blocks in ~root.html~.
 
+    *~importfn~*
+
+    It's up to you to define how templates are going to be found by
+    the extends statement.  First, it can't be used without the
+    environment API.  If the function ~templatel-env-new~ doesn't
+    receive the ~:importfn~ parameter, the ~extends~ statement will
+    roduce a runtime error.
+
+    Here's a pretty simple implementation that walks a list of paths
+    trying to find a given template.
+
+    #+begin_src emacs-lisp
+(defun template-find (directories name)
+  "Find template NAME within DIRECTORIES."
+  (if (null directories)
+      ;; didn't find it. Signal an error upwards:
+      (signal
+       'file-missing
+       (list "" "File not found" (format "Template `%s' doesn't exist" name)))
+    ;; Let's see if we can find it in the next directory
+    (let* ((path (expand-file-name name (car directories)))
+           (attrs (file-attributes path)))
+      (cond
+       ;; doesn't exist; try next dir
+       ((null attrs) (template-find (cdr directories) name))
+       ;; is a directory
+       ((not (null (file-attribute-type attrs))) nil)
+       ;; we found it
+       ((null (file-attribute-type attrs)) path)))))
+
+(defun template-render (template-dirs template-name)
+  "Render template NAME from TEMPLATE-DIRS."
+  ;; Create a new template environment attaching an import function
+  (let ((env (templatel-env-new
+              :importfn #'(lambda(en name)
+                            ;; The import function will add a new
+                            ;; template to the environment
+                            (templatel-env-add-template
+                             en name
+                             (templatel-new-from-file
+                              ;; Will search throughout the same
+                              ;; `template-dirs` used by the template
+                              ;; that imported it
+                              (template-find template-dirs name)))))))
+    (templatel-env-add-template
+     en name
+     (templatel-new-from-file (template-find template-dirs name)))
+    (templatel-env-render env template-name vars)))
+
+(template-render '("~/files/themes/templates/" "~/files/blog/templates/") "post.html")
+    #+end_src
+
 *** Block
     #+BEGIN_SRC web
     {% block header %}{{ title }}{% endblock %}
