@@ -220,6 +220,8 @@
     trying to find a given template.
 
     #+begin_src emacs-lisp
+(require 'templatel)
+
 (defun template-find (directories name)
   "Find template NAME within DIRECTORIES."
   (if (null directories)
@@ -238,8 +240,8 @@
        ;; we found it
        ((null (file-attribute-type attrs)) path)))))
 
-(defun template-render (template-dirs template-name)
-  "Render template NAME from TEMPLATE-DIRS."
+(defun template-render (template-dirs template-name vars)
+  "Render template NAME from TEMPLATE-DIRS interpolated with VARS."
   ;; Create a new template environment attaching an import function
   (let ((env (templatel-env-new
               :importfn #'(lambda(en name)
@@ -253,11 +255,11 @@
                               ;; that imported it
                               (template-find template-dirs name)))))))
     (templatel-env-add-template
-     en name
-     (templatel-new-from-file (template-find template-dirs name)))
+     env template-name
+     (templatel-new-from-file (template-find template-dirs template-name)))
     (templatel-env-render env template-name vars)))
 
-(template-render '("~/files/themes/templates/" "~/files/blog/templates/") "post.html")
+(message "%s" (template-render '("~/tmp/templates/" "/blog/templates/") "post.html" '(("name" . "x"))))
     #+end_src
 
 *** Block
