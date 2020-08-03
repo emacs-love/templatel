@@ -180,12 +180,17 @@
 
 (defun scanner/zero-or-more (scanner expr)
   "Read EXPR zero or more time from SCANNER."
-  (let ((state (scanner/state scanner)))
-    (condition-case nil
-        (cons (funcall expr) (scanner/zero-or-more scanner expr))
-      (templatel-internal
-       (scanner/state/set scanner state)
-       nil))))
+  (let (output
+        (running t))
+    (while running
+      (let ((state (scanner/state scanner)))
+        (condition-case nil
+            (setq output (cons (funcall expr) output))
+          (templatel-internal
+           (progn
+             (scanner/state/set scanner state)
+             (setq running nil))))))
+    (reverse output)))
 
 (defun scanner/one-or-more (scanner expr)
   "Read EXPR one or more time from SCANNER."
