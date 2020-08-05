@@ -307,7 +307,35 @@
             '(("names" . ("One" "Two" "Three"))))
            "One Two Three ")))
 
-(ert-deftest render-if-nil-var ()
+(ert-deftest render-if-else-elif-two-stmt ()
+  (should
+   (equal
+    (templatel-render-string
+     "{% if false %}aaa{{ b }}aaa{% elif true %}b{% else %}c{% endif %}"
+     '())
+    "b"))
+  (should
+   (equal
+    (templatel-render-string
+     "{% if false %}aaa{{ b }}aaa{% elif false %}bbbb{{ b }}bbb{% else %}c{% endif %}"
+     '())
+    "c")))
+
+(ert-deftest render-if-else-two-stmt ()
+  (should
+   (equal
+    (templatel-render-string
+     "{% if true %}stuff{% else %}before{{ a }}after{% endif %}"
+     '())
+    "stuff"))
+  (should
+   (equal
+    (templatel-render-string
+     "{% if false %}before{{ a }}after{% else %}stuff{% endif %}"
+     '())
+    "stuff")))
+
+(ert-deftest render-if-two-stmt ()
   (should
    (equal
     (templatel-render-string

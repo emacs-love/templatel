@@ -1283,7 +1283,7 @@ call `compiler/filter-item' on each entry."
         (body (cadr tree))
         (else (cadr (caddr tree))))
     `(if (progn ,(compiler/run expr) (pop rt/valstk))
-         ,@(compiler/run body)
+         (progn ,@(compiler/run body))
        ,@(compiler/run else))))
 
 (defun compiler/if (tree)
