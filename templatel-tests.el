@@ -307,6 +307,15 @@
             '(("names" . ("One" "Two" "Three"))))
            "One Two Three ")))
 
+(ert-deftest render-if-nil-var ()
+  (should
+   (equal
+    (templatel-render-string
+     "aqui ali {% if a.b %}before{{ a.b }}after{% endif %} e acola"
+     '(("a" . (("a" . 1)
+               ("c" . 3)))))
+    "aqui ali  e acola")))
+
 (ert-deftest render-template-elif0 ()
   (should
    (equal
