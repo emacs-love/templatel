@@ -1,3 +1,7 @@
+#+CAPTION: CI Status
+#+NAME:   CI
+[[https://github.com/clarete/templatel/workflows/CI/badge.svg]]
+
 * templatel
 
   A templating language for Emacs-Lisp.
