@@ -1403,6 +1403,7 @@ call `compiler/filter-item' on each entry."
     (`("Number"         . ,a) a)
     (`("String"         . ,a) a)
     (`("Bool"           . ,a) a)
+    (`("Nil"            . ,a) a)
     ((pred listp)             (mapcar #'compiler/run tree))
     (_ (message "NOENTIENDO: `%s`" tree))))
 
