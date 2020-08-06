@@ -1,8 +1,9 @@
-;;; templatel --- Templating language for Emacs-Lisp; -*- lexical-binding: t -*-
+;;; templatel.el --- Templating language; -*- lexical-binding: t -*-
 ;;
 ;; Author: Lincoln Clarete <lincoln@clarete.li>
 ;; URL: http://clarete.li/templatel
 ;; Version: 0.1.0
+;; Package-Requires: ((emacs "25.1"))
 ;;
 ;; Copyright (C) 2020  Lincoln Clarete
 ;;
@@ -40,408 +41,408 @@
 
 ;; --- Scanner ---
 
-(defun scanner/new (input file-name)
+(defun templatel-scanner-new (input file-name)
   "Create scanner for INPUT named FILE-NAME."
   (list input 0 0 0 file-name))
 
-(defun scanner/input (scanner)
+(defun templatel-scanner-input (scanner)
   "Input that SCANNER is operating on."
   (car scanner))
 
-(defun scanner/cursor (scanner)
+(defun templatel-scanner-cursor (scanner)
   "Cursor position of SCANNER."
   (cadr scanner))
 
-(defun scanner/cursor/set (scanner value)
+(defun templatel-scanner-cursor-set (scanner value)
   "Set SCANNER's cursor to VALUE."
   (setf (cadr scanner) value))
 
-(defun scanner/cursor/incr (scanner)
+(defun templatel-scanner-cursor-incr (scanner)
   "Increment SCANNER's cursor."
-  (scanner/cursor/set scanner (+ 1 (scanner/cursor scanner))))
+  (templatel-scanner-cursor-set scanner (+ 1 (templatel-scanner-cursor scanner))))
 
-(defun scanner/file (scanner)
+(defun templatel-scanner-file (scanner)
   "Line the SCANNER's cursor is in."
   (elt scanner 4))
 
-(defun scanner/line (scanner)
+(defun templatel-scanner-line (scanner)
   "Line the SCANNER's cursor is in."
   (caddr scanner))
 
-(defun scanner/line/set (scanner value)
+(defun templatel-scanner-line-set (scanner value)
   "Set SCANNER's line to VALUE."
   (setf (caddr scanner) value))
 
-(defun scanner/line/incr (scanner)
+(defun templatel-scanner-line-incr (scanner)
   "Increment SCANNER's line and reset col."
-  (scanner/col/set scanner 0)
-  (scanner/line/set scanner (+ 1 (scanner/line scanner))))
+  (templatel-scanner-col-set scanner 0)
+  (templatel-scanner-line-set scanner (+ 1 (templatel-scanner-line scanner))))
 
-(defun scanner/col (scanner)
+(defun templatel-scanner-col (scanner)
   "Column the SCANNER's cursor is in."
   (cadddr scanner))
 
-(defun scanner/col/set (scanner value)
+(defun templatel-scanner-col-set (scanner value)
   "Set column of the SCANNER as VALUE."
   (setf (cadddr scanner) value))
 
-(defun scanner/col/incr (scanner)
+(defun templatel-scanner-col-incr (scanner)
   "Increment SCANNER's col."
-  (scanner/col/set scanner (+ 1 (scanner/col scanner))))
+  (templatel-scanner-col-set scanner (+ 1 (templatel-scanner-col scanner))))
 
-(defun scanner/state (scanner)
+(defun templatel-scanner-state (scanner)
   "Return a copy o SCANNER's state."
   (copy-sequence (cdr scanner)))
 
-(defun scanner/state/set (scanner state)
+(defun templatel-scanner-state-set (scanner state)
   "Set SCANNER's state with STATE."
-  (scanner/cursor/set scanner (car state))
-  (scanner/line/set scanner (cadr state))
-  (scanner/col/set scanner (caddr state)))
+  (templatel-scanner-cursor-set scanner (car state))
+  (templatel-scanner-line-set scanner (cadr state))
+  (templatel-scanner-col-set scanner (caddr state)))
 
-(defun scanner/current (scanner)
+(defun templatel-scanner-current (scanner)
   "Peak the nth cursor of SCANNER's input."
-  (if (scanner/eos scanner)
-      (scanner/error scanner "EOF")
-    (elt (scanner/input scanner)
-         (scanner/cursor scanner))))
+  (if (templatel-scanner-eos scanner)
+      (templatel-scanner-error scanner "EOF")
+    (elt (templatel-scanner-input scanner)
+         (templatel-scanner-cursor scanner))))
 
-(defun scanner/error (_scanner msg)
+(defun templatel-scanner-error (_scanner msg)
   "Generate error in SCANNER and document with MSG."
   (signal 'templatel-backtracking msg))
 
-(defun scanner/eos (scanner)
+(defun templatel-scanner-eos (scanner)
   "Return t if cursor is at the end of SCANNER's input."
-  (eq (scanner/cursor scanner)
-      (length (scanner/input scanner))))
+  (eq (templatel-scanner-cursor scanner)
+      (length (templatel-scanner-input scanner))))
 
-(defun scanner/next (scanner)
+(defun templatel-scanner-next (scanner)
   "Push SCANNER's cursor one character."
-  (if (scanner/eos scanner)
-      (scanner/error scanner "EOF")
+  (if (templatel-scanner-eos scanner)
+      (templatel-scanner-error scanner "EOF")
     (progn
-      (scanner/col/incr scanner)
-      (scanner/cursor/incr scanner))))
+      (templatel-scanner-col-incr scanner)
+      (templatel-scanner-cursor-incr scanner))))
 
-(defun scanner/any (scanner)
+(defun templatel-scanner-any (scanner)
   "Match any character on SCANNER's input minus EOF."
-  (let ((current (scanner/current scanner)))
-    (scanner/next scanner)
+  (let ((current (templatel-scanner-current scanner)))
+    (templatel-scanner-next scanner)
     current))
 
-(defun scanner/match (scanner c)
+(defun templatel-scanner-match (scanner c)
   "Match current character under SCANNER's to C."
-  (if (eq c (scanner/current scanner))
-      (progn (scanner/next scanner) c)
-    (scanner/error scanner
+  (if (eq c (templatel-scanner-current scanner))
+      (progn (templatel-scanner-next scanner) c)
+    (templatel-scanner-error scanner
      (format
-      "Expected %s, got %s" c (scanner/current scanner)))))
+      "Expected %s, got %s" c (templatel-scanner-current scanner)))))
 
-(defun scanner/matchs (scanner s)
+(defun templatel-scanner-matchs (scanner s)
   "Match SCANNER's input to string S."
-  (mapcar #'(lambda (i) (scanner/match scanner i)) s))
+  (mapcar #'(lambda (i) (templatel-scanner-match scanner i)) s))
 
-(defun scanner/range (scanner a b)
+(defun templatel-scanner-range (scanner a b)
   "Succeed if SCANNER's current entry is between A and B."
-  (let ((c (scanner/current scanner)))
+  (let ((c (templatel-scanner-current scanner)))
     (if (and (>= c a) (<= c b))
-        (scanner/any scanner)
-      (scanner/error scanner (format "Expected %s-%s, got %s" a b c)))))
+        (templatel-scanner-any scanner)
+      (templatel-scanner-error scanner (format "Expected %s-%s, got %s" a b c)))))
 
-(defun scanner/or (scanner options)
+(defun templatel-scanner-or (scanner options)
   "Read the first one of OPTIONS that works SCANNER."
   (if (null options)
-      (scanner/error scanner "No valid options")
-    (let ((state (scanner/state scanner)))
+      (templatel-scanner-error scanner "No valid options")
+    (let ((state (templatel-scanner-state scanner)))
       (condition-case nil
           (funcall (car options))
         (templatel-internal
-         (progn (scanner/state/set scanner state)
-                (scanner/or scanner (cdr options))))))))
+         (progn (templatel-scanner-state-set scanner state)
+                (templatel-scanner-or scanner (cdr options))))))))
 
-(defun scanner/optional (scanner expr)
+(defun templatel-scanner-optional (scanner expr)
   "Read EXPR from SCANNER returning nil if it fails."
-  (let ((state (scanner/state scanner)))
+  (let ((state (templatel-scanner-state scanner)))
     (condition-case nil
         (funcall expr)
       (templatel-internal
-       (scanner/state/set scanner state)
+       (templatel-scanner-state-set scanner state)
        nil))))
 
-(defun scanner/not (scanner expr)
+(defun templatel-scanner-not (scanner expr)
   "Fail if EXPR succeed, succeed when EXPR fail using SCANNER."
-  (let ((cursor (scanner/cursor scanner))
+  (let ((cursor (templatel-scanner-cursor scanner))
         (succeeded (condition-case nil
                        (funcall expr)
                      (templatel-internal
                       nil))))
-    (scanner/cursor/set scanner cursor)
+    (templatel-scanner-cursor-set scanner cursor)
     (if succeeded
-        (scanner/error scanner "Not meant to succeed")
+        (templatel-scanner-error scanner "Not meant to succeed")
       t)))
 
-(defun scanner/zero-or-more (scanner expr)
+(defun templatel-scanner-zero-or-more (scanner expr)
   "Read EXPR zero or more time from SCANNER."
   (let (output
         (running t))
     (while running
-      (let ((state (scanner/state scanner)))
+      (let ((state (templatel-scanner-state scanner)))
         (condition-case nil
             (setq output (cons (funcall expr) output))
           (templatel-internal
            (progn
-             (scanner/state/set scanner state)
+             (templatel-scanner-state-set scanner state)
              (setq running nil))))))
     (reverse output)))
 
-(defun scanner/one-or-more (scanner expr)
+(defun templatel-scanner-one-or-more (scanner expr)
   "Read EXPR one or more time from SCANNER."
   (cons (funcall expr)
-        (scanner/zero-or-more scanner expr)))
+        (templatel-scanner-zero-or-more scanner expr)))
 
-(defun token/expr-op (scanner)
+(defun templatel-token-expr-op (scanner)
   "Read '{{' off SCANNER's input."
-  (scanner/matchs scanner "{{")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "{{")
+  (templatel-parser-_ scanner))
 
-(defun token/stm-op (scanner)
+(defun templatel-token-stm-op (scanner)
   "Read '{%' off SCANNER's input."
-  (scanner/matchs scanner "{%")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "{%")
+  (templatel-parser-_ scanner))
 
-(defun token/comment-op (scanner)
+(defun templatel-token-comment-op (scanner)
   "Read '{#' off SCANNER's input."
-  (scanner/matchs scanner "{#")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "{#")
+  (templatel-parser-_ scanner))
 
 ;; Notice these two tokens don't consume white spaces right after the
 ;; closing tag. That gets us a little closer to preserving entirely
 ;; the input provided to the parser.
-(defun token/expr-cl (scanner)
+(defun templatel-token-expr-cl (scanner)
   "Read '}}' off SCANNER's input."
-  (scanner/matchs scanner "}}"))
+  (templatel-scanner-matchs scanner "}}"))
 
-(defun token/stm-cl (scanner)
+(defun templatel-token-stm-cl (scanner)
   "Read '%}' off SCANNER's input."
-  (scanner/matchs scanner "%}"))
+  (templatel-scanner-matchs scanner "%}"))
 
-(defun token/comment-cl (scanner)
+(defun templatel-token-comment-cl (scanner)
   "Read '#}' off SCANNER's input."
-  (scanner/matchs scanner "#}"))
+  (templatel-scanner-matchs scanner "#}"))
 
-(defun token/dot (scanner)
+(defun templatel-token-dot (scanner)
   "Read '.' off SCANNER's input."
-  (scanner/matchs scanner ".")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner ".")
+  (templatel-parser-_ scanner))
 
-(defun token/comma (scanner)
+(defun templatel-token-comma (scanner)
   "Read ',' off SCANNER's input."
-  (scanner/matchs scanner ",")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner ",")
+  (templatel-parser-_ scanner))
 
-(defun token/if (scanner)
+(defun templatel-token-if (scanner)
   "Read 'if' off SCANNER's input."
-  (scanner/matchs scanner "if")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "if")
+  (templatel-parser-_ scanner))
 
-(defun token/elif (scanner)
+(defun templatel-token-elif (scanner)
   "Read 'elif' off SCANNER's input."
-  (scanner/matchs scanner "elif")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "elif")
+  (templatel-parser-_ scanner))
 
-(defun token/else (scanner)
+(defun templatel-token-else (scanner)
   "Read 'else' off SCANNER's input."
-  (scanner/matchs scanner "else")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "else")
+  (templatel-parser-_ scanner))
 
-(defun token/endif (scanner)
+(defun templatel-token-endif (scanner)
   "Read 'endif' off SCANNER's input."
-  (scanner/matchs scanner "endif")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "endif")
+  (templatel-parser-_ scanner))
 
-(defun token/for (scanner)
+(defun templatel-token-for (scanner)
   "Read 'for' off SCANNER's input."
-  (scanner/matchs scanner "for")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "for")
+  (templatel-parser-_ scanner))
 
-(defun token/endfor (scanner)
+(defun templatel-token-endfor (scanner)
   "Read 'endfor' off SCANNER's input."
-  (scanner/matchs scanner "endfor")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "endfor")
+  (templatel-parser-_ scanner))
 
-(defun token/block (scanner)
+(defun templatel-token-block (scanner)
   "Read 'block' off SCANNER's input."
-  (scanner/matchs scanner "block")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "block")
+  (templatel-parser-_ scanner))
 
-(defun token/endblock (scanner)
+(defun templatel-token-endblock (scanner)
   "Read 'endblock' off SCANNER's input."
-  (scanner/matchs scanner "endblock")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "endblock")
+  (templatel-parser-_ scanner))
 
-(defun token/extends (scanner)
+(defun templatel-token-extends (scanner)
   "Read 'extends' off SCANNER's input."
-  (scanner/matchs scanner "extends")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "extends")
+  (templatel-parser-_ scanner))
 
-(defun token/in (scanner)
+(defun templatel-token-in (scanner)
   "Read 'in' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "in")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "in")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/and (scanner)
+(defun templatel-token-and (scanner)
   "Read 'and' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "and")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "and")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/not (scanner)
+(defun templatel-token-not (scanner)
   "Read 'not' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "not")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "not")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/or (scanner)
+(defun templatel-token-or (scanner)
   "Read 'or' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "or")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "or")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/paren-op (scanner)
+(defun templatel-token-paren-op (scanner)
   "Read '(' off SCANNER's input."
-  (scanner/matchs scanner "(")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner "(")
+  (templatel-parser-_ scanner))
 
-(defun token/paren-cl (scanner)
+(defun templatel-token-paren-cl (scanner)
   "Read ')' off SCANNER's input."
-  (scanner/matchs scanner ")")
-  (parser/_ scanner))
+  (templatel-scanner-matchs scanner ")")
+  (templatel-parser-_ scanner))
 
-(defun token/| (scanner)
+(defun templatel-token-| (scanner)
   "Read '|' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "|")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "|")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/|| (scanner)
+(defun templatel-token-|| (scanner)
   "Read '||' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "||")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "||")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/+ (scanner)
+(defun templatel-token-+ (scanner)
   "Read '+' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "+")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "+")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/- (scanner)
+(defun templatel-token-- (scanner)
   "Read '-' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "-")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "-")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/* (scanner)
+(defun templatel-token-* (scanner)
   "Read '*' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "*")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "*")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/** (scanner)
+(defun templatel-token-** (scanner)
   "Read '**' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "**")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "**")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token// (scanner)
+(defun templatel-token-slash (scanner)
   "Read '/' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "/")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "/")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/// (scanner)
+(defun templatel-token-dslash (scanner)
   "Read '//' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "//")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "//")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/== (scanner)
+(defun templatel-token-== (scanner)
   "Read '==' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "==")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "==")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/!= (scanner)
+(defun templatel-token-!= (scanner)
   "Read '!=' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "!=")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "!=")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/> (scanner)
+(defun templatel-token-> (scanner)
   "Read '>' off SCANNER's input."
-  (let ((m (scanner/matchs scanner ">")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner ">")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/< (scanner)
+(defun templatel-token-< (scanner)
   "Read '<' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "<")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "<")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/>= (scanner)
+(defun templatel-token->= (scanner)
   "Read '>=' off SCANNER's input."
-  (let ((m (scanner/matchs scanner ">=")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner ">=")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/<= (scanner)
+(defun templatel-token-<= (scanner)
   "Read '<=' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "<=")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "<=")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/<< (scanner)
+(defun templatel-token-<< (scanner)
   "Read '<<' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "<<")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "<<")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/>> (scanner)
+(defun templatel-token->> (scanner)
   "Read '>>' off SCANNER's input."
-  (let ((m (scanner/matchs scanner ">>")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner ">>")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/& (scanner)
+(defun templatel-token-& (scanner)
   "Read '&' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "&")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "&")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/~ (scanner)
+(defun templatel-token-~ (scanner)
   "Read '~' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "~")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "~")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/% (scanner)
+(defun templatel-token-% (scanner)
   "Read '%' off SCANNER's input."
   ;; This is needed or allowing a cutting point to be introduced right
   ;; after the operator of a binary expression.
-  (scanner/not scanner #'(lambda() (token/stm-cl scanner)))
-  (let ((m (scanner/matchs scanner "%")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (templatel-scanner-not scanner #'(lambda() (templatel-token-stm-cl scanner)))
+  (let ((m (templatel-scanner-matchs scanner "%")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun token/^ (scanner)
+(defun templatel-token-^ (scanner)
   "Read '^' off SCANNER's input."
-  (let ((m (scanner/matchs scanner "^")))
-    (parser/_ scanner)
-    (parser/join-chars m)))
+  (let ((m (templatel-scanner-matchs scanner "^")))
+    (templatel-parser-_ scanner)
+    (templatel-parser-join-chars m)))
 
-(defun parser/join-chars (chars)
+(defun templatel-parser-join-chars (chars)
   "Join all the CHARS forming a string."
   (string-join (mapcar 'byte-to-string chars) ""))
 
@@ -449,240 +450,240 @@
 
 ;; --- Parser ---
 
-(defun parser/rstrip-comment (scanner thing)
+(defun templatel-parser-rstrip-comment (scanner thing)
   "SCANNER THING."
   (let ((value (funcall thing scanner)))
-    (scanner/zero-or-more
+    (templatel-scanner-zero-or-more
      scanner
-     #'(lambda() (parser/comment scanner)))
+     #'(lambda() (templatel-parser-comment scanner)))
     value))
 
 ;; Template      <- Comment* (Text Comment* / Statement Comment* / Expression Comment*)+
-(defun parser/template (scanner)
+(defun templatel-parser-template (scanner)
   "Parse Template entry from SCANNER's input."
-  (scanner/zero-or-more
+  (templatel-scanner-zero-or-more
    scanner
-   #'(lambda() (parser/comment scanner)))
+   #'(lambda() (templatel-parser-comment scanner)))
   (cons
    "Template"
-   (scanner/one-or-more
+   (templatel-scanner-one-or-more
     scanner
-    #'(lambda() (scanner/or
+    #'(lambda() (templatel-scanner-or
                  scanner
-                 (list #'(lambda() (parser/rstrip-comment scanner #'parser/text))
-                       #'(lambda() (parser/rstrip-comment scanner #'parser/statement))
-                       #'(lambda() (parser/rstrip-comment scanner #'parser/expression))))))))
+                 (list #'(lambda() (templatel-parser-rstrip-comment scanner #'templatel-parser-text))
+                       #'(lambda() (templatel-parser-rstrip-comment scanner #'templatel-parser-statement))
+                       #'(lambda() (templatel-parser-rstrip-comment scanner #'templatel-parser-expression))))))))
 
 ;; Text <- (!(_EXPR_OPEN / _STM_OPEN / _COMMENT_OPEN) .)+
-(defun parser/text (scanner)
+(defun templatel-parser-text (scanner)
   "Parse Text entries from SCANNER's input."
   (cons
    "Text"
-   (parser/join-chars
-    (scanner/one-or-more
+   (templatel-parser-join-chars
+    (templatel-scanner-one-or-more
      scanner
      #'(lambda()
-         (scanner/not
+         (templatel-scanner-not
           scanner
           (lambda()
-            (scanner/or
+            (templatel-scanner-or
              scanner
              (list
-              #'(lambda() (token/expr-op scanner))
-              #'(lambda() (token/stm-op scanner))
-              #'(lambda() (token/comment-op scanner))))))
-         (let ((chr (scanner/any scanner)))
+              #'(lambda() (templatel-token-expr-op scanner))
+              #'(lambda() (templatel-token-stm-op scanner))
+              #'(lambda() (templatel-token-comment-op scanner))))))
+         (let ((chr (templatel-scanner-any scanner)))
            (if (eq chr ?\n)
-               (scanner/line/incr scanner))
+               (templatel-scanner-line-incr scanner))
            chr))))))
 
 ;; Statement     <- IfStatement / ForStatement / BlockStatement / ExtendsStatement
-(defun parser/statement (scanner)
+(defun templatel-parser-statement (scanner)
   "Parse a statement from SCANNER."
-  (scanner/or
+  (templatel-scanner-or
    scanner
    (list
-    #'(lambda() (parser/if-stm scanner))
-    #'(lambda() (parser/for-stm scanner))
-    #'(lambda() (parser/block-stm scanner))
-    #'(lambda() (parser/extends-stm scanner)))))
+    #'(lambda() (templatel-parser-if-stm scanner))
+    #'(lambda() (templatel-parser-for-stm scanner))
+    #'(lambda() (templatel-parser-block-stm scanner))
+    #'(lambda() (templatel-parser-extends-stm scanner)))))
 
 ;; IfStatement   <- _If Expr _STM_CLOSE Template Elif
 ;;                / _If Expr _STM_CLOSE Template Else
 ;;                / _If Expr _STM_CLOSE Template _EndIf
-(defun parser/if-stm (scanner)
+(defun templatel-parser-if-stm (scanner)
   "SCANNER."
-  (scanner/or
+  (templatel-scanner-or
    scanner
-   (list #'(lambda() (parser/if-stm-elif scanner))
-         #'(lambda() (parser/if-stm-else scanner))
-         #'(lambda() (parser/if-stm-endif scanner)))))
+   (list #'(lambda() (templatel-parser-if-stm-elif scanner))
+         #'(lambda() (templatel-parser-if-stm-else scanner))
+         #'(lambda() (templatel-parser-if-stm-endif scanner)))))
 
-(defun parser/stm-cl (scanner)
+(defun templatel-parser-stm-cl (scanner)
   "Read stm-cl off SCANNER or error out if it's not there."
-  (parser/cut
+  (templatel-parser-cut
    scanner
-   #'(lambda() (token/stm-cl scanner))
+   #'(lambda() (templatel-token-stm-cl scanner))
    "Statement not closed with \"%}\""))
 
 ;; _If Expr _STM_CLOSE Template Elif+ Else?
-(defun parser/if-stm-elif (scanner)
+(defun templatel-parser-if-stm-elif (scanner)
   "Parse elif from SCANNER."
-  (parser/if scanner)
-  (let* ((expr (parser/expr scanner))
-         (_ (parser/stm-cl scanner))
-         (tmpl (parser/template scanner))
-         (elif (scanner/one-or-more scanner #'(lambda() (parser/elif scanner))))
-         (else (scanner/optional scanner #'(lambda() (parser/else scanner)))))
+  (templatel-parser-if scanner)
+  (let* ((expr (templatel-parser-expr scanner))
+         (_ (templatel-parser-stm-cl scanner))
+         (tmpl (templatel-parser-template scanner))
+         (elif (templatel-scanner-one-or-more scanner #'(lambda() (templatel-parser-elif scanner))))
+         (else (templatel-scanner-optional scanner #'(lambda() (templatel-parser-else scanner)))))
     (cons "IfElif" (list expr tmpl elif else))))
 
 ;; _If Expr _STM_CLOSE Template Else
-(defun parser/if-stm-else (scanner)
+(defun templatel-parser-if-stm-else (scanner)
   "Parse else from SCANNER."
-  (parser/if scanner)
-  (let* ((expr (parser/expr scanner))
-         (_ (parser/stm-cl scanner))
-         (tmpl (parser/template scanner))
-         (else (parser/else scanner)))
+  (templatel-parser-if scanner)
+  (let* ((expr (templatel-parser-expr scanner))
+         (_ (templatel-parser-stm-cl scanner))
+         (tmpl (templatel-parser-template scanner))
+         (else (templatel-parser-else scanner)))
     (cons "IfElse" (list expr tmpl else))))
 
 ;; _If Expr _STM_CLOSE Template _EndIf
-(defun parser/if-stm-endif (scanner)
+(defun templatel-parser-if-stm-endif (scanner)
   "Parse endif from SCANNER."
-  (parser/if scanner)
-  (let* ((expr (parser/expr scanner))
-         (_    (parser/stm-cl scanner))
-         (tmpl (parser/template scanner))
-         (_    (parser/endif scanner)))
+  (templatel-parser-if scanner)
+  (let* ((expr (templatel-parser-expr scanner))
+         (_    (templatel-parser-stm-cl scanner))
+         (tmpl (templatel-parser-template scanner))
+         (_    (templatel-parser-endif scanner)))
     (cons "IfStatement" (list expr tmpl))))
 
 ;; Elif          <- _STM_OPEN _elif Expr _STM_CLOSE Template
-(defun parser/elif (scanner)
+(defun templatel-parser-elif (scanner)
   "Parse elif expression off SCANNER."
-  (token/stm-op scanner)
-  (token/elif scanner)
-  (let ((expr (parser/expr scanner))
-        (_    (parser/stm-cl scanner))
-        (tmpl (parser/template scanner)))
+  (templatel-token-stm-op scanner)
+  (templatel-token-elif scanner)
+  (let ((expr (templatel-parser-expr scanner))
+        (_    (templatel-parser-stm-cl scanner))
+        (tmpl (templatel-parser-template scanner)))
     (cons "Elif" (list expr tmpl))))
 
 ;; _If           <- _STM_OPEN _if
-(defun parser/if (scanner)
+(defun templatel-parser-if (scanner)
   "Parse if condition off SCANNER."
-  (token/stm-op scanner)
-  (token/if scanner))
+  (templatel-token-stm-op scanner)
+  (templatel-token-if scanner))
 
 ;; Else          <- _STM_OPEN _else _STM_CLOSE Template _EndIf
-(defun parser/else (scanner)
+(defun templatel-parser-else (scanner)
   "Parse else expression off SCANNER."
-  (token/stm-op scanner)
-  (token/else scanner)
-  (parser/stm-cl scanner)
-  (let ((tmpl (parser/template scanner)))
-    (parser/endif scanner)
+  (templatel-token-stm-op scanner)
+  (templatel-token-else scanner)
+  (templatel-parser-stm-cl scanner)
+  (let ((tmpl (templatel-parser-template scanner)))
+    (templatel-parser-endif scanner)
     (cons "Else" (list tmpl))))
 
 ;; _EndIf        <- _STM_OPEN _endif _STM_CLOSE
-(defun parser/endif (scanner)
+(defun templatel-parser-endif (scanner)
   "Parse endif tag off SCANNER."
-  (parser/cut
+  (templatel-parser-cut
    scanner
    #'(lambda()
-       (token/stm-op scanner)
-       (token/endif scanner)
-       (parser/stm-cl scanner))
+       (templatel-token-stm-op scanner)
+       (templatel-token-endif scanner)
+       (templatel-parser-stm-cl scanner))
    "Missing endif statement"))
 
 ;; ForStatement  <- _For Expr _in Expr _STM_CLOSE Template _EndFor
 ;; _For          <- _STM_OPEN _for
-(defun parser/for-stm (scanner)
+(defun templatel-parser-for-stm (scanner)
   "Parse for statement from SCANNER."
-  (token/stm-op scanner)
-  (token/for scanner)
-  (let ((iter (parser/identifier scanner))
-        (_ (token/in scanner))
-        (iterable (parser/expr scanner))
-        (_ (parser/stm-cl scanner))
-        (tmpl (parser/template scanner))
-        (_ (parser/endfor scanner)))
+  (templatel-token-stm-op scanner)
+  (templatel-token-for scanner)
+  (let ((iter (templatel-parser-identifier scanner))
+        (_ (templatel-token-in scanner))
+        (iterable (templatel-parser-expr scanner))
+        (_ (templatel-parser-stm-cl scanner))
+        (tmpl (templatel-parser-template scanner))
+        (_ (templatel-parser-endfor scanner)))
     (cons "ForStatement" (list iter iterable tmpl))))
 
 ;; _EndFor       <- _STM_OPEN _endfor _STM_CLOSE
-(defun parser/endfor (scanner)
+(defun templatel-parser-endfor (scanner)
   "Parse {% endfor %} statement from SCANNER."
-  (parser/cut
+  (templatel-parser-cut
    scanner
    #'(lambda()
-       (token/stm-op scanner)
-       (token/endfor scanner)
-       (parser/stm-cl scanner))
+       (templatel-token-stm-op scanner)
+       (templatel-token-endfor scanner)
+       (templatel-parser-stm-cl scanner))
    "Missing endfor statement"))
 
 ;; BlockStatement <- _Block String _STM_CLOSE Template? _EndBlock
-(defun parser/block-stm (scanner)
+(defun templatel-parser-block-stm (scanner)
   "Parse block statement from SCANNER."
-  (token/stm-op scanner)
-  (token/block scanner)
-  (let ((name (parser/cut
+  (templatel-token-stm-op scanner)
+  (templatel-token-block scanner)
+  (let ((name (templatel-parser-cut
                scanner
-               #'(lambda() (parser/identifier scanner))
+               #'(lambda() (templatel-parser-identifier scanner))
                "Missing block name"))
-        (_ (parser/_ scanner))
-        (_ (parser/stm-cl scanner))
-        (tmpl (scanner/optional
+        (_ (templatel-parser-_ scanner))
+        (_ (templatel-parser-stm-cl scanner))
+        (tmpl (templatel-scanner-optional
                scanner
-               #'(lambda() (parser/template scanner)))))
-    (parser/endblock scanner)
+               #'(lambda() (templatel-parser-template scanner)))))
+    (templatel-parser-endblock scanner)
     (cons "BlockStatement" (list name tmpl))))
 
 ;; _EndBlock       <- _STM_OPEN _endblock _STM_CLOSE
-(defun parser/endblock (scanner)
+(defun templatel-parser-endblock (scanner)
   "Parse {% endblock %} statement from SCANNER."
-  (parser/cut
+  (templatel-parser-cut
      scanner
      #'(lambda()
-         (token/stm-op scanner)
-         (token/endblock scanner)
-         (parser/stm-cl scanner))
+         (templatel-token-stm-op scanner)
+         (templatel-token-endblock scanner)
+         (templatel-parser-stm-cl scanner))
      "Missing endblock statement"))
 
 ;; ExtendsStatement <- _STM_OPEN _extends String _STM_CLOSE
-(defun parser/extends-stm (scanner)
+(defun templatel-parser-extends-stm (scanner)
   "Parse extends statement from SCANNER."
-  (token/stm-op scanner)
-  (token/extends scanner)
-  (let ((name (parser/cut
+  (templatel-token-stm-op scanner)
+  (templatel-token-extends scanner)
+  (let ((name (templatel-parser-cut
                scanner
-               #'(lambda() (parser/string scanner))
+               #'(lambda() (templatel-parser-string scanner))
                "Missing template name in extends statement")))
-    (parser/_ scanner)
-    (parser/stm-cl scanner)
+    (templatel-parser-_ scanner)
+    (templatel-parser-stm-cl scanner)
     (cons "ExtendsStatement" (list name))))
 
 ;; Expression    <- _EXPR_OPEN Expr _EXPR_CLOSE
-(defun parser/expression (scanner)
+(defun templatel-parser-expression (scanner)
   "SCANNER."
-  (token/expr-op scanner)
-  (let ((expr (parser/expr scanner)))
-    (parser/cut
+  (templatel-token-expr-op scanner)
+  (let ((expr (templatel-parser-expr scanner)))
+    (templatel-parser-cut
      scanner
-     #'(lambda() (token/expr-cl scanner))
+     #'(lambda() (templatel-token-expr-cl scanner))
      "Unclosed bracket")
     (cons "Expression" (list expr))))
 
 ;; Expr          <- Filter
-(defun parser/expr (scanner)
+(defun templatel-parser-expr (scanner)
   "Read an expression from SCANNER."
   (cons
    "Expr"
-   (list (parser/filter scanner))))
+   (list (templatel-parser-filter scanner))))
 
-(defun parser/cut (scanner fn msg)
+(defun templatel-parser-cut (scanner fn msg)
   "Try to parse FN off SCANNER or error with MSG.
 
 There are two types of errors emitted by this parser:
  1. Backtracking (internal), which is caught by most scanner
-    functions, like scanner/or and scanner/zero-or-more.
+    functions, like templatel-scanner-or and templatel-scanner-zero-or-more.
  2. Syntax Error (public), which signals an unrecoverable parsing
     error.
 
@@ -694,456 +695,456 @@ backtracking should be interrupted earlier."
     (templatel-internal
      (signal 'templatel-syntax-error
              (format "%s at %s,%s: %s"
-                     (or (scanner/file scanner) "<string>")
-                     (1+ (scanner/line scanner))
-                     (1+ (scanner/col scanner))
+                     (or (templatel-scanner-file scanner) "<string>")
+                     (1+ (templatel-scanner-line scanner))
+                     (1+ (templatel-scanner-col scanner))
                      msg)))))
 
-(defun parser/item-or-named-collection (name first rest)
+(defun templatel-parser-item-or-named-collection (name first rest)
   "NAME FIRST REST."
   (if (null rest)
       first
     (cons name (cons first rest))))
 
-(defun parser/binary (scanner name randfn ratorfn)
+(defun templatel-parser-binary (scanner name randfn ratorfn)
   "Parse binary operator NAME from SCANNER.
 
 A binary operator needs two functions: one for reading the
 operands (RANDFN) and another one to read the
 operator (RATORFN)."
-  (parser/item-or-named-collection
+  (templatel-parser-item-or-named-collection
    (if (null name) "BinOp" name)
    (funcall randfn scanner)
-   (scanner/zero-or-more
+   (templatel-scanner-zero-or-more
     scanner
     #'(lambda()
         (cons
            (funcall ratorfn scanner)
-           (parser/cut
+           (templatel-parser-cut
             scanner
             #'(lambda() (funcall randfn scanner))
             "Missing operand after binary operator"))))))
 
 ;; Filter        <- Logical (_PIPE Logical)*
-(defun parser/filter (scanner)
+(defun templatel-parser-filter (scanner)
   "Read Filter from SCANNER."
-  (parser/binary scanner "Filter" #'parser/logical #'token/|))
+  (templatel-parser-binary scanner "Filter" #'templatel-parser-logical #'templatel-token-|))
 
 ;; Logical       <- BitLogical ((AND / OR) BitLogical)*
-(defun parser/logical (scanner)
+(defun templatel-parser-logical (scanner)
   "Read Logical from SCANNER."
-  (parser/binary
+  (templatel-parser-binary
    scanner
    nil ; "Logical"
-   #'parser/bit-logical
+   #'templatel-parser-bit-logical
    #'(lambda(s)
-       (scanner/or
+       (templatel-scanner-or
         s
         (list
-         #'(lambda() (token/and s))
-         #'(lambda() (token/or s)))))))
+         #'(lambda() (templatel-token-and s))
+         #'(lambda() (templatel-token-or s)))))))
 
 ;; BitLogical    <- Comparison ((BAND / BXOR / BOR) Comparison)*
-(defun parser/bit-logical (scanner)
+(defun templatel-parser-bit-logical (scanner)
   "Read BitLogical from SCANNER."
-  (parser/binary
+  (templatel-parser-binary
    scanner
    nil ; "BitLogical"
-   #'parser/comparison
+   #'templatel-parser-comparison
    #'(lambda(s)
-       (scanner/or
+       (templatel-scanner-or
         s
         (list
-         #'(lambda() (token/& s))
-         #'(lambda() (token/^ s))
-         #'(lambda() (token/|| s)))))))
+         #'(lambda() (templatel-token-& s))
+         #'(lambda() (templatel-token-^ s))
+         #'(lambda() (templatel-token-|| s)))))))
 
 ;; Comparison    <- BitShifting ((EQ / NEQ / LTE / GTE / LT / GT / IN) BitShifting)*
-(defun parser/comparison (scanner)
+(defun templatel-parser-comparison (scanner)
   "Read a Comparison from SCANNER."
-  (parser/binary
+  (templatel-parser-binary
    scanner
    nil ; "Comparison"
-   #'parser/bit-shifting
+   #'templatel-parser-bit-shifting
    #'(lambda(s)
-       (scanner/or
+       (templatel-scanner-or
         s
         (list
-         #'(lambda() (token/== s))
-         #'(lambda() (token/!= s))
-         #'(lambda() (token/<= s))
-         #'(lambda() (token/>= s))
-         #'(lambda() (token/< s))
-         #'(lambda() (token/> s))
-         #'(lambda() (token/in s)))))))
+         #'(lambda() (templatel-token-== s))
+         #'(lambda() (templatel-token-!= s))
+         #'(lambda() (templatel-token-<= s))
+         #'(lambda() (templatel-token->= s))
+         #'(lambda() (templatel-token-< s))
+         #'(lambda() (templatel-token-> s))
+         #'(lambda() (templatel-token-in s)))))))
 
 ;; BitShifting   <- Term ((RSHIFT / LSHIFT) Term)*
-(defun parser/bit-shifting (scanner)
+(defun templatel-parser-bit-shifting (scanner)
   "Read a BitShifting from SCANNER."
-  (parser/binary
+  (templatel-parser-binary
    scanner
    nil ; "BitShifting"
-   #'parser/term
+   #'templatel-parser-term
    #'(lambda(s)
-       (scanner/or
+       (templatel-scanner-or
         s
         (list
-         #'(lambda() (token/>> s))
-         #'(lambda() (token/<< s)))))))
+         #'(lambda() (templatel-token->> s))
+         #'(lambda() (templatel-token-<< s)))))))
 
 ;; Term          <- Factor ((PLUS / MINUS) Factor)*
-(defun parser/term (scanner)
+(defun templatel-parser-term (scanner)
   "Read Term from SCANNER."
-  (parser/binary
+  (templatel-parser-binary
    scanner
    nil ; "Term"
-   #'parser/factor
+   #'templatel-parser-factor
    #'(lambda(s)
-       (scanner/or
+       (templatel-scanner-or
         s
         (list
-         #'(lambda() (token/+ s))
-         #'(lambda() (token/- s)))))))
+         #'(lambda() (templatel-token-+ s))
+         #'(lambda() (templatel-token-- s)))))))
 
 ;; Factor        <- Power ((STAR / DSLASH / SLASH) Power)*
-(defun parser/factor (scanner)
+(defun templatel-parser-factor (scanner)
   "Read Factor from SCANNER."
-  (parser/binary
+  (templatel-parser-binary
    scanner
    nil ; "Factor"
-   #'parser/power
+   #'templatel-parser-power
    #'(lambda(s)
-       (scanner/or
+       (templatel-scanner-or
         s
         (list
-         #'(lambda() (token/* s))
-         #'(lambda() (token/// s))
-         #'(lambda() (token// s)))))))
+         #'(lambda() (templatel-token-* s))
+         #'(lambda() (templatel-token-slash s))
+         #'(lambda() (templatel-token-dslash s)))))))
 
 ;; Power         <- Unary ((POWER / MOD) Unary)*
-(defun parser/power (scanner)
+(defun templatel-parser-power (scanner)
   "Read Power from SCANNER."
-  (parser/binary
+  (templatel-parser-binary
    scanner
    nil ; "Power"
-   #'parser/unary
+   #'templatel-parser-unary
    #'(lambda(s)
-       (scanner/or
+       (templatel-scanner-or
         s
         (list
-         #'(lambda() (token/** s))
-         #'(lambda() (token/% s)))))))
+         #'(lambda() (templatel-token-** s))
+         #'(lambda() (templatel-token-% s)))))))
 
 ;; UnaryOp       <- PLUS / MINUS / NOT / BNOT
-(defun parser/unary-op (scanner)
+(defun templatel-parser-unary-op (scanner)
   "Read an Unary operator from SCANNER."
-  (scanner/or
+  (templatel-scanner-or
    scanner
    (list
-    #'(lambda() (token/+ scanner))
-    #'(lambda() (token/- scanner))
-    #'(lambda() (token/~ scanner))
-    #'(lambda() (token/not scanner)))))
+    #'(lambda() (templatel-token-+ scanner))
+    #'(lambda() (templatel-token-- scanner))
+    #'(lambda() (templatel-token-~ scanner))
+    #'(lambda() (templatel-token-not scanner)))))
 
 ;; Unary         <- UnaryOp Unary / UnaryOp Primary / Primary
-(defun parser/unary (scanner)
+(defun templatel-parser-unary (scanner)
   "Read Unary from SCANNER."
-  (scanner/or
+  (templatel-scanner-or
    scanner
    (list
     #'(lambda()
         (cons
          "Unary"
          (list
-          (parser/unary-op scanner)
-          (parser/unary scanner))))
+          (templatel-parser-unary-op scanner)
+          (templatel-parser-unary scanner))))
     #'(lambda()
         (cons
          "Unary"
          (list
-          (parser/unary-op scanner)
-          (parser/cut
+          (templatel-parser-unary-op scanner)
+          (templatel-parser-cut
             scanner
-            #'(lambda() (parser/primary scanner))
+            #'(lambda() (templatel-parser-primary scanner))
             "Missing operand after unary operator"))))
-    #'(lambda() (parser/primary scanner)))))
+    #'(lambda() (templatel-parser-primary scanner)))))
 
 ;; Primary       <- _PAREN_OPEN Expr _PAREN_CLOSE
 ;;                / Element
-(defun parser/primary (scanner)
+(defun templatel-parser-primary (scanner)
   "Read Primary from SCANNER."
-  (scanner/or
+  (templatel-scanner-or
    scanner
    (list
     #'(lambda()
-        (token/paren-op scanner)
-        (let ((expr (parser/expr scanner)))
-          (token/paren-cl scanner)
+        (templatel-token-paren-op scanner)
+        (let ((expr (templatel-parser-expr scanner)))
+          (templatel-token-paren-cl scanner)
           expr))
-    #'(lambda() (parser/element scanner)))))
+    #'(lambda() (templatel-parser-element scanner)))))
 
 ;; Attribute     <- Identifier (_dot Identifier)+
-(defun parser/attribute (scanner)
+(defun templatel-parser-attribute (scanner)
   "Read an Attribute from SCANNER."
   (cons
    "Attribute"
    (cons
-    (parser/identifier scanner)
+    (templatel-parser-identifier scanner)
     (progn
-      (token/dot scanner)
-      (scanner/one-or-more
+      (templatel-token-dot scanner)
+      (templatel-scanner-one-or-more
        scanner
-       #'(lambda() (parser/identifier scanner)))))))
+       #'(lambda() (templatel-parser-identifier scanner)))))))
 
 ;; Element       <- Value / Attribute / FnCall / Identifier
-(defun parser/element (scanner)
+(defun templatel-parser-element (scanner)
   "Read Element off SCANNER."
   (cons
    "Element"
    (list
-    (scanner/or
+    (templatel-scanner-or
      scanner
      (list
-      #'(lambda() (parser/value scanner))
-      #'(lambda() (parser/attribute scanner))
-      #'(lambda() (parser/fncall scanner))
-      #'(lambda() (parser/identifier scanner)))))))
+      #'(lambda() (templatel-parser-value scanner))
+      #'(lambda() (templatel-parser-attribute scanner))
+      #'(lambda() (templatel-parser-fncall scanner))
+      #'(lambda() (templatel-parser-identifier scanner)))))))
 
 ;; FnCall        <- Identifier ParamList
-(defun parser/fncall (scanner)
+(defun templatel-parser-fncall (scanner)
   "Read FnCall off SCANNER."
   (cons
    "FnCall"
    (cons
-    (parser/identifier scanner)
-    (parser/paramlist scanner))))
+    (templatel-parser-identifier scanner)
+    (templatel-parser-paramlist scanner))))
 
 ;; -paramlist   <- _PAREN_OPEN Expr (_COMMA Expr)* _PAREN_CLOSE
-(defun parser/-paramlist (scanner)
+(defun templatel-parser--paramlist (scanner)
   "Read parameter list from SCANNER."
-  (token/paren-op scanner)
-  (let ((first (parser/expr scanner))
-        (rest (scanner/zero-or-more
+  (templatel-token-paren-op scanner)
+  (let ((first (templatel-parser-expr scanner))
+        (rest (templatel-scanner-zero-or-more
                scanner
                #'(lambda()
-                   (token/comma scanner)
-                   (parser/expr scanner)))))
-    (token/paren-cl scanner)
+                   (templatel-token-comma scanner)
+                   (templatel-parser-expr scanner)))))
+    (templatel-token-paren-cl scanner)
     (cons first rest)))
 
 ;; ParamList     <- -paramlist
 ;;                / _PAREN_OPEN _PAREN_CLOSE
-(defun parser/paramlist (scanner)
+(defun templatel-parser-paramlist (scanner)
   "Read parameter list off SCANNER."
-  (scanner/or
+  (templatel-scanner-or
    scanner
    (list
-    #'(lambda() (parser/-paramlist scanner))
+    #'(lambda() (templatel-parser--paramlist scanner))
     #'(lambda()
-        (token/paren-op scanner)
-        (token/paren-cl scanner)
+        (templatel-token-paren-op scanner)
+        (templatel-token-paren-cl scanner)
         nil))))
 
 ;; Value         <- Number / BOOL / NIL / String
-(defun parser/value (scanner)
+(defun templatel-parser-value (scanner)
   "Read Value from SCANNER."
-  (let ((value (scanner/or
+  (let ((value (templatel-scanner-or
                 scanner
                 (list
-                 #'(lambda() (parser/number scanner))
-                 #'(lambda() (parser/bool scanner))
-                 #'(lambda() (parser/nil scanner))
-                 #'(lambda() (parser/string scanner))))))
-    (parser/_ scanner)
+                 #'(lambda() (templatel-parser-number scanner))
+                 #'(lambda() (templatel-parser-bool scanner))
+                 #'(lambda() (templatel-parser-nil scanner))
+                 #'(lambda() (templatel-parser-string scanner))))))
+    (templatel-parser-_ scanner)
     value))
 
 ;; Number        <- BIN / HEX / FLOAT / INT
-(defun parser/number (scanner)
+(defun templatel-parser-number (scanner)
   "Read Number off SCANNER."
   (cons
    "Number"
-   (scanner/or
+   (templatel-scanner-or
     scanner
     (list
-     #'(lambda() (parser/bin scanner))
-     #'(lambda() (parser/hex scanner))
-     #'(lambda() (parser/float scanner))
-     #'(lambda() (parser/int scanner))))))
+     #'(lambda() (templatel-parser-bin scanner))
+     #'(lambda() (templatel-parser-hex scanner))
+     #'(lambda() (templatel-parser-float scanner))
+     #'(lambda() (templatel-parser-int scanner))))))
 
 ;; INT           <- [0-9]+                  _
-(defun parser/int (scanner)
+(defun templatel-parser-int (scanner)
   "Read integer off SCANNER."
   (string-to-number
-   (parser/join-chars
-    (scanner/one-or-more
+   (templatel-parser-join-chars
+    (templatel-scanner-one-or-more
      scanner
-     #'(lambda() (scanner/range scanner ?0 ?9))))
+     #'(lambda() (templatel-scanner-range scanner ?0 ?9))))
    10))
 
 ;; FLOAT         <- [0-9]* '.' [0-9]+       _
-(defun parser/float (scanner)
+(defun templatel-parser-float (scanner)
   "Read float from SCANNER."
   (append
-   (scanner/zero-or-more scanner #'(lambda() (scanner/range scanner ?0 ?9)))
-   (scanner/matchs scanner ".")
-   (scanner/one-or-more scanner #'(lambda() (scanner/range scanner ?0 ?9)))))
+   (templatel-scanner-zero-or-more scanner #'(lambda() (templatel-scanner-range scanner ?0 ?9)))
+   (templatel-scanner-matchs scanner ".")
+   (templatel-scanner-one-or-more scanner #'(lambda() (templatel-scanner-range scanner ?0 ?9)))))
 
 ;; BIN           <- '0b' [0-1]+             _
-(defun parser/bin (scanner)
+(defun templatel-parser-bin (scanner)
   "Read binary number from SCANNER."
-  (scanner/matchs scanner "0b")
+  (templatel-scanner-matchs scanner "0b")
   (string-to-number
-   (parser/join-chars
+   (templatel-parser-join-chars
     (append
-     (scanner/one-or-more
+     (templatel-scanner-one-or-more
       scanner
-      #'(lambda() (scanner/range scanner ?0 ?1)))))
+      #'(lambda() (templatel-scanner-range scanner ?0 ?1)))))
    2))
 
 ;; HEX           <- '0x' [0-9a-fA-F]+       _
-(defun parser/hex (scanner)
+(defun templatel-parser-hex (scanner)
   "Read hex number from SCANNER."
-  (scanner/matchs scanner "0x")
+  (templatel-scanner-matchs scanner "0x")
   (string-to-number
-   (parser/join-chars
+   (templatel-parser-join-chars
     (append
-     (scanner/one-or-more
+     (templatel-scanner-one-or-more
       scanner
       #'(lambda()
-          (scanner/or
+          (templatel-scanner-or
            scanner
-           (list #'(lambda() (scanner/range scanner ?0 ?9))
-                 #'(lambda() (scanner/range scanner ?a ?f))
-                 #'(lambda() (scanner/range scanner ?A ?F))))))))
+           (list #'(lambda() (templatel-scanner-range scanner ?0 ?9))
+                 #'(lambda() (templatel-scanner-range scanner ?a ?f))
+                 #'(lambda() (templatel-scanner-range scanner ?A ?F))))))))
    16))
 
 ;; BOOL          <- ('true' / 'false')         _
-(defun parser/bool (scanner)
+(defun templatel-parser-bool (scanner)
   "Read boolean value from SCANNER."
   (cons
    "Bool"
-   (scanner/or
+   (templatel-scanner-or
     scanner
-    (list #'(lambda() (scanner/matchs scanner "true") t)
-          #'(lambda() (scanner/matchs scanner "false") nil)))))
+    (list #'(lambda() (templatel-scanner-matchs scanner "true") t)
+          #'(lambda() (templatel-scanner-matchs scanner "false") nil)))))
 
 ;; NIL           <- 'nil'                      _
-(defun parser/nil (scanner)
+(defun templatel-parser-nil (scanner)
   "Read nil constant from SCANNER."
-  (scanner/matchs scanner "nil")
+  (templatel-scanner-matchs scanner "nil")
   (cons "Nil" nil))
 
 ;; String        <- _QUOTE (!_QUOTE .)* _QUOTE _
-(defun parser/string (scanner)
+(defun templatel-parser-string (scanner)
   "Read a double quoted string from SCANNER."
-  (scanner/match scanner ?\")
-  (let ((str (scanner/zero-or-more
+  (templatel-scanner-match scanner ?\")
+  (let ((str (templatel-scanner-zero-or-more
               scanner
               #'(lambda()
-                  (scanner/not
+                  (templatel-scanner-not
                    scanner
-                   #'(lambda() (scanner/match scanner ?\")))
-                  (scanner/any scanner)))))
-    (scanner/match scanner ?\")
-    (cons "String" (parser/join-chars str))))
+                   #'(lambda() (templatel-scanner-match scanner ?\")))
+                  (templatel-scanner-any scanner)))))
+    (templatel-scanner-match scanner ?\")
+    (cons "String" (templatel-parser-join-chars str))))
 
 ;; IdentStart    <- [a-zA-Z_]
-(defun parser/identstart (scanner)
+(defun templatel-parser-identstart (scanner)
   "Read the first character of an identifier from SCANNER."
-  (scanner/or
+  (templatel-scanner-or
    scanner
-   (list #'(lambda() (scanner/range scanner ?a ?z))
-         #'(lambda() (scanner/range scanner ?A ?Z))
-         #'(lambda() (scanner/match scanner ?_)))))
+   (list #'(lambda() (templatel-scanner-range scanner ?a ?z))
+         #'(lambda() (templatel-scanner-range scanner ?A ?Z))
+         #'(lambda() (templatel-scanner-match scanner ?_)))))
 
 ;; IdentCont    <- [a-zA-Z0-9_]*  _
-(defun parser/identcont (scanner)
+(defun templatel-parser-identcont (scanner)
   "Read the rest of an identifier from SCANNER."
-  (scanner/zero-or-more
+  (templatel-scanner-zero-or-more
    scanner
    #'(lambda()
-       (scanner/or
+       (templatel-scanner-or
         scanner
-        (list #'(lambda() (scanner/range scanner ?a ?z))
-              #'(lambda() (scanner/range scanner ?A ?Z))
-              #'(lambda() (scanner/range scanner ?0 ?9))
-              #'(lambda() (scanner/match scanner ?_)))))))
+        (list #'(lambda() (templatel-scanner-range scanner ?a ?z))
+              #'(lambda() (templatel-scanner-range scanner ?A ?Z))
+              #'(lambda() (templatel-scanner-range scanner ?0 ?9))
+              #'(lambda() (templatel-scanner-match scanner ?_)))))))
 
 ;; Identifier   <- IdentStart IdentCont
-(defun parser/identifier (scanner)
+(defun templatel-parser-identifier (scanner)
   "Read Identifier entry from SCANNER."
   (cons
    "Identifier"
-   (let ((identifier (parser/join-chars
-                      (cons (parser/identstart scanner)
-                            (parser/identcont scanner)))))
-     (parser/_ scanner)
+   (let ((identifier (templatel-parser-join-chars
+                      (cons (templatel-parser-identstart scanner)
+                            (templatel-parser-identcont scanner)))))
+     (templatel-parser-_ scanner)
      identifier)))
 
 ;; _               <- (Space / Comment)*
-(defun parser/_ (scanner)
+(defun templatel-parser-_ (scanner)
   "Read whitespaces from SCANNER."
-  (scanner/zero-or-more
+  (templatel-scanner-zero-or-more
    scanner
    #'(lambda()
-       (scanner/or
+       (templatel-scanner-or
         scanner
         (list
-         #'(lambda() (parser/space scanner))
-         #'(lambda() (parser/comment scanner)))))))
+         #'(lambda() (templatel-parser-space scanner))
+         #'(lambda() (templatel-parser-comment scanner)))))))
 
 ;; Space           <- ' ' / '\t' / _EOL
-(defun parser/space (scanner)
+(defun templatel-parser-space (scanner)
   "Consume spaces off SCANNER."
-  (scanner/or
+  (templatel-scanner-or
    scanner
    (list
-    #'(lambda() (scanner/matchs scanner " "))
-    #'(lambda() (scanner/matchs scanner "\t"))
-    #'(lambda() (parser/eol scanner)))))
+    #'(lambda() (templatel-scanner-matchs scanner " "))
+    #'(lambda() (templatel-scanner-matchs scanner "\t"))
+    #'(lambda() (templatel-parser-eol scanner)))))
 
 ;; _EOL            <- '\r\n' / '\n' / '\r'
-(defun parser/eol (scanner)
+(defun templatel-parser-eol (scanner)
   "Read end of line from SCANNER."
-  (let ((eol (scanner/or
+  (let ((eol (templatel-scanner-or
               scanner
               (list
-               #'(lambda() (scanner/matchs scanner "\r\n"))
-               #'(lambda() (scanner/matchs scanner "\n"))
-               #'(lambda() (scanner/matchs scanner "\r"))))))
-    (scanner/line/incr scanner)
+               #'(lambda() (templatel-scanner-matchs scanner "\r\n"))
+               #'(lambda() (templatel-scanner-matchs scanner "\n"))
+               #'(lambda() (templatel-scanner-matchs scanner "\r"))))))
+    (templatel-scanner-line-incr scanner)
     eol))
 
 ;; Comment         <- "{#" (!"#}" .)* "#}"
-(defun parser/comment (scanner)
+(defun templatel-parser-comment (scanner)
   "Read comment from SCANNER."
-  (token/comment-op scanner)
-  (let ((str (scanner/zero-or-more
+  (templatel-token-comment-op scanner)
+  (let ((str (templatel-scanner-zero-or-more
               scanner
               #'(lambda()
-                  (scanner/not
+                  (templatel-scanner-not
                    scanner
-                   #'(lambda() (token/comment-cl scanner)))
-                  (scanner/any scanner)))))
-    (token/comment-cl scanner)
-    (cons "Comment" (parser/join-chars str))))
+                   #'(lambda() (templatel-token-comment-cl scanner)))
+                  (templatel-scanner-any scanner)))))
+    (templatel-token-comment-cl scanner)
+    (cons "Comment" (templatel-parser-join-chars str))))
 
 
 
 ;; --- Compiler ---
 
-(defun compiler/wrap (tree)
+(defun templatel-compiler-wrap (tree)
   "Compile root node into a function with TREE as body."
   `(lambda(vars &optional env blocks)
      (let* ((rt/blocks (make-hash-table :test 'equal))
             (rt/parent-template nil)
             (rt/varstk (list vars))
             (rt/valstk (list))
-            (rt/filters '(("upper" . filters/upper)
-                          ("lower" . filters/lower)
-                          ("sum" . filters/sum)
-                          ("plus1" . filters/plus1)
-                          ("int" . filters/int)))
+            (rt/filters '(("upper" . templatel-filters-upper)
+                          ("lower" . templatel-filters-lower)
+                          ("sum" . templatel-filters-sum)
+                          ("plus1" . templatel-filters-plus1)
+                          ("int" . templatel-filters-int)))
             (rt/lookup-var
              (lambda(name)
                (catch '-brk
@@ -1163,28 +1164,28 @@ operator (RATORFN)."
            rt/data
          (funcall (templatel-env-source env rt/parent-template) vars env rt/blocks)))))
 
-(defun compiler/element (tree)
+(defun templatel-compiler-element (tree)
   "Compile an element from TREE."
-  `(let ((value ,@(compiler/run tree)))
+  `(let ((value ,@(templatel-compiler-run tree)))
      (push value rt/valstk)
      value))
 
-(defun compiler/expr (tree)
+(defun templatel-compiler-expr (tree)
   "Compile an expr from TREE."
   `(progn
-     ,@(mapcar #'compiler/run tree)))
+     ,@(mapcar #'templatel-compiler-run tree)))
 
-(defun compiler/-attr (tree)
+(defun templatel-compiler--attr (tree)
   "Walk through attributes on TREE."
   (if (null (cdr tree))
-      (compiler/identifier (cdar tree))
-    `(cdr (assoc ,(cdar tree) ,(compiler/-attr (cdr tree))))))
+      (templatel-compiler-identifier (cdar tree))
+    `(cdr (assoc ,(cdar tree) ,(templatel-compiler--attr (cdr tree))))))
 
-(defun compiler/attribute (tree)
+(defun templatel-compiler-attribute (tree)
   "Compile attribute access from TREE."
-  (compiler/-attr (reverse tree)))
+  (templatel-compiler--attr (reverse tree)))
 
-(defun compiler/filter-identifier (item)
+(defun templatel-compiler-filter-identifier (item)
   "Compile a filter without params from ITEM.
 
 This filter takes a single parameter: the value being piped into
@@ -1199,7 +1200,7 @@ If the filter exists, it must then call its associated handler."
             (format "Filter `%s' doesn't exist" ,fname))
          (push (funcall (cdr entry) (pop rt/valstk)) rt/valstk)))))
 
-(defun compiler/filter-fncall (item)
+(defun templatel-compiler-filter-fncall (item)
   "Compiler filter with params from ITEM.
 
 A filter can have multiple parameters.  In that case, the value
@@ -1224,95 +1225,95 @@ function call."
          (push (apply
                 (cdr entry)
                 (cons (pop rt/valstk)
-                      (list ,@(compiler/run params))))
+                      (list ,@(templatel-compiler-run params))))
                rt/valstk)))))
 
-(defun compiler/filter-item (item)
+(defun templatel-compiler-filter-item (item)
   "Handle compilation of single filter described by ITEM.
 
 This function routes the item to be compiled to the appropriate
 function.  A filter could be either just an identifier or a
 function call."
   (if (string= (caar (cddr item)) "Identifier")
-      (compiler/filter-identifier (cdr item))
-    (compiler/filter-fncall (cdr item))))
+      (templatel-compiler-filter-identifier (cdr item))
+    (templatel-compiler-filter-fncall (cdr item))))
 
-(defun compiler/filter-list (tree)
+(defun templatel-compiler-filter-list (tree)
   "Compile filters from TREE.
 
 TREE contains a list of filters that can be either Identifiers or
 FnCalls.  This functions job is to iterate over the this list and
-call `compiler/filter-item' on each entry."
+call `templatel-compiler-filter-item' on each entry."
   `(progn
-     ,(compiler/run (car tree))
-     ,@(mapcar #'compiler/filter-item (cdr tree))))
+     ,(templatel-compiler-run (car tree))
+     ,@(mapcar #'templatel-compiler-filter-item (cdr tree))))
 
-(defun compiler/expression (tree)
+(defun templatel-compiler-expression (tree)
   "Compile an expression from TREE."
   `(progn
-     ,@(compiler/run tree)
+     ,@(templatel-compiler-run tree)
      (insert (format "%s" (pop rt/valstk)))))
 
-(defun compiler/text (tree)
+(defun templatel-compiler-text (tree)
   "Compile text from TREE."
   `(insert ,tree))
 
-(defun compiler/identifier (tree)
+(defun templatel-compiler-identifier (tree)
   "Compile identifier from TREE."
   `(funcall rt/lookup-var ,tree))
 
-(defun compiler/if-elif-cond (tree)
+(defun templatel-compiler-if-elif-cond (tree)
   "Compile cond from elif statements in TREE."
   (let ((expr (cadr tree))
         (tmpl (caddr tree)))
-    `((progn ,(compiler/run expr) (pop rt/valstk))
-      ,@(compiler/run tmpl))))
+    `((progn ,(templatel-compiler-run expr) (pop rt/valstk))
+      ,@(templatel-compiler-run tmpl))))
 
-(defun compiler/if-elif (tree)
+(defun templatel-compiler-if-elif (tree)
   "Compile if/elif/else statement off TREE."
   (let ((expr (car tree))
         (body (cadr tree))
         (elif (caddr tree))
         (else (cadr (cadddr tree))))
-    `(cond ((progn ,(compiler/run expr) (pop rt/valstk))
-            ,@(compiler/run body))
-           ,@(mapcar #'compiler/if-elif-cond elif)
-           (t ,@(compiler/run else)))))
+    `(cond ((progn ,(templatel-compiler-run expr) (pop rt/valstk))
+            ,@(templatel-compiler-run body))
+           ,@(mapcar #'templatel-compiler-if-elif-cond elif)
+           (t ,@(templatel-compiler-run else)))))
 
-(defun compiler/if-else (tree)
+(defun templatel-compiler-if-else (tree)
   "Compile if/else statement off TREE."
   (let ((expr (car tree))
         (body (cadr tree))
         (else (cadr (caddr tree))))
-    `(if (progn ,(compiler/run expr) (pop rt/valstk))
-         (progn ,@(compiler/run body))
-       ,@(compiler/run else))))
+    `(if (progn ,(templatel-compiler-run expr) (pop rt/valstk))
+         (progn ,@(templatel-compiler-run body))
+       ,@(templatel-compiler-run else))))
 
-(defun compiler/if (tree)
+(defun templatel-compiler-if (tree)
   "Compile if statement off TREE."
   (let ((expr (car tree))
         (body (cadr tree)))
-    `(if (progn ,(compiler/run expr) (pop rt/valstk))
-         (progn ,@(compiler/run body)))))
+    `(if (progn ,(templatel-compiler-run expr) (pop rt/valstk))
+         (progn ,@(templatel-compiler-run body)))))
 
-(defun compiler/for (tree)
+(defun templatel-compiler-for (tree)
   "Compile for statement off TREE."
   (let ((id (cdar tree)))
     `(let ((subenv '((,id . nil)))
-           (iterable ,(compiler/run (cadr tree))))
+           (iterable ,(templatel-compiler-run (cadr tree))))
        (push subenv rt/varstk)
        (mapc
         #'(lambda(id)
             (setf (alist-get ,id subenv) id)
-            ,@(compiler/run (caddr tree)))
+            ,@(templatel-compiler-run (caddr tree)))
         iterable)
        (pop rt/varstk))))
 
-(defun compiler/binop-item (tree)
+(defun templatel-compiler-binop-item (tree)
   "Compile item from list of binary operator/operand in TREE."
   (if (not (null tree))
       (let* ((tag (caar tree))
-             (val (compiler/run (cdr (car tree))))
+             (val (templatel-compiler-run (cdr (car tree))))
              (op (cadr (assoc tag '(;; Arithmetic
                                     ("*" *)
                                     ("/" /)
@@ -1336,18 +1337,18 @@ call `compiler/filter-item' on each entry."
         (if (not (null val))
             `(progn
                ,val
-               ,(compiler/binop-item (cdr tree))
+               ,(templatel-compiler-binop-item (cdr tree))
                (let ((b (pop rt/valstk))
                      (a (pop rt/valstk)))
                  (push (,op a b) rt/valstk)))))))
 
-(defun compiler/binop (tree)
+(defun templatel-compiler-binop (tree)
   "Compile a binary operator from the TREE."
   `(progn
-     ,(compiler/run (car tree))
-     ,(compiler/binop-item (cdr tree))))
+     ,(templatel-compiler-run (car tree))
+     ,(templatel-compiler-binop-item (cdr tree))))
 
-(defun compiler/unary (tree)
+(defun templatel-compiler-unary (tree)
   "Compile a unary operator from the TREE."
   (let* ((tag (car tree))
          (val (cadr tree))
@@ -1356,15 +1357,15 @@ call `compiler/filter-item' on each entry."
                                 ("~" lognot)
                                 ("not" not))))))
     `(progn
-       ,(compiler/run val)
+       ,(templatel-compiler-run val)
        (push (,op (pop rt/valstk)) rt/valstk))))
 
-(defun compiler/block (tree)
+(defun templatel-compiler-block (tree)
   "Compile a block statement from TREE."
   (let ((name (cdar tree))
-        (body (compiler/run (cadr tree))))
+        (body (templatel-compiler-run (cadr tree))))
     `(if (null rt/parent-template)
-         (let* ((super-code ',(compiler/wrap body))
+         (let* ((super-code ',(templatel-compiler-wrap body))
                 (subenv (cons "super" (funcall super-code vars env)))
                 (code (and blocks (gethash ,name blocks))))
            (if (not (null code))
@@ -1373,66 +1374,66 @@ call `compiler/filter-item' on each entry."
                  (insert (funcall code vars env rt/blocks))
                  (pop vars))
              ,@body))
-       (puthash ,name ',(compiler/wrap body) rt/blocks))))
+       (puthash ,name ',(templatel-compiler-wrap body) rt/blocks))))
 
-(defun compiler/extends (tree)
+(defun templatel-compiler-extends (tree)
   "Compile an extends statement from TREE."
   `(progn
      (setq rt/parent-template ,(cdar tree))
      (if env
          (templatel-env-run-importfn env rt/parent-template))))
 
-(defun compiler/run (tree)
+(defun templatel-compiler-run (tree)
   "Compile TREE into bytecode."
   (pcase tree
     (`() nil)
-    (`("Template"       . ,a) (compiler/run a))
-    (`("Text"           . ,a) (compiler/text a))
-    (`("Identifier"     . ,a) (compiler/identifier a))
-    (`("Attribute"      . ,a) (compiler/attribute a))
-    (`("Filter"         . ,a) (compiler/filter-list a))
-    (`("Expr"           . ,a) (compiler/expr a))
-    (`("Expression"     . ,a) (compiler/expression a))
-    (`("Element"        . ,a) (compiler/element a))
-    (`("IfElse"         . ,a) (compiler/if-else a))
-    (`("IfElif"         . ,a) (compiler/if-elif a))
-    (`("IfStatement"    . ,a) (compiler/if a))
-    (`("ForStatement"   . ,a) (compiler/for a))
-    (`("BlockStatement" . ,a) (compiler/block a))
-    (`("ExtendsStatement" . ,a) (compiler/extends a))
-    (`("BinOp"          . ,a) (compiler/binop a))
-    (`("Unary"          . ,a) (compiler/unary a))
+    (`("Template"       . ,a) (templatel-compiler-run a))
+    (`("Text"           . ,a) (templatel-compiler-text a))
+    (`("Identifier"     . ,a) (templatel-compiler-identifier a))
+    (`("Attribute"      . ,a) (templatel-compiler-attribute a))
+    (`("Filter"         . ,a) (templatel-compiler-filter-list a))
+    (`("Expr"           . ,a) (templatel-compiler-expr a))
+    (`("Expression"     . ,a) (templatel-compiler-expression a))
+    (`("Element"        . ,a) (templatel-compiler-element a))
+    (`("IfElse"         . ,a) (templatel-compiler-if-else a))
+    (`("IfElif"         . ,a) (templatel-compiler-if-elif a))
+    (`("IfStatement"    . ,a) (templatel-compiler-if a))
+    (`("ForStatement"   . ,a) (templatel-compiler-for a))
+    (`("BlockStatement" . ,a) (templatel-compiler-block a))
+    (`("ExtendsStatement" . ,a) (templatel-compiler-extends a))
+    (`("BinOp"          . ,a) (templatel-compiler-binop a))
+    (`("Unary"          . ,a) (templatel-compiler-unary a))
     (`("Number"         . ,a) a)
     (`("String"         . ,a) a)
     (`("Bool"           . ,a) a)
     (`("Nil"            . ,a) a)
-    ((pred listp)             (mapcar #'compiler/run tree))
+    ((pred listp)             (mapcar #'templatel-compiler-run tree))
     (_ (message "NOENTIENDO: `%s`" tree))))
 
 
 
-(defun filters/upper (s)
+(defun templatel-filters-upper (s)
   "Upper case all chars of S."
   (upcase s))
 
-(defun filters/lower (s)
+(defun templatel-filters-lower (s)
   "Lowewr case all chars of S."
   (downcase s))
 
-(defun filters/sum (s)
+(defun templatel-filters-sum (s)
   "Sum all entries in S."
   (apply '+ s))
 
-(defun filters/plus1 (s)
+(defun templatel-filters-plus1 (s)
   "Add one to S."
   (1+ s))
 
-(defun filters/int (s base)
+(defun templatel-filters-int (s base)
   "Convert S into integer of base BASE."
   (string-to-number
    (replace-regexp-in-string "^0[xXbB]" "" s) base))
 
-(defun --templatel-get (lst sym default)
+(defun templatel--get (lst sym default)
   "Pick SYM from LST or return DEFAULT."
   (let ((val (assoc sym lst)))
     (if val
@@ -1447,8 +1448,8 @@ call `compiler/filter-item' on each entry."
     ;; where we keep the templates
     `[,(make-hash-table :test 'equal)
       ;; Function used by extends
-      ,(--templatel-get opt :importfn
-                        #'(lambda(_e _n) (error "Import function not defined")))]))
+      ,(templatel--get opt :importfn
+                       #'(lambda(_e _n) (error "Import function not defined")))]))
 
 (defun templatel-env-add-template (env name template)
   "Add TEMPLATE to ENV under key NAME."
@@ -1477,22 +1478,22 @@ call `compiler/filter-item' on each entry."
   "Create a template from file at PATH."
   (with-temp-buffer
     (insert-file-contents path)
-    (let* ((scanner (scanner/new (buffer-string) path))
-           (tree (parser/template scanner))
-           (code (compiler/wrap (compiler/run tree))))
+    (let* ((scanner (templatel-scanner-new (buffer-string) path))
+           (tree (templatel-parser-template scanner))
+           (code (templatel-compiler-wrap (templatel-compiler-run tree))))
       `((source . ,code)))))
 
 ;; ------ Public API without Environment
 
 (defun templatel-parse-string (input)
   "Parse INPUT into a tree."
-  (let ((s (scanner/new input "<string>")))
-    (parser/template s)))
+  (let ((s (templatel-scanner-new input "<string>")))
+    (templatel-parser-template s)))
 
 (defun templatel-compile-string (input)
   "Compile INPUT to Lisp code."
   (let ((tree (templatel-parse-string input)))
-    (compiler/wrap (compiler/run tree))))
+    (templatel-compiler-wrap (templatel-compiler-run tree))))
 
 (defun templatel-render-code (code env)
   "Render CODE to final output with variables from ENV."

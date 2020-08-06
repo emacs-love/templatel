@@ -418,27 +418,27 @@
 
 
 (ert-deftest filter-upper ()
-  (should (equal (filters/upper "stuff") "STUFF")))
+  (should (equal (templatel-filters-upper "stuff") "STUFF")))
 
 (ert-deftest filter-lower ()
-  (should (equal (filters/lower "STUFF") "stuff")))
+  (should (equal (templatel-filters-lower "STUFF") "stuff")))
 
 
 
 ;; --- Compiler ---
 
 (ert-deftest compile-template ()
-  (let* ((s (scanner/new "<h1>Hello Emacs</h1>" "<string>"))
-         (tree (parser/template s)))
+  (let* ((s (templatel-scanner-new "<h1>Hello Emacs</h1>" "<string>"))
+         (tree (templatel-parser-template s)))
     (should (equal
-             (compiler/run tree)
+             (templatel-compiler-run tree)
              '((insert "<h1>Hello Emacs</h1>"))))))
 
 (ert-deftest compile-text ()
-  (let* ((s (scanner/new "<h1>Hello Emacs</h1>" "<string>"))
-         (tree (parser/text s)))
+  (let* ((s (templatel-scanner-new "<h1>Hello Emacs</h1>" "<string>"))
+         (tree (templatel-parser-text s)))
     (should (equal
-             (compiler/run tree)
+             (templatel-compiler-run tree)
              '(insert "<h1>Hello Emacs</h1>")))))
 
 
@@ -446,8 +446,8 @@
 ;; --- Parser & Scanner ---
 
 (ert-deftest template-extends ()
-  (let* ((s (scanner/new "{% extends \"layout.html\" %}" "<string>"))
-         (tree (parser/template s)))
+  (let* ((s (templatel-scanner-new "{% extends \"layout.html\" %}" "<string>"))
+         (tree (templatel-parser-template s)))
     (should (equal
              tree
              '("Template"
@@ -455,8 +455,8 @@
                 ("String" . "layout.html")))))))
 
 (ert-deftest template-block ()
-  (let* ((s (scanner/new "{% block stuff %}default{% endblock %}" "<string>"))
-         (tree (parser/template s)))
+  (let* ((s (templatel-scanner-new "{% block stuff %}default{% endblock %}" "<string>"))
+         (tree (templatel-parser-template s)))
     (should (equal
              tree
              '("Template"
@@ -466,12 +466,12 @@
                  ("Text" . "default"))))))))
 
 (ert-deftest template-for ()
-  (let* ((s (scanner/new "
+  (let* ((s (templatel-scanner-new "
 {% for name in names %}
   {{ name }}
 {% endfor %}
 " "<string>"))
-         (txt (parser/template s)))
+         (txt (templatel-parser-template s)))
     (should (equal
              txt
              '("Template"
@@ -489,7 +489,7 @@
                ("Text" . "\n"))))))
 
 (ert-deftest template-elif ()
-  (let* ((s (scanner/new "
+  (let* ((s (templatel-scanner-new "
 {% if one %}
   One
 {% elif two %}
@@ -500,7 +500,7 @@
   Four
 {% endif %}
 " "<string>"))
-         (txt (parser/template s)))
+         (txt (templatel-parser-template s)))
     (should (equal
              txt
              '("Template"
@@ -521,8 +521,8 @@
                ("Text" . "\n"))))))
 
 (ert-deftest template-if-else ()
-  (let* ((s (scanner/new "{% if show %}{{ show }}{% else %}Hide{% endif %}" "<string>"))
-         (txt (parser/template s)))
+  (let* ((s (templatel-scanner-new "{% if show %}{{ show }}{% else %}Hide{% endif %}" "<string>"))
+         (txt (templatel-parser-template s)))
     (should (equal
              txt
              '("Template"
@@ -539,8 +539,8 @@
                  ("Template" ("Text" . "Hide")))))))))
 
 (ert-deftest template-if ()
-  (let* ((s (scanner/new "{% if show %}{{ show }}{% endif %}" "<string>"))
-         (txt (parser/template s)))
+  (let* ((s (templatel-scanner-new "{% if show %}{{ show }}{% endif %}" "<string>"))
+         (txt (templatel-parser-template s)))
     (should (equal
              txt
              '("Template"
@@ -555,8 +555,8 @@
                     ("Identifier" . "show")))))))))))
 
 (ert-deftest template-expr-binop ()
-  (let* ((s (scanner/new "Hello, {{ 1 * 2 }}!" "<string>"))
-         (tree (parser/template s)))
+  (let* ((s (templatel-scanner-new "Hello, {{ 1 * 2 }}!" "<string>"))
+         (tree (templatel-parser-template s)))
     (should (equal
              tree
              '("Template"
@@ -569,8 +569,8 @@
                ("Text" . "!"))))))
 
 (ert-deftest template-variable ()
-  (let* ((s (scanner/new "Hello, {{ name }}!" "<string>"))
-         (tree (parser/template s)))
+  (let* ((s (templatel-scanner-new "Hello, {{ name }}!" "<string>"))
+         (tree (templatel-parser-template s)))
     (should (equal
              tree
              '("Template"
@@ -582,39 +582,39 @@
                ("Text" . "!"))))))
 
 (ert-deftest expr-value-string ()
-  (let ((s (scanner/new "\"fun with Emacs\"" "<string>")))
+  (let ((s (templatel-scanner-new "\"fun with Emacs\"" "<string>")))
     (should (equal
-             (parser/value s)
+             (templatel-parser-value s)
              '("String" . "fun with Emacs")))))
 
 (ert-deftest expr-value-number ()
-  (let ((s (scanner/new "325" "<string>")))
+  (let ((s (templatel-scanner-new "325" "<string>")))
     (should (equal
-             (parser/value s)
+             (templatel-parser-value s)
              '("Number" . 325)))))
 
 (ert-deftest expr-value-number-bin ()
-  (let ((s (scanner/new "0b1010" "<string>")))
+  (let ((s (templatel-scanner-new "0b1010" "<string>")))
     (should (equal
-             (parser/value s)
+             (templatel-parser-value s)
              '("Number" . 10)))))
 
 (ert-deftest expr-value-number-hex ()
-  (let ((s (scanner/new "0xff" "<string>")))
+  (let ((s (templatel-scanner-new "0xff" "<string>")))
     (should (equal
-             (parser/value s)
+             (templatel-parser-value s)
              '("Number" . 255)))))
 
 (ert-deftest expr-value-bool-true ()
-  (let ((s (scanner/new "true" "<string>")))
+  (let ((s (templatel-scanner-new "true" "<string>")))
     (should (equal
-             (parser/value s)
+             (templatel-parser-value s)
              '("Bool" . t)))))
 
 (ert-deftest expr-value-bool-false-with-comment ()
-  (let ((s (scanner/new "false {# not important #}" "<string>")))
+  (let ((s (templatel-scanner-new "false {# not important #}" "<string>")))
     (should (equal
-             (parser/value s)
+             (templatel-parser-value s)
              '("Bool" . nil)))))
 
 ;;; templatel-tests.el ends here
