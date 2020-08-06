@@ -1,6 +1,8 @@
 ;;; templatel --- Templating language for Emacs-Lisp; -*- lexical-binding: t -*-
 ;;
 ;; Author: Lincoln Clarete <lincoln@clarete.li>
+;; URL: http://clarete.li/templatel
+;; Version: 0.1.0
 ;;
 ;; Copyright (C) 2020  Lincoln Clarete
 ;;
