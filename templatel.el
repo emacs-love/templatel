@@ -1,7 +1,7 @@
 ;;; templatel.el --- Templating language; -*- lexical-binding: t -*-
 ;;
 ;; Author: Lincoln Clarete <lincoln@clarete.li>
-;; URL: http://clarete.li/templatel
+;; URL: https://clarete.li/templatel
 ;; Version: 0.1.0
 ;; Package-Requires: ((emacs "25.1"))
 ;;
@@ -18,7 +18,7 @@
 ;; GNU General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ;;
 ;;; Commentary:
 ;;
