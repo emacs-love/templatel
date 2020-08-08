@@ -469,10 +469,10 @@
    (templatel--scanner-one-or-more
     scanner
     (lambda() (templatel--scanner-or
-          scanner
-          (list (lambda() (templatel--parser-rstrip-comment scanner #'templatel--parser-text))
-                (lambda() (templatel--parser-rstrip-comment scanner #'templatel--parser-statement))
-                (lambda() (templatel--parser-rstrip-comment scanner #'templatel--parser-expression))))))))
+               scanner
+               (list (lambda() (templatel--parser-rstrip-comment scanner #'templatel--parser-text))
+                     (lambda() (templatel--parser-rstrip-comment scanner #'templatel--parser-statement))
+                     (lambda() (templatel--parser-rstrip-comment scanner #'templatel--parser-expression))))))))
 
 ;; Text <- (!(_EXPR_OPEN / _STM_OPEN / _COMMENT_OPEN) .)+
 (defun templatel--parser-text (scanner)
@@ -814,12 +814,12 @@ operator (RATORFN)."
    nil ; "Factor"
    #'templatel--parser-power
    (lambda(s)
-       (templatel--scanner-or
-        s
-        (list
-         (lambda() (templatel--token-* s))
-         (lambda() (templatel--token-slash s))
-         (lambda() (templatel--token-dslash s)))))))
+     (templatel--scanner-or
+      s
+      (list
+       (lambda() (templatel--token-* s))
+       (lambda() (templatel--token-slash s))
+       (lambda() (templatel--token-dslash s)))))))
 
 ;; Power         <- Unary ((POWER / MOD) Unary)*
 (defun templatel--parser-power (scanner)
@@ -829,11 +829,11 @@ operator (RATORFN)."
    nil ; "Power"
    #'templatel--parser-unary
    (lambda(s)
-       (templatel--scanner-or
-        s
-        (list
-         (lambda() (templatel--token-** s))
-         (lambda() (templatel--token-% s)))))))
+     (templatel--scanner-or
+      s
+      (list
+       (lambda() (templatel--token-** s))
+       (lambda() (templatel--token-% s)))))))
 
 ;; UnaryOp       <- PLUS / MINUS / NOT / BNOT
 (defun templatel--parser-unary-op (scanner)
@@ -853,20 +853,20 @@ operator (RATORFN)."
    scanner
    (list
     (lambda()
-        (cons
-         "Unary"
-         (list
-          (templatel--parser-unary-op scanner)
-          (templatel--parser-unary scanner))))
+      (cons
+       "Unary"
+       (list
+        (templatel--parser-unary-op scanner)
+        (templatel--parser-unary scanner))))
     (lambda()
-        (cons
-         "Unary"
-         (list
-          (templatel--parser-unary-op scanner)
-          (templatel--parser-cut
-           scanner
-           (lambda() (templatel--parser-primary scanner))
-           "Missing operand after unary operator"))))
+      (cons
+       "Unary"
+       (list
+        (templatel--parser-unary-op scanner)
+        (templatel--parser-cut
+         scanner
+         (lambda() (templatel--parser-primary scanner))
+         "Missing operand after unary operator"))))
     (lambda() (templatel--parser-primary scanner)))))
 
 ;; Primary       <- _PAREN_OPEN Expr _PAREN_CLOSE
@@ -877,10 +877,10 @@ operator (RATORFN)."
    scanner
    (list
     (lambda()
-        (templatel--token-paren-op scanner)
-        (let ((expr (templatel--parser-expr scanner)))
-          (templatel--token-paren-cl scanner)
-          expr))
+      (templatel--token-paren-op scanner)
+      (let ((expr (templatel--parser-expr scanner)))
+        (templatel--token-paren-cl scanner)
+        expr))
     (lambda() (templatel--parser-element scanner)))))
 
 ;; Attribute     <- Identifier (_dot Identifier)+
@@ -927,8 +927,8 @@ operator (RATORFN)."
         (rest (templatel--scanner-zero-or-more
                scanner
                (lambda()
-                   (templatel--token-comma scanner)
-                   (templatel--parser-expr scanner)))))
+                 (templatel--token-comma scanner)
+                 (templatel--parser-expr scanner)))))
     (templatel--token-paren-cl scanner)
     (cons first rest)))
 
@@ -941,9 +941,9 @@ operator (RATORFN)."
    (list
     (lambda() (templatel--parser--paramlist scanner))
     (lambda()
-        (templatel--token-paren-op scanner)
-        (templatel--token-paren-cl scanner)
-        nil))))
+      (templatel--token-paren-op scanner)
+      (templatel--token-paren-cl scanner)
+      nil))))
 
 ;; Value         <- Number / BOOL / NIL / String
 (defun templatel--parser-value (scanner)
@@ -1011,11 +1011,11 @@ operator (RATORFN)."
      (templatel--scanner-one-or-more
       scanner
       (lambda()
-          (templatel--scanner-or
-           scanner
-           (list (lambda() (templatel--scanner-range scanner ?0 ?9))
-                 (lambda() (templatel--scanner-range scanner ?a ?f))
-                 (lambda() (templatel--scanner-range scanner ?A ?F))))))))
+        (templatel--scanner-or
+         scanner
+         (list (lambda() (templatel--scanner-range scanner ?0 ?9))
+               (lambda() (templatel--scanner-range scanner ?a ?f))
+               (lambda() (templatel--scanner-range scanner ?A ?F))))))))
    16))
 
 ;; BOOL          <- ('true' / 'false')         _
@@ -1041,10 +1041,10 @@ operator (RATORFN)."
   (let ((str (templatel--scanner-zero-or-more
               scanner
               (lambda()
-                  (templatel--scanner-not
-                   scanner
-                   (lambda() (templatel--scanner-match scanner ?\")))
-                  (templatel--scanner-any scanner)))))
+                (templatel--scanner-not
+                 scanner
+                 (lambda() (templatel--scanner-match scanner ?\")))
+                (templatel--scanner-any scanner)))))
     (templatel--scanner-match scanner ?\")
     (cons "String" (templatel--parser-join-chars str))))
 
@@ -1063,12 +1063,12 @@ operator (RATORFN)."
   (templatel--scanner-zero-or-more
    scanner
    (lambda()
-       (templatel--scanner-or
-        scanner
-        (list (lambda() (templatel--scanner-range scanner ?a ?z))
-              (lambda() (templatel--scanner-range scanner ?A ?Z))
-              (lambda() (templatel--scanner-range scanner ?0 ?9))
-              (lambda() (templatel--scanner-match scanner ?_)))))))
+     (templatel--scanner-or
+      scanner
+      (list (lambda() (templatel--scanner-range scanner ?a ?z))
+            (lambda() (templatel--scanner-range scanner ?A ?Z))
+            (lambda() (templatel--scanner-range scanner ?0 ?9))
+            (lambda() (templatel--scanner-match scanner ?_)))))))
 
 ;; Identifier   <- IdentStart IdentCont
 (defun templatel--parser-identifier (scanner)
@@ -1087,11 +1087,11 @@ operator (RATORFN)."
   (templatel--scanner-zero-or-more
    scanner
    (lambda()
-       (templatel--scanner-or
-        scanner
-        (list
-         (lambda() (templatel--parser-space scanner))
-         (lambda() (templatel--parser-comment scanner)))))))
+     (templatel--scanner-or
+      scanner
+      (list
+       (lambda() (templatel--parser-space scanner))
+       (lambda() (templatel--parser-comment scanner)))))))
 
 ;; Space           <- ' ' / '\t' / _EOL
 (defun templatel--parser-space (scanner)
@@ -1122,10 +1122,10 @@ operator (RATORFN)."
   (let ((str (templatel--scanner-zero-or-more
               scanner
               (lambda()
-                  (templatel--scanner-not
-                   scanner
-                   (lambda() (templatel--token-comment-cl scanner)))
-                  (templatel--scanner-any scanner)))))
+                (templatel--scanner-not
+                 scanner
+                 (lambda() (templatel--token-comment-cl scanner)))
+                (templatel--scanner-any scanner)))))
     (templatel--token-comment-cl scanner)
     (cons "Comment" (templatel--parser-join-chars str))))
 
@@ -1304,8 +1304,8 @@ call `templatel--compiler-filter-item' on each entry."
        (push subenv rt/varstk)
        (mapc
         (lambda(id)
-            (setf (alist-get ,id subenv) id)
-            ,@(templatel--compiler-run (caddr tree)))
+          (setf (alist-get ,id subenv) id)
+          ,@(templatel--compiler-run (caddr tree)))
         iterable)
        (pop rt/varstk))))
 
