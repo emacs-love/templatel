@@ -444,7 +444,7 @@
 
 (defun templatel--parser-join-chars (chars)
   "Join all the CHARS forming a string."
-  (string-join (mapcar 'byte-to-string chars) ""))
+  (string-join (mapcar #'byte-to-string chars) ""))
 
 
 
@@ -1422,7 +1422,7 @@ call `templatel--compiler-filter-item' on each entry."
 
 (defun templatel-filters-sum (s)
   "Sum all entries in S."
-  (apply '+ s))
+  (apply #'+ s))
 
 (defun templatel-filters-plus1 (s)
   "Add one to S."
