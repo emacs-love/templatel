@@ -1,6 +1,10 @@
 #+CAPTION: CI Status
-#+NAME:   CI
+#+NAME:    CI
 [[https://github.com/clarete/templatel/workflows/CI/badge.svg]]
+
+#+CAPTION: Melpa
+#+NAME:    Melpa
+[[https://melpa.org/#/templatel][file:https://melpa.org/packages/templatel-badge.svg]]
 
 * templatel
 
