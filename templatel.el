@@ -1472,7 +1472,7 @@ call `templatel--compiler-filter-item' on each entry."
 
 (defun templatel-new (source)
   "Create a template off SOURCE."
-  `((source . ,(templatel-compile-string source))))
+  `((source . ,(templatel--compile-string source))))
 
 (defun templatel-new-from-file (path)
   "Create a template from file at PATH."
@@ -1485,31 +1485,31 @@ call `templatel--compiler-filter-item' on each entry."
 
 ;; ------ Public API without Environment
 
-(defun templatel-parse-string (input)
+(defun templatel--parse-string (input)
   "Parse INPUT into a tree."
   (let ((s (templatel--scanner-new input "<string>")))
     (templatel--parser-template s)))
 
-(defun templatel-compile-string (input)
+(defun templatel--compile-string (input)
   "Compile INPUT to Lisp code."
-  (let ((tree (templatel-parse-string input)))
+  (let ((tree (templatel--parse-string input)))
     (templatel--compiler-wrap (templatel--compiler-run tree))))
 
-(defun templatel-render-code (code env)
+(defun templatel--render-code (code env)
   "Render CODE to final output with variables from ENV."
   (funcall (eval code) env))
 
 (defun templatel-render-string (input env)
   "Render INPUT to final output with variables from ENV."
-  (let ((code (templatel-compile-string input)))
-    (templatel-render-code code env)))
+  (let ((code (templatel--compile-string input)))
+    (templatel--render-code code env)))
 
 (defun templatel-render-file (path env)
   "Render file at PATH into a tree with variables from ENV."
   (with-temp-buffer
     (insert-file-contents path)
-    (let ((code (templatel-compile-string (buffer-string))))
-      (templatel-render-code code env))))
+    (let ((code (templatel--compile-string (buffer-string))))
+      (templatel--render-code code env))))
 
 (provide 'templatel)
 ;;; templatel.el ends here
