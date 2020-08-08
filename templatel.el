@@ -1495,21 +1495,21 @@ call `templatel--compiler-filter-item' on each entry."
   (let ((tree (templatel--parse-string input)))
     (templatel--compiler-wrap (templatel--compiler-run tree))))
 
-(defun templatel--render-code (code env)
-  "Render CODE to final output with variables from ENV."
-  (funcall (eval code) env))
+(defun templatel--render-code (code vars)
+  "Render CODE to final output with variables from VARS."
+  (funcall (eval code) vars))
 
-(defun templatel-render-string (input env)
-  "Render INPUT to final output with variables from ENV."
+(defun templatel-render-string (input vars)
+  "Render INPUT to final output with variables from VARS."
   (let ((code (templatel--compile-string input)))
-    (templatel--render-code code env)))
+    (templatel--render-code code vars)))
 
-(defun templatel-render-file (path env)
-  "Render file at PATH into a tree with variables from ENV."
+(defun templatel-render-file (path vars)
+  "Render file at PATH into a tree with variables from VARS."
   (with-temp-buffer
     (insert-file-contents path)
     (let ((code (templatel--compile-string (buffer-string))))
-      (templatel--render-code code env))))
+      (templatel--render-code code vars))))
 
 (provide 'templatel)
 ;;; templatel.el ends here
