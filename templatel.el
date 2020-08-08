@@ -135,8 +135,8 @@
   (if (eq c (templatel--scanner-current scanner))
       (progn (templatel--scanner-next scanner) c)
     (templatel--scanner-error scanner
-     (format
-      "Expected %s, got %s" c (templatel--scanner-current scanner)))))
+                              (format
+                               "Expected %s, got %s" c (templatel--scanner-current scanner)))))
 
 (defun templatel--scanner-matchs (scanner s)
   "Match SCANNER's input to string S."
