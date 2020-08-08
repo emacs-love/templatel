@@ -1150,7 +1150,7 @@ operator (RATORFN)."
                (catch '-brk
                  (dolist (ivars (reverse rt/varstk))
                    (let ((value (assoc name ivars)))
-                     (when (not (null value))
+                     (unless (null value)
                        (throw '-brk (cdr value)))))
                  (signal
                   'templatel-runtime-error
