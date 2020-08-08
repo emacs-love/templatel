@@ -1213,7 +1213,7 @@ Will be converted into the following:
 
   (int number 16)
 
-Notice the paramter list is compiled before being passed to the
+Notice the parameter list is compiled before being passed to the
 function call."
   (let ((fname (cdr (cadr (cadr item))))
         (params (cddr (cadr item))))
@@ -1417,7 +1417,7 @@ call `templatel--compiler-filter-item' on each entry."
   (upcase s))
 
 (defun templatel-filters-lower (s)
-  "Lowewr case all chars of S."
+  "Lower case all chars of S."
   (downcase s))
 
 (defun templatel-filters-sum (s)
