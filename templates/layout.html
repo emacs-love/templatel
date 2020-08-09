@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    {% block head %}
+      <meta charset="utf-8">
+      <title>Templatel - {% block title %}Home{% endblock %}</title>
+      <meta name="description" content="{% block description %}{% endblock %}">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="/pub/style.css">
+    {% endblock %}
+  </head>
+  <body>
+    <div class="document">
+      {# Top navigation bar #}
+      {% block nav %}
+        <div class="nav">
+          <h1><a href="/">templatel</a> {% block title %}{% endblock %}</h1>
+        </div>
+      {% endblock %}
+
+      {# Probably where most of the action will happen #}
+      {% block page %}{% endblock %}
+    </div>
+  </body>
+</html>

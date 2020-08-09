@@ -1,0 +1,136 @@
+:root {
+    /* Fonts */
+    --cl-font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+    --cl-font-size-0: 2.6rem;
+    --cl-font-size-1: 1rem;
+    --cl-font-size-2: .5rem;
+    --cl-font-size-3: .1rem;
+
+    /* Layout Variables */
+    --cl-background: #ffffff;
+    --cl-foreground: #000000;
+    /* https://colorhunt.co/palette/180289 */
+    --cl-blue0: #142850;
+    --cl-blue1: #27496d;
+    --cl-blue2: #00909e;
+    --cl-gray0: #666666;
+    --cl-gray1: #dae1e7;
+    --cl-gray2: #f8f8f2;
+
+    /* -- Page colors -- */
+    --cl-color-bg-dark:         var(--cl-blue0);
+    --cl-color-bg-light:        var(--cl-gray2);
+    --cl-color-fg-dark:         var(--cl-blue1);
+    --cl-color-fg-light:        var(--cl-gray2);
+
+    --cl-color-link-nav:        var(--cl-blue2);
+    --cl-color-link-menu:       var(--cl-gray0);
+    --cl-color-link-menu-hover: var(--cl-blue2);
+    --cl-color-link-page:       var(--cl-blue2);
+
+    /* -- Code Block Colors -- */
+
+    /* --- Monokai Theme */
+    --cl-code-monokai-background:   #272822; /* Background	#272822 #272822 */
+    --cl-code-monokai-foreground:   #F8F8F2; /* Foreground	#F8F8F2 #F8F8F2 */
+    --cl-code-monokai-comment:      #75715E; /* Comment	#75715E #75715E */
+    --cl-code-monokai-red:          #F92672; /* Red 		#F92672 #F92672 */
+    --cl-code-monokai-orange:       #FD971F; /* Orange		#FD971F #FD971F */
+    --cl-code-monokai-light-orange: #E69F66; /* Light Orange 	#E69F66 #E69F66 */
+    --cl-code-monokai-yellow:       #E6DB74; /* Yellow		#E6DB74 #E6DB74 */
+    --cl-code-monokai-green:        #A6E22E; /* Green		#A6E22E #A6E22E */
+    --cl-code-monokai-blue:         #66D9EF; /* Blue		#66D9EF #66D9EF */
+    --cl-code-monokai-purple:       #AE81FF; /* Purple		#AE81FF #AE81FF */
+
+    /* --- Theme Variables */
+    --cl-code-background:           var(--cl-code-monokai-background);
+    --cl-code-foreground:           var(--cl-code-monokai-foreground);
+    --cl-code-builtin:              var(--cl-code-monokai-red);
+    --cl-code-doc:                  var(--cl-code-monokai-comment);
+    --cl-code-function-name:        var(--cl-code-monokai-green);
+    --cl-code-keyword:              var(--cl-code-monokai-red);
+    --cl-code-string:               var(--cl-code-monokai-yellow);
+    --cl-code-type:                 var(--cl-code-monokai-blue);
+    --cl-code-variable-name:        var(--cl-code-monokai-orange);
+}
+
+/* Main HTML tags */
+body                  {
+    /* Reset */
+    margin: 0;
+    padding: 0;
+
+    /* Colors */
+    background-color: var(--cl-background);
+    color: var(--cl-foreground);
+
+    /* Font */
+    font-family: var(--cl-font-family);
+}
+
+/* code { color: var(--cl-color-link-hover); } */
+
+code                  { background-color: var(--cl-gray1); }
+
+/* -- Code Blocks -- */
+.org-builtin          { color: var(--cl-code-builtin); }
+.org-doc              { color: var(--cl-code-doc); }
+.org-function-name    { color: var(--cl-code-function-name); }
+.org-keyword          { color: var(--cl-code-keyword); }
+.org-string           { color: var(--cl-code-string); }
+.org-type             { color: var(--cl-code-type); }
+.org-variable-name    { color: var(--cl-code-variable-name); }
+.org-src-container    { color: var(--cl-code-foreground);
+                        background-color: var(--cl-code-background);
+                        padding: 10px 20px;
+                        max-width: 100%;
+                        overflow-y: scroll; }
+
+/* Navigation */
+.nav                  { background-color: var(--cl-color-bg-dark); color: var(--cl-color-fg-light); padding: 5px 20px; }
+.nav h1               { text-transform: lowercase; font-size: var(--cl-font-size-1); font-weight: 500; }
+.nav a                { text-decoration: none; color: var(--cl-color-link-nav); }
+
+/* General settings for the content area */
+.page                 { line-height: 1.6; flex-grow: 1; }
+.page article         { max-width: 850px; margin: 0 auto; }
+.page h1              { color: var(--cl-blue1); font-weight: 50; }
+.page h2              { color: #4f566b; font-weight: 500; }
+.page p               { margin-bottom: 1.5rem; }
+.page a               { color: var(--cl-color-link-page); text-decoration: none; }
+.page a:hover         { text-decoration: underline; }
+.page h1              { font-size: 28pt; }
+.page h2              { font-size: 14pt; }
+
+/* Index page */
+
+
+/* API reference page */
+.api                  { display: flex; }
+.api > div            { padding: 20px; }
+
+/* -- Left menu with index of all sections & symbols  */
+.api-menu             { background-color: var(--cl-color-bg-light); border-right: 1px solid #94979B39 ; }
+.api-menu a           { text-decoration: none; color: var(--cl-color-link-menu); }
+.api-menu a:hover     { color: var(--cl-color-link-menu-hover); }
+.api-menu ul          { list-style: square; }
+.api-menu ul li       { margin-bottom: 8px; }
+
+/* -- Right side of the API page with the actual content */
+.page .section        { border-bottom: solid 1px #666; }
+.page .docstring      { padding-left: 50px; }
+.page .symbol         { margin-bottom: 50px; }
+
+/* Mobile settings */
+
+@media only screen 
+  and (min-device-width: 375px) 
+  and (max-device-width: 812px) 
+  and (-webkit-min-device-pixel-ratio: 3) {
+    .document         { width: 100%; }
+    .api              { width: 100%; }
+    .api-menu         { display: none; }
+    .page             { width: calc(100% - 60px); }
+    .page .section    { margin-bottom: 50px; }
+    .page .docstring  { padding-left: 0; }
+}
