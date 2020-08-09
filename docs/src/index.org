@@ -1,16 +1,36 @@
 #+TITLE: Introduction to templatel
+#+OPTIONS: toc:nil num:nil
 
-Templatel is a templating engine for Emacs-Lisp that aims to be
-powerful and easy to use.
+* Introduction
 
-#+BEGIN_SRC jinja2
-{% extends "layout.html" %}
+  Templatel is the modern templating language that was missing for
+  Emacs-Lisp.  It aims to be powerful and easy to use.
 
-{% block body %}
-  <ul>
-  {% for post in posts %}
-    <li><a href="{{ post.url }}">{{ post.title }}</a></li>
-  {% endfor %}
-  </ul>
-{% endblock %}
-#+END_SRC
+  #+BEGIN_SRC jinja2
+  {% extends "layout.html" %}
+  {% block body %}
+    <h1>Project List</h1>
+    <ul>
+      {% for project in projects %}
+        <li><a href="{{ project.url }}">{{ project.name }}</a></li>
+      {% endfor %}
+    </ul>
+  {% endblock %}
+  #+END_SRC
+
+* Installation
+
+** Via Melpa
+
+   The simplest and recommended way to get yourself a copy of
+   ~templatel~ is to install it via [[https://melpa.org][MELPA]].  You must have something
+   along these lines on your Emacs configuration for that to work:
+
+   #+BEGIN_SRC emacs-lisp
+   (package-initialize)
+   (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
+   #+END_SRC
+
+   And then, you can just ~M-x package-install RET templatel RET~.
+   Notice that you might need to run ~M-x package-refresh-contents
+   RET~ if you haven't done that in a while.
