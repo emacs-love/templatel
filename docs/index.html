@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    
+      <meta charset="utf-8">
+      <title>'templatel - Home</title>
+      <meta name="description" content="">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="/pub/style.css">
+    
+  </head>
+  <body>
+    <div class="document">
+      
+      
+
+      
+      
+  <div class="index">
+    <div class="banner">
+      <h1>'templatel</h1>
+      <div class="sub">
+        A modern templating language for Emacs-Lisp
+      </div>
+    </div>
+
+    <div class="menu">
+      <ul>
+        <li><a href="/api.html">API Reference</a></li>
+        <li>
+          <a href="https://github.com/clarete/templatel" target="_blank">
+            Github
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="page">
+      <article>
+        
+<div id="outline-container-org71f6a19" class="outline-2">
+<h2 id="org71f6a19">Introduction</h2>
+<div class="outline-text-2" id="text-org71f6a19">
+<p>
+Templatel is the modern templating language that was missing for
+Emacs-Lisp.  It aims to be powerful and easy to use.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-jinja2"><span class="org-function-name">{%</span> <span class="org-builtin">extends</span> "layout.html" <span class="org-function-name">%}</span>
+<span class="org-function-name">{%</span> <span class="org-keyword">block</span> body <span class="org-function-name">%}</span>
+  &lt;<span class="org-function-name">h1</span>&gt;<span class="org-underline"><span class="org-bold">Project List</span></span>&lt;/<span class="org-function-name">h1</span>&gt;
+  &lt;<span class="org-function-name">ul</span>&gt;
+    <span class="org-function-name">{%</span> <span class="org-keyword">for</span> project <span class="org-builtin">in</span> projects <span class="org-function-name">%}</span>
+      &lt;<span class="org-function-name">li</span>&gt;&lt;<span class="org-function-name">a</span> <span class="org-variable-name">href</span>=<span class="org-string">"</span><span class="org-type">{{</span><span class="org-string"> </span><span class="org-variable-name">project.url</span><span class="org-string"> </span><span class="org-type">}}</span><span class="org-string">"</span>&gt;<span class="org-type">{{</span> <span class="org-variable-name">project.name</span> <span class="org-type">}}</span>&lt;/<span class="org-function-name">a</span>&gt;&lt;/<span class="org-function-name">li</span>&gt;
+    <span class="org-function-name">{%</span> <span class="org-keyword">endfor</span> <span class="org-function-name">%}</span>
+  &lt;/<span class="org-function-name">ul</span>&gt;
+<span class="org-function-name">{%</span> <span class="org-keyword">endblock</span> <span class="org-function-name">%}</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb5f9d38" class="outline-2">
+<h2 id="orgb5f9d38">Installation</h2>
+<div class="outline-text-2" id="text-orgb5f9d38">
+</div>
+<div id="outline-container-org8e8158e" class="outline-3">
+<h3 id="org8e8158e">Via Melpa</h3>
+<div class="outline-text-3" id="text-org8e8158e">
+<p>
+The simplest and recommended way to get yourself a copy of
+<code>templatel</code> is to install it via <a href="https://melpa.org">MELPA</a>.  You must have something
+along these lines on your Emacs configuration for that to work:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(package-initialize)
+(add-to-list 'package-archives '(<span class="org-string">"melpa"</span> . <span class="org-string">"http://melpa.org/packages/"</span>))
+</pre>
+</div>
+
+<p>
+And then, you can just <code>M-x package-install RET templatel RET</code>.
+Notice that you might need to run <code>M-x package-refresh-contents
+   RET</code> if you haven't done that in a while.
+</p>
+</div>
+</div>
+</div>
+
+      </article>
+    </div>
+  </div>
+
+    </div>
+  </body>
+</html>

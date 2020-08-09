@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    
+      <meta charset="utf-8">
+      <title>'templatel - API Reference</title>
+      <meta name="description" content="">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="/pub/style.css">
+    
+  </head>
+  <body>
+    <div class="document">
+      
+      
+        <div class="nav">
+          <h1><a href="/">'templatel</a> API Reference</h1>
+        </div>
+      
+
+      
+      
+  <div class="api">
+    <div class="api-menu">
+      
+        <h3>
+          <a href="#section-render-template-strings">Render template strings</a>
+        </h3>
+        <ul>
+          
+            <li><a href="#symbol-templatel-render-file">templatel-render-file</a></li>
+          
+            <li><a href="#symbol-templatel-render-string">templatel-render-string</a></li>
+          
+        </ul>
+      
+        <h3>
+          <a href="#section-template-environments">Template environments</a>
+        </h3>
+        <ul>
+          
+            <li><a href="#symbol-templatel-env-add-template">templatel-env-add-template</a></li>
+          
+            <li><a href="#symbol-templatel-env-new">templatel-env-new</a></li>
+          
+            <li><a href="#symbol-templatel-env-render">templatel-env-render</a></li>
+          
+            <li><a href="#symbol-templatel-env-run-importfn">templatel-env-run-importfn</a></li>
+          
+            <li><a href="#symbol-templatel-env-source">templatel-env-source</a></li>
+          
+        </ul>
+      
+        <h3>
+          <a href="#section-filters">Filters</a>
+        </h3>
+        <ul>
+          
+            <li><a href="#symbol-templatel-filters-int">templatel-filters-int</a></li>
+          
+            <li><a href="#symbol-templatel-filters-lower">templatel-filters-lower</a></li>
+          
+            <li><a href="#symbol-templatel-filters-plus1">templatel-filters-plus1</a></li>
+          
+            <li><a href="#symbol-templatel-filters-sum">templatel-filters-sum</a></li>
+          
+            <li><a href="#symbol-templatel-filters-upper">templatel-filters-upper</a></li>
+          
+        </ul>
+      
+        <h3>
+          <a href="#section-exceptions">Exceptions</a>
+        </h3>
+        <ul>
+          
+            <li><a href="#symbol-templatel-backtracking">templatel-backtracking</a></li>
+          
+            <li><a href="#symbol-templatel-runtime-error">templatel-runtime-error</a></li>
+          
+            <li><a href="#symbol-templatel-syntax-error">templatel-syntax-error</a></li>
+          
+        </ul>
+      
+    </div>
+
+    <div class="page">
+      
+        <article id="section-render-template-strings" class="section">
+          <h1>Render template strings</h1>
+
+          <div class="symbols">
+            
+              <div class="symbol" id="symbol-templatel-render-file">
+                
+                  <h2>(templatel-render-file (path variables))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Render template file at PATH with VARIABLES.
+</p>
+
+<p>
+Just like with
+<a href="#symbol-templatel-render-string">templatel-render-string</a>,
+templates rendered with this function also can’t use <code>{% extends
+%}</code> statements.  Please refer to the section
+<a href="#section-template-environments">Template Environments</a>
+to learn how to use the API that enables template inheritance.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-render-string">
+                
+                  <h2>(templatel-render-string (template variables))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Render TEMPLATE string with VARIABLES.
+</p>
+
+<p>
+This is the simplest way to use <b>templatel</b>, since it only takes
+a function call.  However, notice that it won’t allow you to
+extend other templates because no <code>:importfn</code> can be passed to
+the implicit envoronment created within this function.  Please
+refer to the next section
+<a href="#section-template-environments">Template Environments</a>
+to learn how to use the API that enables template inheritance.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(templatel-render-string <span class="org-string">"Hello, {{ name }}!"</span> &#8217;((<span class="org-string">"name"</span> . <span class="org-string">"GNU!"</span>)))
+</pre>
+</div>
+
+                  </div>
+                
+              </div>
+            
+          </div>
+        </article>
+      
+        <article id="section-template-environments" class="section">
+          <h1>Template environments</h1>
+
+          <div class="symbols">
+            
+              <div class="symbol" id="symbol-templatel-env-add-template">
+                
+                  <h2>(templatel-env-add-template (env name template))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Add TEMPLATE to ENV under key NAME.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-env-new">
+                
+                  <h2>(templatel-env-new (&rest options))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Multiple template manager setup with OPTIONS.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-env-render">
+                
+                  <h2>(templatel-env-render (env name vars))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Render template NAME within ENV with VARS as parameters.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-env-run-importfn">
+                
+                  <h2>(templatel-env-run-importfn (env name))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Run import with NAME within ENV.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-env-source">
+                
+                  <h2>(templatel-env-source (env name))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Get source code of template NAME within ENV.</p>
+
+                  </div>
+                
+              </div>
+            
+          </div>
+        </article>
+      
+        <article id="section-filters" class="section">
+          <h1>Filters</h1>
+
+          <div class="symbols">
+            
+              <div class="symbol" id="symbol-templatel-filters-int">
+                
+                  <h2>(templatel-filters-int (s base))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Convert S into integer of base BASE.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-filters-lower">
+                
+                  <h2>(templatel-filters-lower (s))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Lower case all chars of S.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-filters-plus1">
+                
+                  <h2>(templatel-filters-plus1 (s))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Add one to S.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-filters-sum">
+                
+                  <h2>(templatel-filters-sum (s))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Sum all entries in S.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-filters-upper">
+                
+                  <h2>(templatel-filters-upper (s))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Upper case all chars of S.</p>
+
+                  </div>
+                
+              </div>
+            
+          </div>
+        </article>
+      
+        <article id="section-exceptions" class="section">
+          <h1>Exceptions</h1>
+
+          <div class="symbols">
+            
+              <div class="symbol" id="symbol-templatel-backtracking">
+                
+                  <h2>templatel-backtracking</h2>
+                
+
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-runtime-error">
+                
+                  <h2>templatel-runtime-error</h2>
+                
+
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-syntax-error">
+                
+                  <h2>templatel-syntax-error</h2>
+                
+
+                
+              </div>
+            
+          </div>
+        </article>
+      
+    </div>
+  </div>
+
+    </div>
+  </body>
+</html>
