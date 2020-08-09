@@ -1496,7 +1496,7 @@ a function call.  However, notice that it won't allow you to
 extend other templates because no ~:importfn~ can be passed to
 the implicit envoronment created within this function.  Please
 refer to the next section
-*[[anchor:section-template-environments][Template Environments]]*
+[[anchor:section-template-environments][Template Environments]]
 to learn how to use the API that enables template inheritance.
 
 #+BEGIN_SRC emacs-lisp
@@ -1513,7 +1513,7 @@ Just like with
 [[anchor:symbol-templatel-render-string][templatel-render-string]],
 templates rendered with this function also can't use ~{% extends
 %}~ statements.  Please refer to the section
-*[[anchor:section-template-environments][Template Environments]]*
+[[anchor:section-template-environments][Template Environments]]
 to learn how to use the API that enables template inheritance."
   (let ((env (templatel-env-new)))
     (templatel-env-add-template env path (templatel-new-from-file path))
