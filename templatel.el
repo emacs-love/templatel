@@ -1488,17 +1488,36 @@ call `templatel--compiler-filter-item' on each entry."
 
 ;; ------ Public API without Environment
 
-(defun templatel-render-string (input vars)
-  "Render INPUT to final output with variables from VARS."
-  (let ((env (templatel-env-new)))
-    (templatel-env-add-template env "<string>" (templatel-new input))
-    (templatel-env-render env "<string>" vars)))
+(defun templatel-render-string (template variables)
+  "Render TEMPLATE string with VARIABLES.
 
-(defun templatel-render-file (path vars)
-  "Render file at PATH into a tree with variables from VARS."
+This is the simplest way to use *templatel*, since it only takes
+a function call.  However, notice that it won't allow you to
+extend other templates because no ~:importfn~ can be passed to
+the implicit envoronment created within this function.  Please
+refer to the next section
+*[[anchor:section-template-environments][Template Environments]]*
+to learn how to use the API that enables template inheritance.
+
+#+BEGIN_SRC emacs-lisp
+\(templatel-render-string \"Hello, {{ name }}!\" '((\"name\" . \"GNU!\")))
+#+END_SRC"
+  (let ((env (templatel-env-new)))
+    (templatel-env-add-template env "<string>" (templatel-new template))
+    (templatel-env-render env "<string>" variables)))
+
+(defun templatel-render-file (path variables)
+  "Render template file at PATH with VARIABLES.
+
+Just like with
+[[anchor:symbol-templatel-render-string][templatel-render-string]],
+templates rendered with this function also can't use ~{% extends
+%}~ statements.  Please refer to the section
+*[[anchor:section-template-environments][Template Environments]]*
+to learn how to use the API that enables template inheritance."
   (let ((env (templatel-env-new)))
     (templatel-env-add-template env path (templatel-new-from-file path))
-    (templatel-env-render env path vars)))
+    (templatel-env-render env path variables)))
 
 (provide 'templatel)
 ;;; templatel.el ends here
