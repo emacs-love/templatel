@@ -148,10 +148,21 @@ code                  { background-color: var(--cl-gray1); }
 @media only screen 
   and (min-device-width: 375px)
   and (max-device-width: 812px) {
+    /* General */
     .document         { width: 100%; }
+
+    /* Index */
+    .index .menu      { padding: 0 20px; }
+    .index .page      { width: calc(100%-40px); padding: 0 20px; }
+
+    /* API */
     .api              { width: 100%; }
     .api-menu         { display: none; }
-    .page             { width: calc(100% - 60px); }
+    .api .page        { width: calc(100% - 60px); }
     .page .section    { margin-bottom: 50px; }
     .page .docstring  { padding-left: 0; }
+
+    /* Org-Mode */
+    .outline-text-2,
+    .outline-text-3   { margin-left: 0; }
 }
