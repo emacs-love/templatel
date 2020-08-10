@@ -38,21 +38,23 @@
     <div class="page">
       <article>
         
-<div id="outline-container-org71f6a19" class="outline-2">
-<h2 id="org71f6a19">Introduction</h2>
-<div class="outline-text-2" id="text-org71f6a19">
+<div id="outline-container-orgfc9de16" class="outline-2">
+<h2 id="orgfc9de16">Introduction</h2>
+<div class="outline-text-2" id="text-orgfc9de16">
 <p>
-Templatel is the modern templating language that was missing for
-Emacs-Lisp.  It aims to be powerful and easy to use.
+templatel is the modern templating language that was missing for
+Emacs-Lisp.  It provides variable substitution and control flow
+through a clean and powerful language inspired by the well known
+language <a href="https://jinja.palletsprojects.com/">Jinja</a>.
 </p>
 
 <div class="org-src-container">
-<pre class="src src-jinja2"><span class="org-function-name">{%</span> <span class="org-builtin">extends</span> "layout.html" <span class="org-function-name">%}</span>
+<pre class="src src-jinja2"><span class="org-function-name">{%</span> <span class="org-builtin">extends</span> "base.html" <span class="org-function-name">%}</span>
+<span class="org-function-name">{%</span> <span class="org-keyword">block</span> title <span class="org-function-name">%}</span>&lt;<span class="org-function-name">h1</span>&gt;<span class="org-type">{{</span><span class="org-underline"><span class="org-bold"> </span></span><span class="org-variable-name">title</span><span class="org-underline"><span class="org-bold"> </span></span><span class="org-type">}}</span>&lt;/<span class="org-function-name">h1</span>&gt;<span class="org-function-name">{%</span> <span class="org-keyword">endblock</span> <span class="org-function-name">%}</span>
 <span class="org-function-name">{%</span> <span class="org-keyword">block</span> body <span class="org-function-name">%}</span>
-  &lt;<span class="org-function-name">h1</span>&gt;<span class="org-underline"><span class="org-bold">Project List</span></span>&lt;/<span class="org-function-name">h1</span>&gt;
   &lt;<span class="org-function-name">ul</span>&gt;
-    <span class="org-function-name">{%</span> <span class="org-keyword">for</span> project <span class="org-builtin">in</span> projects <span class="org-function-name">%}</span>
-      &lt;<span class="org-function-name">li</span>&gt;&lt;<span class="org-function-name">a</span> <span class="org-variable-name">href</span>=<span class="org-string">"</span><span class="org-type">{{</span><span class="org-string"> </span><span class="org-variable-name">project.url</span><span class="org-string"> </span><span class="org-type">}}</span><span class="org-string">"</span>&gt;<span class="org-type">{{</span> <span class="org-variable-name">project.name</span> <span class="org-type">}}</span>&lt;/<span class="org-function-name">a</span>&gt;&lt;/<span class="org-function-name">li</span>&gt;
+    <span class="org-function-name">{%</span> <span class="org-keyword">for</span> page <span class="org-builtin">in</span> pages <span class="org-function-name">%}</span>
+      &lt;<span class="org-function-name">li</span>&gt;&lt;<span class="org-function-name">a</span> <span class="org-variable-name">href</span>=<span class="org-string">"</span><span class="org-type">{{</span><span class="org-string"> </span><span class="org-variable-name">page.url</span><span class="org-string"> </span><span class="org-type">}}</span><span class="org-string">"</span>&gt;<span class="org-type">{{</span> <span class="org-variable-name">page.title</span> <span class="org-type">}}</span>&lt;/<span class="org-function-name">a</span>&gt;&lt;/<span class="org-function-name">li</span>&gt;
     <span class="org-function-name">{%</span> <span class="org-keyword">endfor</span> <span class="org-function-name">%}</span>
   &lt;/<span class="org-function-name">ul</span>&gt;
 <span class="org-function-name">{%</span> <span class="org-keyword">endblock</span> <span class="org-function-name">%}</span>
@@ -61,13 +63,13 @@ Emacs-Lisp.  It aims to be powerful and easy to use.
 </div>
 </div>
 
-<div id="outline-container-orgb5f9d38" class="outline-2">
-<h2 id="orgb5f9d38">Installation</h2>
-<div class="outline-text-2" id="text-orgb5f9d38">
+<div id="outline-container-orgc4b552d" class="outline-2">
+<h2 id="orgc4b552d">Installation</h2>
+<div class="outline-text-2" id="text-orgc4b552d">
 </div>
-<div id="outline-container-org8e8158e" class="outline-3">
-<h3 id="org8e8158e">Via Melpa</h3>
-<div class="outline-text-3" id="text-org8e8158e">
+<div id="outline-container-orgd1f2c24" class="outline-3">
+<h3 id="orgd1f2c24">Via Melpa</h3>
+<div class="outline-text-3" id="text-orgd1f2c24">
 <p>
 The simplest and recommended way to get yourself a copy of
 <code>templatel</code> is to install it via <a href="https://melpa.org">MELPA</a>.  You must have something
@@ -81,10 +83,27 @@ along these lines on your Emacs configuration for that to work:
 </div>
 
 <p>
-And then, you can just <code>M-x package-install RET templatel RET</code>.
-Notice that you might need to run <code>M-x package-refresh-contents
-   RET</code> if you haven't done that in a while.
+And then run <code>M-x package-install RET templatel RET</code>.  Notice that
+you might need to run <code>M-x package-refresh-contents RET</code> if you
+haven't done that in a while.
 </p>
+</div>
+</div>
+
+<div id="outline-container-orgdf4d44b" class="outline-3">
+<h3 id="orgdf4d44b">Manually</h3>
+<div class="outline-text-3" id="text-orgdf4d44b">
+<p>
+If you don't want to use any package installer, you can just clone
+the repository somewhere on your computer, let's say
+<code>$HOME/src/templatel</code>.  And then you need to add that directory to
+your Emacs configuration so the library can be found by <code>require</code>.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(add-to-list 'load-path <span class="org-string">"~/src/templatel"</span>)
+</pre>
+</div>
 </div>
 </div>
 </div>

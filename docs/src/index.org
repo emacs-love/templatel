@@ -3,16 +3,18 @@
 
 * Introduction
 
-  Templatel is the modern templating language that was missing for
-  Emacs-Lisp.  It aims to be powerful and easy to use.
+  templatel is the modern templating language that was missing for
+  Emacs-Lisp.  It provides variable substitution and control flow
+  through a clean and powerful language inspired by the well known
+  language [[https://jinja.palletsprojects.com/][Jinja]].
 
   #+BEGIN_SRC jinja2
-  {% extends "layout.html" %}
+  {% extends "base.html" %}
+  {% block title %}<h1>{{ title }}</h1>{% endblock %}
   {% block body %}
-    <h1>Project List</h1>
     <ul>
-      {% for project in projects %}
-        <li><a href="{{ project.url }}">{{ project.name }}</a></li>
+      {% for page in pages %}
+        <li><a href="{{ page.url }}">{{ page.title }}</a></li>
       {% endfor %}
     </ul>
   {% endblock %}
@@ -31,6 +33,17 @@
    (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
    #+END_SRC
 
-   And then, you can just ~M-x package-install RET templatel RET~.
-   Notice that you might need to run ~M-x package-refresh-contents
-   RET~ if you haven't done that in a while.
+   And then run ~M-x package-install RET templatel RET~.  Notice that
+   you might need to run ~M-x package-refresh-contents RET~ if you
+   haven't done that in a while.
+
+** Manually
+
+   If you don't want to use any package installer, you can just clone
+   the repository somewhere on your computer, let's say
+   ~$HOME/src/templatel~.  And then you need to add that directory to
+   your Emacs configuration so the library can be found by ~require~.
+
+   #+BEGIN_SRC emacs-lisp
+   (add-to-list 'load-path "~/src/templatel")
+   #+END_SRC
