@@ -1443,7 +1443,36 @@ call `templatel--compiler-filter-item' on each entry."
 ;; --- Public Environment API ---
 
 (defun templatel-env-new (&rest options)
-  "Multiple template manager setup with OPTIONS."
+  "Create new template environment configured via OPTIONS.
+
+Both
+[[anchor:symbol-templatel-render-string][templatel-render-string]]
+and
+[[anchor:symbol-templatel-render-string][templatel-render-file]]
+provide a one-call interface to render a template from a string
+or from a file respectively.  Although convenient, neither or
+these two functions can be used to render templates that use ~{%
+extends %}~.
+
+This decision was made to keep /templatel/ extensible allowing
+users to define how new templates should be found.  It also keeps
+the library simpler as a good side-effect.
+
+To get template inheritance to work, a user defined import
+function must be attached to a template environment.  The user
+defined function is responsible for finding and adding templates
+to the environment.  The following snippet demonstrates how to
+create the simplest import function and provide it to an
+environment via ~:importfn~ parameter.
+
+#+BEGIN_SRC emacs-lisp
+\(templatel-env-new
+ :importfn (lambda(environment name)
+             (templatel-env-add-template
+              environment name
+              (templatel-new-from-file
+               (expand-file-name name \"/home/user/templates\")))))
+#+END_SRC"
   (let* ((opt (seq-partition options 2)))
     ;; where we keep the templates
     `[,(make-hash-table :test 'equal)
