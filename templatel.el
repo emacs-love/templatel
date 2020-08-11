@@ -1162,7 +1162,7 @@ operator (RATORFN)."
                (buffer-string))))
        (if (null rt/parent-template)
            rt/data
-         (funcall (templatel-env-source env rt/parent-template) vars env rt/blocks)))))
+         (funcall (templatel--env-source env rt/parent-template) vars env rt/blocks)))))
 
 (defun templatel--compiler-element (tree)
   "Compile an element from TREE."
@@ -1381,7 +1381,7 @@ call `templatel--compiler-filter-item' on each entry."
   `(progn
      (setq rt/parent-template ,(cdar tree))
      (if env
-         (templatel-env-run-importfn env rt/parent-template))))
+         (templatel--env-run-importfn env rt/parent-template))))
 
 (defun templatel--compiler-run (tree)
   "Compile TREE into bytecode."
@@ -1484,12 +1484,12 @@ environment via ~:importfn~ parameter.
   "Add TEMPLATE to ENV under key NAME."
   (puthash name template (elt env 0)))
 
-(defun templatel-env-source (env name)
+(defun templatel--env-source (env name)
   "Get source code of template NAME within ENV."
   (let ((entry (gethash name (elt env 0))))
     (cdr (assoc 'source entry))))
 
-(defun templatel-env-run-importfn (env name)
+(defun templatel--env-run-importfn (env name)
   "Run import with NAME within ENV."
   (let ((importfn (elt env 1)))
     (if importfn
@@ -1497,7 +1497,7 @@ environment via ~:importfn~ parameter.
 
 (defun templatel-env-render (env name vars)
   "Render template NAME within ENV with VARS as parameters."
-  (funcall (eval (templatel-env-source env name)) vars env))
+  (funcall (eval (templatel--env-source env name)) vars env))
 
 (defun templatel-new (source)
   "Create a template off SOURCE."
