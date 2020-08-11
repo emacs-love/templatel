@@ -1,14 +1,17 @@
 :root {
     /* Fonts */
-    --cl-font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
-    --cl-font-size-0: 2.6rem;
-    --cl-font-size-1: 1rem;
-    --cl-font-size-2: .5rem;
-    --cl-font-size-3: .1rem;
+    --ft-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+    --ft-logofm: Times New Roman, Liberation Serif;
+
+    --ft-size-0: 2.6rem;
+    --ft-size-1: 1rem;
+    --ft-size-2: .5rem;
+    --ft-size-3: .1rem;
 
     /* Layout Variables */
     --cl-background: #ffffff;
     --cl-foreground: #000000;
+
     /* https://colorhunt.co/palette/180289 */
     --cl-blue0: #142850;
     --cl-blue1: #27496d;
@@ -18,23 +21,25 @@
     --cl-gray0: #666666;
     --cl-gray1: #dae1e7;
     --cl-gray2: #f8f8f2;
+    --cl-gray3: #94979a11;
+    --cl-gray4: #94979B39;
 
     /* -- Page colors -- */
-    --cl-color-bg-dark:         var(--cl-blue0);
-    --cl-color-bg-light:        var(--cl-gray2);
-    --cl-color-fg-dark:         var(--cl-blue1);
-    --cl-color-fg-light:        var(--cl-gray2);
-
-    --cl-color-link-nav:        var(--cl-blue2);
-    --cl-color-link-menu:       var(--cl-gray0);
-    --cl-color-link-menu-hover: var(--cl-blue2);
-    --cl-color-link-page:       var(--cl-blue2);
-
-    --cl-color-h1:              var(--cl-blue1);
-    --cl-color-h2:              var(--cl-blue3);
-
-    --cl-banner-bg:             var(--cl-blue1);
-    --cl-banner-fg:             var(--cl-gray2);
+    --cl-bg-dark:         var(--cl-blue0);
+    --cl-bg-light:        var(--cl-gray2);
+    --cl-fg-dark:         var(--cl-blue1);
+    --cl-fg-light:        var(--cl-gray2);
+    --cl-link-nav:        var(--cl-blue2);
+    --cl-link-menu:       var(--cl-gray0);
+    --cl-link-menu-hover: var(--cl-blue2);
+    --cl-link-page:       var(--cl-blue2);
+    --cl-h1:              var(--cl-blue1);
+    --cl-h2:              var(--cl-blue3);
+    --cl-banner-bg:       var(--cl-blue1);
+    --cl-banner-fg:       var(--cl-gray2);
+    --cl-border-src:      var(--cl-gray3);
+    --cl-border-nav:      var(--cl-gray4);
+    --cl-preformatted:    var(--cl-gray1)
 
     /* -- Code Block Colors -- */
 
@@ -62,17 +67,6 @@
     --cl-code-parasol-variables:    #008ED4;
 
     /* --- Theme Variables */
-
-    /* --cl-code-background:           var(--cl-code-monokai-background); */
-    /* --cl-code-foreground:           var(--cl-code-monokai-foreground); */
-    /* --cl-code-builtin:              var(--cl-code-monokai-red); */
-    /* --cl-code-doc:                  var(--cl-code-monokai-comment); */
-    /* --cl-code-function-name:        var(--cl-code-monokai-green); */
-    /* --cl-code-keyword:              var(--cl-code-monokai-red); */
-    /* --cl-code-string:               var(--cl-code-monokai-yellow); */
-    /* --cl-code-type:                 var(--cl-code-monokai-blue); */
-    /* --cl-code-variable-name:        var(--cl-code-monokai-orange); */
-
     --cl-code-background:           var(--cl-code-parasol-background);
     --cl-code-foreground:           var(--cl-code-parasol-foreground);
     --cl-code-builtin:              var(--cl-code-parasol-builtin);
@@ -91,16 +85,15 @@ body                  {
     padding: 0;
 
     /* Colors */
-    background-color: var(--cl-background);
+    background: var(--cl-background);
     color: var(--cl-foreground);
 
     /* Font */
-    font-family: var(--cl-font-family);
+    font-family: var(--ft-family);
 }
 
-/* code { color: var(--cl-color-link-hover); } */
-
-code                  { background-color: var(--cl-gray1); }
+/* -- Inline Code -- */
+code                  { background: var(--cl-preformatted); }
 
 /* -- Code Blocks -- */
 .org-builtin          { color: var(--cl-code-builtin); }
@@ -111,42 +104,42 @@ code                  { background-color: var(--cl-gray1); }
 .org-type             { color: var(--cl-code-type); }
 .org-variable-name    { color: var(--cl-code-variable-name); }
 .org-src-container    { color: var(--cl-code-foreground);
-                        background-color: var(--cl-code-background);
-                        border: 1px solid #94979a11;
+                        background: var(--cl-code-background);
+                        border: 1px solid var(--cl-border-src);
                         padding: 0px 15px;
                         max-width: 100%;
                         overflow-y: scroll;
                         border-radius: 5px; }
 
 /* Navigation */
-.nav                  { background-color: var(--cl-banner-bg); color: var(--cl-color-fg-light); padding: 5px 20px; }
+.nav                  { background: var(--cl-banner-bg); color: var(--cl-fg-light); padding: 5px 20px; }
 .nav h1               { text-transform: lowercase; font-size: 1.5rem; font-weight: 500; }
-.nav a                { text-decoration: none; color: var(--cl-color-link-nav); font-style: italic; font-family: "times new roman"; }
+.nav a                { text-decoration: none; color: var(--cl-link-nav); font-style: italic; font-family: var(--ft-logofm); }
 .nav a:hover          { color: var(--cl-blue2); text-shadow: var(--cl-gray2) 0.01px 0 0.2px; }
 
 /* General settings for the content area */
 .page                 { line-height: 1.6; flex-grow: 1; }
 .page article         { max-width: 850px; margin: 0 auto; }
-.page h1              { color: var(--cl-color-h1); font-weight: 50; }
-.page h2              { color: var(--cl-color-h2); font-weight: 500; }
+.page h1              { color: var(--cl-h1); font-weight: 50; }
+.page h2              { color: var(--cl-h2); font-weight: 500; }
 .page p               { margin-bottom: 1.5rem; }
-.page a               { color: var(--cl-color-link-page); text-decoration: none; }
+.page a               { color: var(--cl-link-page); text-decoration: none; }
 .page a:hover         { text-decoration: underline; }
 .page h1              { font-size: 28pt; }
 .page h2              { font-size: 14pt; }
 
 /* Index page */
-.index .banner        { background-color: var(--cl-banner-bg); color: var(--cl-banner-fg); text-align: center; }
-.index .banner h1     { font-size: 80px; font-style: italic; font-family: "times new roman"; margin: 0; padding: 50px 0 20px 0; }
+.index .banner        { background: var(--cl-banner-bg); color: var(--cl-banner-fg); text-align: center; }
+.index .banner h1     { font-size: 80px; font-style: italic; font-family: var(--ft-logofm); margin: 0; padding: 50px 0 20px 0; }
 .index .banner .sub   { font-size: 30px; font-weight: 100; margin: 0; padding: 0 0 50px 0; color: #aaa; }
-.index .menu          { background-color: var(--cl-color-bg-light); border-bottom: 1px solid #94979B39 ; }
+.index .menu          { background: var(--cl-bg-light); border-bottom: 1px solid var(--cl-border-nav); }
 .index .menu ul       { max-width: 850px; margin: 0 auto; padding: 0; list-style: none; display: flex; }
 .index .menu li       { margin-right: 20px; text-transform: lowercase; }
-.index .menu a        { text-decoration: none; padding: 20px 0; display: block; color: var(--cl-color-link-nav); }
+.index .menu a        { text-decoration: none; padding: 20px 0; display: block; color: var(--cl-link-nav); }
 .index .menu a:hover  { text-decoration: underline; }
 
 /* HTML generated off of Org-Mode files */
-.outline-2 h2         { margin: 40px 0; color: var(--cl-color-h1); font-size: var(--cl-font-size-0); font-weight: 50;  }
+.outline-2 h2         { margin: 40px 0; color: var(--cl-h1); font-size: var(--ft-size-0); font-weight: 50;  }
 .outline-text-2,
 .outline-text-3       { margin-left: 50px; }
 
@@ -155,14 +148,14 @@ code                  { background-color: var(--cl-gray1); }
 .api > div            { padding: 20px; }
 
 /* -- Left menu with index of all sections & symbols  */
-.api-menu             { background-color: var(--cl-color-bg-light); border-right: 1px solid #94979B39 ; }
-.api-menu a           { text-decoration: none; color: var(--cl-color-link-menu); }
-.api-menu a:hover     { color: var(--cl-color-link-menu-hover); }
+.api-menu             { background: var(--cl-bg-light); border-right: 1px solid var(--cl-border-nav); }
+.api-menu a           { text-decoration: none; color: var(--cl-link-menu); }
+.api-menu a:hover     { color: var(--cl-link-menu-hover); }
 .api-menu ul          { list-style: square; }
 .api-menu ul li       { margin-bottom: 8px; }
 
 /* -- Right side of the API page with the actual content */
-.page .section        { border-bottom: solid 1px #94979B39; }
+.page .section        { border-bottom: solid 1px var(--cl-border-nav); }
 .page .docstring      { padding-left: 50px; }
 .page .symbol         { margin-bottom: 50px; }
 
