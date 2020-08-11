@@ -124,6 +124,7 @@ code                  { background: var(--cl-preformatted); }
 .footer               { background-color: var(--cl-footer-bg); padding: 100px; }
 .footer ul            { max-width: var(--dm-page-width); margin: 0 auto; list-style: none; padding: 0; display: flex; }
 .footer li            { margin-right: 20px; }
+.footer li:last-child { margin-right: 0; }
 .footer img           { vertical-align: middle; padding-bottom: 3px; transition: 0.5s; width: 16px; height: 16px; }
 .footer img:hover     { transition: 0.5s; width: 19px; height: 19px; }
 .footer a             { color: var(--cl-link-page); text-decoration: none; }
@@ -181,6 +182,8 @@ code                  { background: var(--cl-preformatted); }
   and (max-device-width: 812px) {
     /* General */
     .document         { width: 100%; }
+    .footer           { padding: 100px 20px; text-align: center; }
+    .footer ul        { justify-content: center; }
 
     /* Index */
     .index .menu      { padding: 0 20px; }
