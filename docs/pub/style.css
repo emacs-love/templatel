@@ -2,11 +2,13 @@
     /* Fonts */
     --ft-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
     --ft-logofm: Times New Roman, Liberation Serif;
-
     --ft-size-0: 2.6rem;
     --ft-size-1: 1rem;
     --ft-size-2: .5rem;
     --ft-size-3: .1rem;
+
+    /* Dimmensions */
+    --dm-page-width: 850px;
 
     /* Layout Variables */
     --cl-background: #ffffff;
@@ -39,7 +41,8 @@
     --cl-banner-fg:       var(--cl-gray2);
     --cl-border-src:      var(--cl-gray3);
     --cl-border-nav:      var(--cl-gray4);
-    --cl-preformatted:    var(--cl-gray1)
+    --cl-preformatted:    var(--cl-gray1);
+    --cl-footer-bg:       var(--cl-gray1);
 
     /* -- Code Block Colors -- */
 
@@ -117,9 +120,21 @@ code                  { background: var(--cl-preformatted); }
 .nav a                { text-decoration: none; color: var(--cl-link-nav); font-style: italic; font-family: var(--ft-logofm); }
 .nav a:hover          { color: var(--cl-blue2); text-shadow: var(--cl-gray2) 0.01px 0 0.2px; }
 
+/* Footer */
+.footer               { background-color: var(--cl-footer-bg); padding: 100px; }
+.footer ul            { max-width: var(--dm-page-width); margin: 0 auto; list-style: none; padding: 0; display: flex; }
+.footer li            { margin-right: 20px; }
+.footer img           { vertical-align: middle; padding-bottom: 3px; transition: 0.5s; width: 16px; height: 16px; }
+.footer img:hover     { transition: 0.5s; width: 19px; height: 19px; }
+.footer a             { color: var(--cl-link-page); text-decoration: none; }
+.footer a:hover       { text-decoration: underline; }
+.footer .ack          { max-width: var(--dm-page-width); margin: 0 auto; padding-top: 50px; }
+.footer a.M-x         { width: 20px; display: inline-block; text-align: center; }
+.footer a:hover.M-x   { text-decoration: none; }
+
 /* General settings for the content area */
-.page                 { line-height: 1.6; flex-grow: 1; }
-.page article         { max-width: 850px; margin: 0 auto; }
+.page                 { line-height: 1.6; flex-grow: 1; margin-bottom: 100px; }
+.page article         { max-width: var(--dm-page-width); margin: 0 auto; }
 .page h1              { color: var(--cl-h1); font-weight: 50; }
 .page h2              { color: var(--cl-h2); font-weight: 500; }
 .page p               { margin-bottom: 1.5rem; }
@@ -133,8 +148,8 @@ code                  { background: var(--cl-preformatted); }
 .index .banner h1     { font-size: 80px; font-style: italic; font-family: var(--ft-logofm); margin: 0; padding: 50px 0 20px 0; }
 .index .banner .sub   { font-size: 30px; font-weight: 100; margin: 0; padding: 0 0 50px 0; color: #aaa; }
 .index .menu          { background: var(--cl-bg-light); border-bottom: 1px solid var(--cl-border-nav); }
-.index .menu ul       { max-width: 850px; margin: 0 auto; padding: 0; list-style: none; display: flex; }
-.index .menu li       { margin-right: 20px; text-transform: lowercase; }
+.index .menu ul       { max-width: var(--dm-page-width); margin: 0 auto; padding: 0; list-style: none; display: flex; }
+.index .menu li       { margin-right: 20px; }
 .index .menu a        { text-decoration: none; padding: 20px 0; display: block; color: var(--cl-link-nav); }
 .index .menu a:hover  { text-decoration: underline; }
 
