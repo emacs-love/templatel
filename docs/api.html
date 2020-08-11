@@ -48,10 +48,6 @@
           
             <li><a href="#symbol-templatel-env-render">templatel-env-render</a></li>
           
-            <li><a href="#symbol-templatel-env-run-importfn">templatel-env-run-importfn</a></li>
-          
-            <li><a href="#symbol-templatel-env-source">templatel-env-source</a></li>
-          
         </ul>
       
         <h3>
@@ -176,7 +172,44 @@ Add TEMPLATE to ENV under key NAME.</p>
                 
                   <div class="docstring">
                     <p>
-Multiple template manager setup with OPTIONS.</p>
+Create new template environment configured via OPTIONS.
+</p>
+
+<p>
+Both
+<a href="#symbol-templatel-render-string">templatel-render-string</a>
+and
+<a href="#symbol-templatel-render-string">templatel-render-file</a>
+provide a one-call interface to render a template from a string
+or from a file respectively.  Although convenient, neither or
+these two functions can be used to render templates that use <code>{%
+extends %}</code>.
+</p>
+
+<p>
+This decision was made to keep <i>templatel</i> extensible allowing
+users to define how new templates should be found.  It also keeps
+the library simpler as a good side-effect.
+</p>
+
+<p>
+To get template inheritance to work, a user defined import
+function must be attached to a template environment.  The user
+defined function is responsible for finding and adding templates
+to the environment.  The following snippet demonstrates how to
+create the simplest import function and provide it to an
+environment via <code>:importfn</code> parameter.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(templatel-env-new
+ <span class="org-builtin">:importfn</span> (<span class="org-keyword">lambda</span>(environment name)
+             (templatel-env-add-template
+              environment name
+              (templatel-new-from-file
+               (expand-file-name name <span class="org-string">"/home/user/templates"</span>)))))
+</pre>
+</div>
 
                   </div>
                 
@@ -191,34 +224,6 @@ Multiple template manager setup with OPTIONS.</p>
                   <div class="docstring">
                     <p>
 Render template NAME within ENV with VARS as parameters.</p>
-
-                  </div>
-                
-              </div>
-            
-              <div class="symbol" id="symbol-templatel-env-run-importfn">
-                
-                  <h2>(templatel-env-run-importfn (env name))</h2>
-                
-
-                
-                  <div class="docstring">
-                    <p>
-Run import with NAME within ENV.</p>
-
-                  </div>
-                
-              </div>
-            
-              <div class="symbol" id="symbol-templatel-env-source">
-                
-                  <h2>(templatel-env-source (env name))</h2>
-                
-
-                
-                  <div class="docstring">
-                    <p>
-Get source code of template NAME within ENV.</p>
 
                   </div>
                 
