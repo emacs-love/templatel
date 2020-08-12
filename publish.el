@@ -77,5 +77,4 @@
  :template "autodoc.html"
  :output "docs/api.html")
 
-(provide 'publish)
 ;;; publish.el ends here

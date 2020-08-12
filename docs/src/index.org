@@ -3,10 +3,9 @@
 
 * Introduction
 
-  templatel is the modern templating language that was missing for
+  /templatel/ is the modern templating language that was missing for
   Emacs-Lisp.  It provides variable substitution and control flow
-  through a clean and powerful language inspired by the well known
-  language [[https://jinja.palletsprojects.com/][Jinja]].
+  through a clean and powerful language inspired by Python's [[https://jinja.palletsprojects.com/][Jinja]].
 
   #+BEGIN_SRC jinja2
   {% extends "base.html" %}
