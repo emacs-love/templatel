@@ -307,6 +307,22 @@
             '(("names" . ("One" "Two" "Three"))))
            "One Two Three ")))
 
+(ert-deftest render-if-else-elif-no-else ()
+  (should
+   (equal
+    (templatel-render-string
+     "before{% if post.image %}postimg{% elif blog.image %}blogimg{% endif %}after"
+     '(("post" . ())
+       ("blog" . ())))
+    "beforeafter"))
+  (should
+   (equal
+    (templatel-render-string
+     "{% block x %}before{% if post.image %}postimg{% elif blog.image %}blogimg{% endif %}after{% endblock %}"
+     '(("post" . ())
+       ("blog" . ())))
+    "beforeafter")))
+
 (ert-deftest render-if-else-elif-two-stmt ()
   (should
    (equal
@@ -486,6 +502,35 @@
                    ("Element"
                     ("Identifier" . "name"))))
                  ("Text" . "\n")))
+               ("Text" . "\n"))))))
+
+(ert-deftest template-elif-no-else ()
+  (let* ((s (templatel--scanner-new "
+{% if one %}
+  One
+{% elif two %}
+  Two
+{% elif three %}
+  Three
+{% endif %}
+" "<string>"))
+         (txt (templatel--parser-template s)))
+    (should (equal
+             txt
+             '("Template"
+               ("Text" . "\n")
+               ("IfElif"
+                ("Expr"
+                 ("Element"
+                  ("Identifier" . "one")))
+                ("Template" ("Text" . "\n  One\n"))
+                (("Elif"
+                  ("Expr"
+                   ("Element"
+                    ("Identifier" . "two")))
+                  ("Template" ("Text" . "\n  Two\n")))
+                 ("Elif" ("Expr" ("Element" ("Identifier" . "three")))
+                  ("Template" ("Text" . "\n  Three\n")))))
                ("Text" . "\n"))))))
 
 (ert-deftest template-elif ()

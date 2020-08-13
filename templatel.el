@@ -535,7 +535,11 @@
          (tmpl (templatel--parser-template scanner))
          (elif (templatel--scanner-one-or-more scanner (lambda() (templatel--parser-elif scanner))))
          (else (templatel--scanner-optional scanner (lambda() (templatel--parser-else scanner)))))
-    (cons "IfElif" (list expr tmpl elif else))))
+    (if else
+        (cons "IfElif" (list expr tmpl elif else))
+      (progn
+        (templatel--parser-endif scanner)
+        (cons "IfElif" (list expr tmpl elif))))))
 
 ;; _If Expr _STM_CLOSE Template Else
 (defun templatel--parser-if-stm-else (scanner)
