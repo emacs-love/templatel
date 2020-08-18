@@ -53,3 +53,11 @@
   lil version, it's still too early to say it's stable.  Until we
   reach 1.0, expect changes in the ~API~ as well as in the language
   itself.
+
+* Changelog
+
+** 0.1.1
+   * Fix ~elif~ without else statements
+   * Make ~templatel-env-{source,run-importfn}~ private
+   * Pretty big refactoring cleaning up the symbol names
+   * Documentation of the project was kicked off
