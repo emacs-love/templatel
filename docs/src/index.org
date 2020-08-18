@@ -46,3 +46,10 @@
    #+BEGIN_SRC emacs-lisp
    (add-to-list 'load-path "~/src/templatel")
    #+END_SRC
+
+* Project Status
+
+  Although /templatel/ has been been functional since it's very first
+  lil version, it's still too early to say it's stable.  Until we
+  reach 1.0, expect changes in the ~API~ as well as in the language
+  itself.
