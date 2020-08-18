@@ -202,8 +202,7 @@
 
 (defun templatel--token-expr-op (scanner)
   "Read '{{' off SCANNER's input."
-  (templatel--scanner-matchs scanner "{{")
-  (templatel--parser-_ scanner))
+  (templatel--scanner-matchs scanner "{{"))
 
 (defun templatel--token-stm-op (scanner)
   "Read '{%' off SCANNER's input."
@@ -668,6 +667,7 @@
 (defun templatel--parser-expression (scanner)
   "SCANNER."
   (templatel--token-expr-op scanner)
+  (templatel--parser-_ scanner)
   (let ((expr (templatel--parser-expr scanner)))
     (templatel--parser-cut
      scanner

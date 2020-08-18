@@ -420,6 +420,15 @@
 
 (ert-deftest render-template-variable ()
   (should (equal
+           (templatel-render-string "<h1>Hello {{name }}</h1>" '(("name" . "Emacs")))
+           "<h1>Hello Emacs</h1>"))
+  (should (equal
+           (templatel-render-string "<h1>Hello {{ name}}</h1>" '(("name" . "Emacs")))
+           "<h1>Hello Emacs</h1>"))
+  (should (equal
+           (templatel-render-string "<h1>Hello {{name}}</h1>" '(("name" . "Emacs")))
+           "<h1>Hello Emacs</h1>"))
+  (should (equal
            (templatel-render-string "<h1>Hello {{ name }}</h1>" '(("name" . "Emacs")))
            "<h1>Hello Emacs</h1>")))
 
