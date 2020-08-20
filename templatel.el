@@ -209,7 +209,7 @@
   (templatel--scanner-matchs scanner "{%"))
 
 (defun templatel--token-stm-op (scanner)
-  "Read '{%' off SCANNER's input."
+  "Read '{%' off SCANNER's input, with optional spaces afterwards."
   (templatel--token-stm-op- scanner)
   (templatel--parser-_ scanner))
 
@@ -454,7 +454,7 @@
 ;; --- Parser ---
 
 (defun templatel--parser-rstrip-comment (scanner thing)
-  "SCANNER THING."
+  "Parse THING then try to consume spaces from SCANNER."
   (let ((value (funcall thing scanner)))
     (templatel--scanner-zero-or-more
      scanner
