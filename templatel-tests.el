@@ -300,6 +300,19 @@
 (ert-deftest render-expr-number ()
   (should (equal (templatel-render-string "{{ 1280 }}" '()) "1280")))
 
+(ert-deftest render-template-no-sp-stm ()
+  (should (equal
+           (templatel-render-string
+            "{%for name in names%}{{name}} {%endfor%}"
+            '(("names" . ("One" "Two" "Three"))))
+           "One Two Three "))
+  (should
+   (equal
+    (templatel-render-string
+     "{%if false%}aaa{{ b }}aaa{%elif true%}b{%else%}c{%endif%}"
+     '())
+    "b")))
+
 (ert-deftest render-template-forloop ()
   (should (equal
            (templatel-render-string

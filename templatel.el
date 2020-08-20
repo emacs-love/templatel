@@ -204,9 +204,13 @@
   "Read '{{' off SCANNER's input."
   (templatel--scanner-matchs scanner "{{"))
 
+(defun templatel--token-stm-op- (scanner)
+  "Read '{%' off SCANNER's input."
+  (templatel--scanner-matchs scanner "{%"))
+
 (defun templatel--token-stm-op (scanner)
   "Read '{%' off SCANNER's input."
-  (templatel--scanner-matchs scanner "{%")
+  (templatel--token-stm-op- scanner)
   (templatel--parser-_ scanner))
 
 (defun templatel--token-comment-op (scanner)
@@ -489,7 +493,7 @@
            scanner
            (list
             (lambda() (templatel--token-expr-op scanner))
-            (lambda() (templatel--token-stm-op scanner))
+            (lambda() (templatel--token-stm-op- scanner))
             (lambda() (templatel--token-comment-op scanner))))))
        (let ((chr (templatel--scanner-any scanner)))
          (if (eq chr ?\n)
