@@ -38,9 +38,9 @@
     <div class="page">
       <article>
         
-<div id="outline-container-orgf536526" class="outline-2">
-<h2 id="orgf536526">Introduction</h2>
-<div class="outline-text-2" id="text-orgf536526">
+<div id="outline-container-orga8cf160" class="outline-2">
+<h2 id="orga8cf160">Introduction</h2>
+<div class="outline-text-2" id="text-orga8cf160">
 <p>
 <i>templatel</i> is the modern templating language that was missing for
 Emacs-Lisp.  It provides variable substitution and control flow
@@ -48,7 +48,7 @@ through a clean and powerful language inspired by Python's <a href="https://jinj
 </p>
 
 <div class="org-src-container">
-<pre class="src src-jinja2"><span class="org-function-name">{%</span> <span class="org-builtin">extends</span> "base.html" <span class="org-function-name">%}</span>
+<pre class="src src-jinja2"><span class="org-function-name">{%</span> <span class="org-builtin">extends</span> <span class="org-string">"base.html"</span> <span class="org-function-name">%}</span>
 <span class="org-function-name">{%</span> <span class="org-keyword">block</span> title <span class="org-function-name">%}</span>&lt;<span class="org-function-name">h1</span>&gt;<span class="org-type">{{</span><span class="org-underline"><span class="org-bold"> </span></span><span class="org-variable-name">title</span><span class="org-underline"><span class="org-bold"> </span></span><span class="org-type">}}</span>&lt;/<span class="org-function-name">h1</span>&gt;<span class="org-function-name">{%</span> <span class="org-keyword">endblock</span> <span class="org-function-name">%}</span>
 <span class="org-function-name">{%</span> <span class="org-keyword">block</span> body <span class="org-function-name">%}</span>
   &lt;<span class="org-function-name">ul</span>&gt;
@@ -62,13 +62,13 @@ through a clean and powerful language inspired by Python's <a href="https://jinj
 </div>
 </div>
 
-<div id="outline-container-orge373894" class="outline-2">
-<h2 id="orge373894">Installation</h2>
-<div class="outline-text-2" id="text-orge373894">
+<div id="outline-container-org76349e3" class="outline-2">
+<h2 id="org76349e3">Installation</h2>
+<div class="outline-text-2" id="text-org76349e3">
 </div>
-<div id="outline-container-org6c094b2" class="outline-3">
-<h3 id="org6c094b2">Via Melpa</h3>
-<div class="outline-text-3" id="text-org6c094b2">
+<div id="outline-container-org7eb9e60" class="outline-3">
+<h3 id="org7eb9e60">Via Melpa</h3>
+<div class="outline-text-3" id="text-org7eb9e60">
 <p>
 The simplest and recommended way to get yourself a copy of
 <code>templatel</code> is to install it via <a href="https://melpa.org">MELPA</a>.  You must have something
@@ -89,9 +89,9 @@ haven't done that in a while.
 </div>
 </div>
 
-<div id="outline-container-org07ec031" class="outline-3">
-<h3 id="org07ec031">Manually</h3>
-<div class="outline-text-3" id="text-org07ec031">
+<div id="outline-container-org26eb9a0" class="outline-3">
+<h3 id="org26eb9a0">Manually</h3>
+<div class="outline-text-3" id="text-org26eb9a0">
 <p>
 If you don't want to use any package installer, you can just clone
 the repository somewhere on your computer, let's say
@@ -107,9 +107,9 @@ your Emacs configuration so the library can be found by <code>require</code>.
 </div>
 </div>
 
-<div id="outline-container-org96184c4" class="outline-2">
-<h2 id="org96184c4">Project Status</h2>
-<div class="outline-text-2" id="text-org96184c4">
+<div id="outline-container-org7164d69" class="outline-2">
+<h2 id="org7164d69">Project Status</h2>
+<div class="outline-text-2" id="text-org7164d69">
 <p>
 Although <i>templatel</i> has been been functional since it's very first
 lil version, it's still too early to say it's stable.  Until we
@@ -119,13 +119,28 @@ itself.
 </div>
 </div>
 
-<div id="outline-container-org1e76549" class="outline-2">
-<h2 id="org1e76549">Changelog</h2>
-<div class="outline-text-2" id="text-org1e76549">
+<div id="outline-container-org3ad8f65" class="outline-2">
+<h2 id="org3ad8f65">Changelog</h2>
+<div class="outline-text-2" id="text-org3ad8f65">
 </div>
-<div id="outline-container-orgac4b03f" class="outline-3">
-<h3 id="orgac4b03f">0.1.1</h3>
-<div class="outline-text-3" id="text-orgac4b03f">
+<div id="outline-container-orge507fd5" class="outline-3">
+<h3 id="orge507fd5">0.1.2</h3>
+<div class="outline-text-3" id="text-orge507fd5">
+<ul class="org-ul">
+<li>Support for user defined filter functions via
+<code>templatel-env-add-filter</code> and <code>templatel-env-remove-filter</code>.</li>
+<li>Fix parsing expressions and statements without spaces after
+brackets, e.g.: <code>{{var}}</code>, <code>{%if stuff%}</code></li>
+<li>Parse and evaluate standalone function calls.  E.g.: <code>{{ super() }}</code></li>
+<li>Breaking change: <code>super()</code> is now a function, not a variable
+anymore.  But still only exists while blocks are evaluated</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgbdceb93" class="outline-3">
+<h3 id="orgbdceb93">0.1.1</h3>
+<div class="outline-text-3" id="text-orgbdceb93">
 <ul class="org-ul">
 <li>Fix <code>elif</code> without else statements</li>
 <li>Make <code>templatel-env-{source,run-importfn}</code> private</li>

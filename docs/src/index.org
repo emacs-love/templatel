@@ -56,6 +56,15 @@
 
 * Changelog
 
+** 0.1.2
+   * Support for user defined filter functions via
+     ~templatel-env-add-filter~ and ~templatel-env-remove-filter~.
+   * Fix parsing expressions and statements without spaces after
+     brackets, e.g.: ~{{var}}~, ~{%if stuff%}~
+   * Parse and evaluate standalone function calls.  E.g.: ~{{ super() }}~
+   * Breaking change: ~super()~ is now a function, not a variable
+     anymore.  But still only exists while blocks are evaluated
+
 ** 0.1.1
    * Fix ~elif~ without else statements
    * Make ~templatel-env-{source,run-importfn}~ private
