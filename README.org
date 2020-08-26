@@ -8,285 +8,34 @@
 
 * templatel
 
-  A templating language for Emacs-Lisp.
+  A modern templating language for Emacs-Lisp.  Inspired on [[https://github.com/pallets/jinja/][Jinja]],
+  /templatel/ brings a high level language for expanding variables
+  with conditional and loop control flow structures.
 
-  Although deeply inspired by [[https://jinja.palletsprojects.com/][Jinja]], this project doesn't exactly aim
-  to be a clone of it for Emacs, but to be a good alternative if
-  anyone needs a template language.  That being said, contributions to
-  increase compatibility between ~templatel~ and ~Jinja~ will be
-  certainly welcome.
+** How does it look like
 
-  This is what it looks like in action:
-
-  #+begin_src web
-  <h1>{{ title }}</h1>
-  <ul>
-  {% for user in users %}
-    <li><a href="{{ user.url }}">{{ user.name }}</a></li>
-  {% endfor %}
-  </ul>
-  #+end_src
-
-  That can be rendered with the following Emacs Lisp code:
-
-  #+begin_src emacs-lisp
-  (templatel-render-file "tmpl.html.jinja"
-                         '(("title" . "A nice web page")
-                           ("users" . ((("url" . "http://clarete.li")
-                                        ("name" . "link"))
-                                       (("url" . "http://gnu.org")
-                                        ("name" . "Gnu!!"))))))
-  #+end_src
-
-  Right about now, the environment (or the variable bag) needs to be
-  an assoc list.  There are plans to make it easy to switch to other
-  lookup methods.
-
-** Text
-
-   Everting that isn't either an expression or a statement, is just
-   text.
-
-** Expressions
-
-*** Literals
-
-    The string representation of literal expressions is emitted in
-    when they're encountered within expression blocks.
-
-    1. Numbers
-
-       #+BEGIN_SRC web
-       {{ 1 }}
-       #+END_SRC
-
-    2. Strings
-
-       #+BEGIN_SRC web
-       {{ "a string" }}
-       #+END_SRC
-
-*** Variables
-
-    #+BEGIN_SRC web
-    Hi {{ name }}!
-    #+END_SRC
-
-*** Filters
-
-    * [ ] batch
-    * [ ] default
-    * [ ] escape
-    * [ ] first
-    * [ ] groupby
-    * [ ] indent
-    * [X] int
-    * [ ] join
-    * [ ] last
-    * [ ] length
-    * [X] lower
-    * [ ] max
-    * [ ] min
-    * [ ] random
-    * [ ] replace
-    * [ ] reverse
-    * [ ] round
-    * [X] sum
-    * [ ] title
-    * [ ] trim
-    * [ ] truncate
-    * [ ] unique
-    * [X] upper
-    * [ ] wordcount
-
-** Statements
-
-*** If
-
-**** Simple case
-
-     #+BEGIN_SRC web
-     {% if user %}
-       <h2>{{ user.name }}</h2>
-     {% endif %}
-     #+END_SRC
-
-**** Multiple conditions
-
-     #+BEGIN_SRC web
-     {% if user.anonymous %}
-       <a href="/login"></a>
-     {% elif user.admin %}
-       <a href="/admin"></a>
-     {% else %}
-       <a href="/profile"></a>
-     {% endif %}
-     #+END_SRC
-
-*** For
-
-**** Support iterating over lists
-
-     #+BEGIN_SRC emacs-lisp
-     (templatel-render-file "forloops.html"
-      '(("users" . ("Moe" "Larry" "Curly"))))
-     #+END_SRC
-
-     #+BEGIN_SRC web
-     <ul>
-     {% for name in names %}
-       <li>{{ name }}</li>
+   #+begin_src jinja
+   <h1>{{ title }}</h1>
+   <ul>
+     {% for user in users %}
+       <li><a href="{{ user.url }}">{{ user.name }}</a></li>
      {% endfor %}
-     </ul>
-     #+END_SRC
+   </ul>
+   #+end_src
 
-**** Support iterating over pairs
+   That can be rendered with the following Emacs Lisp code:
 
-     #+BEGIN_SRC emacs-lisp
-     (templatel-render-file "forloops-with-pairs.html"
-      '(("users" . ((10 "Moe") (20 "Larry") (30 "Curly")))))
-     #+END_SRC
+   #+begin_src emacs-lisp
+   (templatel-render-file "tmpl.html.jinja"
+                          '(("title" . "A nice web page")
+                            ("users" . ((("url" . "http://clarete.li")
+                                         ("name" . "link"))
+                                        (("url" . "http://gnu.org")
+                                         ("name" . "Gnu!!"))))))
+   #+end_src
 
-     #+BEGIN_SRC web
-     <ul>
-     {% for id, name in users %}
-       <li>{{ user[0] }}: {{ user[1] }}</li>
-     {% endfor %}
-     </ul>
-     #+END_SRC
+** Documentation
 
-*** Include (not working)
-
-    #+BEGIN_SRC web
-    {% include "file.html" %}
-    #+END_SRC
-    
-*** Extends
-    #+BEGIN_SRC web
-    {% extends "parent.html" %}
-    #+END_SRC
-
-    The ~extends~ statement mostly only makes sense when used in
-    conjunction with one or more ~block~ statements.  The most basic
-    use case of this feature is to create a layout and share it among
-    different pages. E.g.:
-
-    *layout.html*
-    #+begin_src html
-<html>
-  <head>
-    <title>{% block title %}Home{% endblock %}</title>
-  </head>
-  <body>
-  {% block body %}Content{% endblock %}
-  </body>
-</html>
-    #+end_src
-
-    *post.html*
-    #+begin_src html
-    {% extends "layout.html" %}
-    {% block body %}
-    <h1>{{ post.title }}</h1>
-    <span class="date">{{ post.pub_date }}</span>
-    <hr>
-    <p>{{ post.html_content|safe_html }}</p>
-    {% endblock %}
-    #+end_src
-
-    When *post.html* is rendered, it will start rendering it from
-    *layout.html*, filling in the blocks overridden in *post.html* or
-    its default value.
-
-    This functionality happens to be recursive, one could extend a
-    template that extends another template. E.g.:
-
-    #+begin_src text
-    root.html
-      +--section1.html        ; inherit from root.html
-      |   +--posts-sec1.html  ; inherit from section1.html
-      |   +--slides-sec1.html ; inherit from section1.html
-      +--section2.html        ; inherit from root.html
-          +--posts-sec2.html  ; inherit from section2.html
-          +--slides-sec2.html ; inherit from section2.html
-    #+end_src
-
-    In that scenario, child templates can only override blocks of
-    their immediate parent.  eg.: ~{posts,slides}-sec{1,2}.html~ can
-    override blocks in ~section{1,2}.html~ and ~section{1,2}.html~ can
-    override blocks in ~root.html~.
-
-    *~importfn~*
-
-    It's up to you to define how templates are going to be found by
-    the extends statement.  First, it can't be used without the
-    environment API.  If the function ~templatel-env-new~ doesn't
-    receive the ~:importfn~ parameter, the ~extends~ statement will
-    roduce a runtime error.
-
-    Here's a pretty simple implementation that walks a list of paths
-    trying to find a given template.
-
-    #+begin_src emacs-lisp
-(require 'templatel)
-
-(defun template-find (directories name)
-  "Find template NAME within DIRECTORIES."
-  (if (null directories)
-      ;; didn't find it. Signal an error upwards:
-      (signal
-       'file-missing
-       (list "" "File not found" (format "Template `%s' doesn't exist" name)))
-    ;; Let's see if we can find it in the next directory
-    (let* ((path (expand-file-name name (car directories)))
-           (attrs (file-attributes path)))
-      (cond
-       ;; doesn't exist; try next dir
-       ((null attrs) (template-find (cdr directories) name))
-       ;; is a directory
-       ((not (null (file-attribute-type attrs))) nil)
-       ;; we found it
-       ((null (file-attribute-type attrs)) path)))))
-
-(defun template-render (template-dirs template-name vars)
-  "Render template NAME from TEMPLATE-DIRS interpolated with VARS."
-  ;; Create a new template environment attaching an import function
-  (let ((env (templatel-env-new
-              :importfn #'(lambda(en name)
-                            ;; The import function will add a new
-                            ;; template to the environment
-                            (templatel-env-add-template
-                             en name
-                             (templatel-new-from-file
-                              ;; Will search throughout the same
-                              ;; `template-dirs` used by the template
-                              ;; that imported it
-                              (template-find template-dirs name)))))))
-    (templatel-env-add-template
-     env template-name
-     (templatel-new-from-file (template-find template-dirs template-name)))
-    (templatel-env-render env template-name vars)))
-
-(message "%s" (template-render '("~/tmp/templates/" "/blog/templates/") "post.html" '(("name" . "x"))))
-    #+end_src
-
-*** Block
-    #+BEGIN_SRC web
-    {% block header %}{{ title }}{% endblock %}
-    {% block body %}<h1>{{ title }}</h1><p>{{ text }}</p>{% endblock %}
-    #+END_SRC
-
-** A TODO list
-   * compile to elc
-   * operators:
-     * in, lshift, rshift
-     * slash vs dslash
-   * more filters
-   * work with hash-tables and other data structures
-   * Include external files
-   * For loop variables
-     * idex, index0, revindex, revindex0
-     * first, last, length, cycle
-     * previtem, nextitem
-   * For loop destructuring key & value
-   * Whitespace control
+   * Website: https://clarete.li/templatel
+   * Code: https://github.com/clarete/templatel
+   * Issues: https://github.com/clarete/templatel/issues
