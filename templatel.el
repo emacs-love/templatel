@@ -1540,7 +1540,7 @@ environment via ~:importfn~ parameter.
 (defun templatel--env-filter (env name)
   "Get filter NAME within ENV."
   (let ((entry (gethash name (elt env 2))))
-    (cons name entry)))
+    (or (and entry (cons name entry)))))
 
 (defun templatel--env-run-importfn (env name)
   "Run import with NAME within ENV."

@@ -90,6 +90,10 @@
 ;; --- Renderer --
 
 (ert-deftest render-standalone-filter-syntax ()
+  (condition-case err
+      (templatel-render-string "{{ stuff() }}" '())
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "Filter `stuff' doesn't exist")))))
   (let* ((env (templatel-env-new))
          (_ (templatel-env-add-filter env "mysum" (lambda(a b) (+ a b))))
          (_ (templatel-env-add-template env "page.html" (templatel-new "{{ mysum(2, 3) }}")))
