@@ -1528,11 +1528,31 @@ environment via ~:importfn~ parameter.
   (puthash name template (elt env 0)))
 
 (defun templatel-env-add-filter (env name filter)
-  "Add FILTER to ENV under key NAME."
+  "Add FILTER to ENV under key NAME.
+
+This is how /templatel/ supports user-defined filters.  Let's say
+there's a template environment that needs to provide a new filter
+called *addspam* that adds the word \"spam\" right after text.:
+
+#+begin_src emacs-lisp
+\(let ((env (templatel-env-new)))
+  (templatel-env-add-filter env \"spam\" (lambda(stuff) (format \"%s spam\" stuff)))
+  (templatel-env-add-template env \"page.html\" (templatel-new \"{{ spam(\\\"hi\\\") }}\"))
+  (templatel-env-render env \"page.html\" '()))
+#+end_src
+
+The above code would render something like ~hi spam~.
+
+Use
+[[anchor:symbol-templatel-env-remove-filter][templatel-env-remove-filter]]
+to remove filters added with this function."
   (puthash name filter (elt env 2)))
 
 (defun templatel-env-remove-filter (env name)
-  "Remove filter from ENV under key NAME."
+  "Remove filter from ENV under key NAME.
+
+This function reverts the effect of a previous call to
+[[anchor:symbol-templatel-env-add-filter][templatel-env-add-filter]]."
   (remhash name (elt env 2)))
 
 (defun templatel--env-source (env name)
