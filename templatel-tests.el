@@ -89,6 +89,18 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-standalone-filter-syntax ()
+  (let* ((env (templatel-env-new))
+         (_ (templatel-env-add-filter env "mysum" (lambda(a b) (+ a b))))
+         (_ (templatel-env-add-template env "page.html" (templatel-new "{{ mysum(2, 3) }}")))
+         (out (templatel-env-render env "page.html" '())))
+    (should (equal out "5")))
+  (let* ((env (templatel-env-new))
+         (_ (templatel-env-add-filter env "spam" (lambda(spam) (format "%s%s%s%s" spam spam spam spam))))
+         (_ (templatel-env-add-template env "page.html" (templatel-new "{{ spam(\"sPaM\") }}")))
+         (out (templatel-env-render env "page.html" '())))
+    (should (equal out "sPaMsPaMsPaMsPaM"))))
+
 (ert-deftest render-user-filter ()
   (let ((env (templatel-env-new)))
     (templatel-env-add-filter env "greetings" (lambda(name p) (format "Hello %s%s%s%s" name p p p)))

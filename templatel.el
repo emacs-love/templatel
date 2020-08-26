@@ -1241,6 +1241,34 @@ function call."
                       (list ,@(templatel--compiler-run params))))
                rt/valstk)))))
 
+(defun templatel--compiler-filter-fncall-standalone (item)
+  "Compiler standalone filter with params from ITEM.
+
+Example:
+
+  {{ fn(val) }}
+
+Will be converted into the following:
+
+  (fn val)
+
+Notice the parameter list is compiled before being passed to the
+function call."
+  (let ((fname (cdar item))
+        (params (cdr item)))
+    `(let ((entry ,(templatel--compiler-get-filter fname)))
+       (if (null entry)
+           (signal
+            'templatel-syntax-error
+            (format "Filter `%s' doesn't exist" ,fname))
+         (car
+          (progn
+            ,@(templatel--compiler-run params)
+            (push (apply
+                   (cdr entry)
+                   (mapcar (lambda(_) (pop rt/valstk)) ',params))
+                  rt/valstk)))))))
+
 (defun templatel--compiler-filter-item (item)
   "Handle compilation of single filter described by ITEM.
 
@@ -1405,6 +1433,7 @@ call `templatel--compiler-filter-item' on each entry."
     (`("Identifier"     . ,a) (templatel--compiler-identifier a))
     (`("Attribute"      . ,a) (templatel--compiler-attribute a))
     (`("Filter"         . ,a) (templatel--compiler-filter-list a))
+    (`("FnCall"         . ,a) (templatel--compiler-filter-fncall-standalone a))
     (`("Expr"           . ,a) (templatel--compiler-expr a))
     (`("Expression"     . ,a) (templatel--compiler-expression a))
     (`("Element"        . ,a) (templatel--compiler-element a))
