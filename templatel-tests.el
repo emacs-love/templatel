@@ -160,7 +160,7 @@
     ;; Template that extends the layout and override the block
     (templatel-env-add-template
      env "page.html"
-     (templatel-new "{% extends \"nav.html\" %}{% block greeting %}{{ super }} world{% endblock %}"))
+     (templatel-new "{% extends \"nav.html\" %}{% block greeting %}{{ super() }} world{% endblock %}"))
     (should (equal (templatel-env-render env "page.html" '()) "Hello world"))))
 
 (ert-deftest render-block-default ()

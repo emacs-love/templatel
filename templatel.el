@@ -1407,13 +1407,12 @@ call `templatel--compiler-filter-item' on each entry."
         (body (templatel--compiler-run (cadr tree))))
     `(if (null rt/parent-template)
          (let* ((super-code ',(templatel--compiler-wrap body))
-                (subenv (cons "super" (funcall super-code vars env)))
                 (code (and blocks (gethash ,name blocks))))
            (if (not (null code))
                (progn
-                 (push subenv vars)
+                 (templatel-env-add-filter env "super" (lambda() (funcall super-code vars env)))
                  (insert (funcall code vars env rt/blocks))
-                 (pop vars))
+                 (templatel-env-remove-filter env "super"))
              ,@body))
        (puthash ,name ',(templatel--compiler-wrap body) rt/blocks))))
 
@@ -1531,6 +1530,10 @@ environment via ~:importfn~ parameter.
 (defun templatel-env-add-filter (env name filter)
   "Add FILTER to ENV under key NAME."
   (puthash name filter (elt env 2)))
+
+(defun templatel-env-remove-filter (env name)
+  "Remove filter from ENV under key NAME."
+  (remhash name (elt env 2)))
 
 (defun templatel--env-source (env name)
   "Get source code of template NAME within ENV."
