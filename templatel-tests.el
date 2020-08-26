@@ -89,6 +89,12 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-user-filter ()
+  (let ((env (templatel-env-new)))
+    (templatel-env-add-filter env "greetings" (lambda(name p) (format "Hello %s%s%s%s" name p p p)))
+    (templatel-env-add-template env "page.html" (templatel-new "{{ name|greetings(\"!\") }}"))
+    (should (equal (templatel-env-render env "page.html" '(("name" . "GNU"))) "Hello GNU!!!"))))
+
 (ert-deftest render-block-extends-override-some-empty-blocks ()
   (let ((env (templatel-env-new
               :importfn #'(lambda(e name)

@@ -1201,12 +1201,17 @@ it.  The code generated must first ensure that such filter is
 registered in the local `filters' variable, failing if it isn't.
 If the filter exists, it must then call its associated handler."
   (let ((fname (cdar (cdr item))))
-    `(let ((entry (assoc ,fname rt/filters)))
+    `(let ((entry ,(templatel--compiler-get-filter fname)))
        (if (null entry)
            (signal
             'templatel-runtime-error
             (format "Filter `%s' doesn't exist" ,fname))
          (push (funcall (cdr entry) (pop rt/valstk)) rt/valstk)))))
+
+(defun templatel--compiler-get-filter (name)
+  "Produce accessor for filter NAME."
+  `(or (assoc ,name rt/filters)
+       (templatel--env-filter env ,name)))
 
 (defun templatel--compiler-filter-fncall (item)
   "Compiler filter with params from ITEM.
@@ -1225,7 +1230,7 @@ Notice the parameter list is compiled before being passed to the
 function call."
   (let ((fname (cdr (cadr (cadr item))))
         (params (cddr (cadr item))))
-    `(let ((entry (assoc ,fname rt/filters)))
+    `(let ((entry ,(templatel--compiler-get-filter fname)))
        (if (null entry)
            (signal
             'templatel-syntax-error
@@ -1482,20 +1487,31 @@ environment via ~:importfn~ parameter.
                (expand-file-name name \"/home/user/templates\")))))
 #+END_SRC"
   (let* ((opt (seq-partition options 2)))
-    ;; where we keep the templates
-    `[,(make-hash-table :test 'equal)
-      ;; Function used by extends
+    `[;; 0. Where we keep the templates
+      ,(make-hash-table :test 'equal)
+      ;; 1. Function used by extends
       ,(templatel--get opt :importfn
-                       (lambda(_e _n) (error "Import function not defined")))]))
+                       (lambda(_e _n) (error "Import function not defined")))
+      ;; 2. Where we keep the filter functions
+      ,(make-hash-table :test 'equal)]))
 
 (defun templatel-env-add-template (env name template)
   "Add TEMPLATE to ENV under key NAME."
   (puthash name template (elt env 0)))
 
+(defun templatel-env-add-filter (env name filter)
+  "Add FILTER to ENV under key NAME."
+  (puthash name filter (elt env 2)))
+
 (defun templatel--env-source (env name)
   "Get source code of template NAME within ENV."
   (let ((entry (gethash name (elt env 0))))
     (cdr (assoc 'source entry))))
+
+(defun templatel--env-filter (env name)
+  "Get filter NAME within ENV."
+  (let ((entry (gethash name (elt env 2))))
+    (cons name entry)))
 
 (defun templatel--env-run-importfn (env name)
   "Run import with NAME within ENV."
