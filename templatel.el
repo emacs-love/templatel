@@ -461,7 +461,7 @@
      (lambda() (templatel--parser-comment scanner)))
     value))
 
-;; Template      <- Comment* (Text Comment* / Statement Comment* / Expression Comment*)+
+;; GR: Template            <- Comment* (Text Comment* / Statement Comment* / Expression Comment*)+
 (defun templatel--parser-template (scanner)
   "Parse Template entry from SCANNER's input."
   (templatel--scanner-zero-or-more
@@ -477,7 +477,7 @@
                      (lambda() (templatel--parser-rstrip-comment scanner #'templatel--parser-statement))
                      (lambda() (templatel--parser-rstrip-comment scanner #'templatel--parser-expression))))))))
 
-;; Text <- (!(_EXPR_OPEN / _STM_OPEN / _COMMENT_OPEN) .)+
+;; GR: Text                <- (!(_EXPR_OPEN / _STM_OPEN / _COMMENT_OPEN) .)+
 (defun templatel--parser-text (scanner)
   "Parse Text entries from SCANNER's input."
   (cons
@@ -500,7 +500,7 @@
              (templatel--scanner-line-incr scanner))
          chr))))))
 
-;; Statement     <- IfStatement / ForStatement / BlockStatement / ExtendsStatement
+;; GR: Statement           <- IfStatement / ForStatement / BlockStatement / ExtendsStatement
 (defun templatel--parser-statement (scanner)
   "Parse a statement from SCANNER."
   (templatel--scanner-or
@@ -511,9 +511,7 @@
     (lambda() (templatel--parser-block-stm scanner))
     (lambda() (templatel--parser-extends-stm scanner)))))
 
-;; IfStatement   <- _If Expr _STM_CLOSE Template Elif
-;;                / _If Expr _STM_CLOSE Template Else
-;;                / _If Expr _STM_CLOSE Template _EndIf
+;; GR: IfStatement         <- _Elif / _Else / _If Expr _STM_CLOSE Template _EndIf
 (defun templatel--parser-if-stm (scanner)
   "SCANNER."
   (templatel--scanner-or
@@ -529,7 +527,7 @@
    (lambda() (templatel--token-stm-cl scanner))
    "Statement not closed with \"%}\""))
 
-;; _If Expr _STM_CLOSE Template Elif+ Else?
+;; GR: _Elif               <- _If Expr _STM_CLOSE Template Elif+ Else?
 (defun templatel--parser-if-stm-elif (scanner)
   "Parse elif from SCANNER."
   (templatel--parser-if scanner)
@@ -544,7 +542,7 @@
         (templatel--parser-endif scanner)
         (cons "IfElif" (list expr tmpl elif))))))
 
-;; _If Expr _STM_CLOSE Template Else
+;; GR: _Else               <- _If Expr _STM_CLOSE Template Else
 (defun templatel--parser-if-stm-else (scanner)
   "Parse else from SCANNER."
   (templatel--parser-if scanner)
@@ -554,7 +552,7 @@
          (else (templatel--parser-else scanner)))
     (cons "IfElse" (list expr tmpl else))))
 
-;; _If Expr _STM_CLOSE Template _EndIf
+;; _If Expr _STM_CLOSE Template _EndIf  -- No grammar annotation because it's repeated
 (defun templatel--parser-if-stm-endif (scanner)
   "Parse endif from SCANNER."
   (templatel--parser-if scanner)
@@ -564,7 +562,7 @@
          (_    (templatel--parser-endif scanner)))
     (cons "IfStatement" (list expr tmpl))))
 
-;; Elif          <- _STM_OPEN _elif Expr _STM_CLOSE Template
+;; GR: Elif                <- _STM_OPEN _elif Expr _STM_CLOSE Template
 (defun templatel--parser-elif (scanner)
   "Parse elif expression off SCANNER."
   (templatel--token-stm-op scanner)
@@ -574,13 +572,13 @@
         (tmpl (templatel--parser-template scanner)))
     (cons "Elif" (list expr tmpl))))
 
-;; _If           <- _STM_OPEN _if
+;; GR: _If                 <- _STM_OPEN _if
 (defun templatel--parser-if (scanner)
   "Parse if condition off SCANNER."
   (templatel--token-stm-op scanner)
   (templatel--token-if scanner))
 
-;; Else          <- _STM_OPEN _else _STM_CLOSE Template _EndIf
+;; GR: Else                <- _STM_OPEN _else _STM_CLOSE Template _EndIf
 (defun templatel--parser-else (scanner)
   "Parse else expression off SCANNER."
   (templatel--token-stm-op scanner)
@@ -590,7 +588,7 @@
     (templatel--parser-endif scanner)
     (cons "Else" (list tmpl))))
 
-;; _EndIf        <- _STM_OPEN _endif _STM_CLOSE
+;; GR: _EndIf              <- _STM_OPEN _endif _STM_CLOSE
 (defun templatel--parser-endif (scanner)
   "Parse endif tag off SCANNER."
   (templatel--parser-cut
@@ -601,8 +599,8 @@
      (templatel--parser-stm-cl scanner))
    "Missing endif statement"))
 
-;; ForStatement  <- _For Expr _in Expr _STM_CLOSE Template _EndFor
-;; _For          <- _STM_OPEN _for
+;; GR: ForStatement        <- _For Expr _in Expr _STM_CLOSE Template _EndFor
+;; GR: _For                <- _STM_OPEN _for
 (defun templatel--parser-for-stm (scanner)
   "Parse for statement from SCANNER."
   (templatel--token-stm-op scanner)
@@ -615,7 +613,7 @@
         (_ (templatel--parser-endfor scanner)))
     (cons "ForStatement" (list iter iterable tmpl))))
 
-;; _EndFor       <- _STM_OPEN _endfor _STM_CLOSE
+;; GR: _EndFor             <- _STM_OPEN _endfor _STM_CLOSE
 (defun templatel--parser-endfor (scanner)
   "Parse {% endfor %} statement from SCANNER."
   (templatel--parser-cut
@@ -626,7 +624,7 @@
      (templatel--parser-stm-cl scanner))
    "Missing endfor statement"))
 
-;; BlockStatement <- _Block String _STM_CLOSE Template? _EndBlock
+;; GR: BlockStatement      <- _Block String _STM_CLOSE Template? _EndBlock
 (defun templatel--parser-block-stm (scanner)
   "Parse block statement from SCANNER."
   (templatel--token-stm-op scanner)
@@ -643,7 +641,7 @@
     (templatel--parser-endblock scanner)
     (cons "BlockStatement" (list name tmpl))))
 
-;; _EndBlock       <- _STM_OPEN _endblock _STM_CLOSE
+;; GR: _EndBlock           <- _STM_OPEN _endblock _STM_CLOSE
 (defun templatel--parser-endblock (scanner)
   "Parse {% endblock %} statement from SCANNER."
   (templatel--parser-cut
@@ -654,7 +652,7 @@
      (templatel--parser-stm-cl scanner))
    "Missing endblock statement"))
 
-;; ExtendsStatement <- _STM_OPEN _extends String _STM_CLOSE
+;; GR: ExtendsStatement    <- _STM_OPEN _extends String _STM_CLOSE
 (defun templatel--parser-extends-stm (scanner)
   "Parse extends statement from SCANNER."
   (templatel--token-stm-op scanner)
@@ -667,7 +665,7 @@
     (templatel--parser-stm-cl scanner)
     (cons "ExtendsStatement" (list name))))
 
-;; Expression    <- _EXPR_OPEN Expr _EXPR_CLOSE
+;; GR: Expression          <- _EXPR_OPEN Expr _EXPR_CLOSE
 (defun templatel--parser-expression (scanner)
   "SCANNER."
   (templatel--token-expr-op scanner)
@@ -679,7 +677,7 @@
      "Unclosed bracket")
     (cons "Expression" (list expr))))
 
-;; Expr          <- Filter
+;; GR: Expr                <- Filter
 (defun templatel--parser-expr (scanner)
   "Read an expression from SCANNER."
   (cons
@@ -733,12 +731,12 @@ operator (RATORFN)."
         (lambda() (funcall randfn scanner))
         "Missing operand after binary operator"))))))
 
-;; Filter        <- Logical (_PIPE Logical)*
+;; GR: Filter              <- Logical (_PIPE Logical)*
 (defun templatel--parser-filter (scanner)
   "Read Filter from SCANNER."
   (templatel--parser-binary scanner "Filter" #'templatel--parser-logical #'templatel--token-|))
 
-;; Logical       <- BitLogical ((AND / OR) BitLogical)*
+;; GR: Logical             <- BitLogical ((AND / OR) BitLogical)*
 (defun templatel--parser-logical (scanner)
   "Read Logical from SCANNER."
   (templatel--parser-binary
@@ -752,7 +750,7 @@ operator (RATORFN)."
        (lambda() (templatel--token-and s))
        (lambda() (templatel--token-or s)))))))
 
-;; BitLogical    <- Comparison ((BAND / BXOR / BOR) Comparison)*
+;; GR: BitLogical          <- Comparison ((BAND / BXOR / BOR) Comparison)*
 (defun templatel--parser-bit-logical (scanner)
   "Read BitLogical from SCANNER."
   (templatel--parser-binary
@@ -767,7 +765,7 @@ operator (RATORFN)."
        (lambda() (templatel--token-^ s))
        (lambda() (templatel--token-|| s)))))))
 
-;; Comparison    <- BitShifting ((EQ / NEQ / LTE / GTE / LT / GT / IN) BitShifting)*
+;; GR: Comparison          <- BitShifting ((EQ / NEQ / LTE / GTE / LT / GT / IN) BitShifting)*
 (defun templatel--parser-comparison (scanner)
   "Read a Comparison from SCANNER."
   (templatel--parser-binary
@@ -786,7 +784,7 @@ operator (RATORFN)."
        (lambda() (templatel--token-> s))
        (lambda() (templatel--token-in s)))))))
 
-;; BitShifting   <- Term ((RSHIFT / LSHIFT) Term)*
+;; GR: BitShifting         <- Term ((RSHIFT / LSHIFT) Term)*
 (defun templatel--parser-bit-shifting (scanner)
   "Read a BitShifting from SCANNER."
   (templatel--parser-binary
@@ -800,7 +798,7 @@ operator (RATORFN)."
        (lambda() (templatel--token->> s))
        (lambda() (templatel--token-<< s)))))))
 
-;; Term          <- Factor ((PLUS / MINUS) Factor)*
+;; GR: Term                <- Factor ((PLUS / MINUS) Factor)*
 (defun templatel--parser-term (scanner)
   "Read Term from SCANNER."
   (templatel--parser-binary
@@ -814,7 +812,7 @@ operator (RATORFN)."
        (lambda() (templatel--token-+ s))
        (lambda() (templatel--token-- s)))))))
 
-;; Factor        <- Power ((STAR / DSLASH / SLASH) Power)*
+;; GR: Factor              <- Power ((STAR / DSLASH / SLASH) Power)*
 (defun templatel--parser-factor (scanner)
   "Read Factor from SCANNER."
   (templatel--parser-binary
@@ -829,7 +827,7 @@ operator (RATORFN)."
        (lambda() (templatel--token-slash s))
        (lambda() (templatel--token-dslash s)))))))
 
-;; Power         <- Unary ((POWER / MOD) Unary)*
+;; GR: Power               <- Unary ((POWER / MOD) Unary)*
 (defun templatel--parser-power (scanner)
   "Read Power from SCANNER."
   (templatel--parser-binary
@@ -843,7 +841,7 @@ operator (RATORFN)."
        (lambda() (templatel--token-** s))
        (lambda() (templatel--token-% s)))))))
 
-;; UnaryOp       <- PLUS / MINUS / NOT / BNOT
+;; GR: UnaryOp             <- PLUS / MINUS / NOT / BNOT
 (defun templatel--parser-unary-op (scanner)
   "Read an Unary operator from SCANNER."
   (templatel--scanner-or
@@ -854,7 +852,7 @@ operator (RATORFN)."
     (lambda() (templatel--token-~ scanner))
     (lambda() (templatel--token-not scanner)))))
 
-;; Unary         <- UnaryOp Unary / UnaryOp Primary / Primary
+;; GR: Unary               <- UnaryOp Unary / UnaryOp Primary / Primary
 (defun templatel--parser-unary (scanner)
   "Read Unary from SCANNER."
   (templatel--scanner-or
@@ -877,8 +875,8 @@ operator (RATORFN)."
          "Missing operand after unary operator"))))
     (lambda() (templatel--parser-primary scanner)))))
 
-;; Primary       <- _PAREN_OPEN Expr _PAREN_CLOSE
-;;                / Element
+;; GR: Primary             <- _PAREN_OPEN Expr _PAREN_CLOSE
+;; GR:                      / Element
 (defun templatel--parser-primary (scanner)
   "Read Primary from SCANNER."
   (templatel--scanner-or
@@ -891,7 +889,7 @@ operator (RATORFN)."
         expr))
     (lambda() (templatel--parser-element scanner)))))
 
-;; Attribute     <- Identifier (_dot Identifier)+
+;; GR: Attribute           <- Identifier (_dot Identifier)+
 (defun templatel--parser-attribute (scanner)
   "Read an Attribute from SCANNER."
   (cons
@@ -904,7 +902,7 @@ operator (RATORFN)."
        scanner
        (lambda() (templatel--parser-identifier scanner)))))))
 
-;; Element       <- Value / Attribute / FnCall / Identifier
+;; GR: Element             <- Value / Attribute / FnCall / Identifier
 (defun templatel--parser-element (scanner)
   "Read Element off SCANNER."
   (cons
@@ -918,7 +916,7 @@ operator (RATORFN)."
       (lambda() (templatel--parser-fncall scanner))
       (lambda() (templatel--parser-identifier scanner)))))))
 
-;; FnCall        <- Identifier ParamList
+;; GR: FnCall              <- Identifier ParamList
 (defun templatel--parser-fncall (scanner)
   "Read FnCall off SCANNER."
   (cons
@@ -927,7 +925,7 @@ operator (RATORFN)."
     (templatel--parser-identifier scanner)
     (templatel--parser-paramlist scanner))))
 
-;; -paramlist   <- _PAREN_OPEN Expr (_COMMA Expr)* _PAREN_CLOSE
+;; GR: _paramlist          <- _PAREN_OPEN Expr (_COMMA Expr)* _PAREN_CLOSE
 (defun templatel--parser--paramlist (scanner)
   "Read parameter list from SCANNER."
   (templatel--token-paren-op scanner)
@@ -940,8 +938,8 @@ operator (RATORFN)."
     (templatel--token-paren-cl scanner)
     (cons first rest)))
 
-;; ParamList     <- -paramlist
-;;                / _PAREN_OPEN _PAREN_CLOSE
+;; GR: ParamList           <- _paramlist
+;; GR:                      / _PAREN_OPEN _PAREN_CLOSE
 (defun templatel--parser-paramlist (scanner)
   "Read parameter list off SCANNER."
   (templatel--scanner-or
@@ -953,7 +951,7 @@ operator (RATORFN)."
       (templatel--token-paren-cl scanner)
       nil))))
 
-;; Value         <- Number / BOOL / NIL / String
+;; GR: Value               <- Number / BOOL / NIL / String
 (defun templatel--parser-value (scanner)
   "Read Value from SCANNER."
   (let ((value (templatel--scanner-or
@@ -966,7 +964,7 @@ operator (RATORFN)."
     (templatel--parser-_ scanner)
     value))
 
-;; Number        <- BIN / HEX / FLOAT / INT
+;; GR: Number              <- BIN / HEX / FLOAT / INT
 (defun templatel--parser-number (scanner)
   "Read Number off SCANNER."
   (cons
@@ -979,7 +977,7 @@ operator (RATORFN)."
      (lambda() (templatel--parser-float scanner))
      (lambda() (templatel--parser-int scanner))))))
 
-;; INT           <- [0-9]+                  _
+;; GR: INT                 <- [0-9]+                  _
 (defun templatel--parser-int (scanner)
   "Read integer off SCANNER."
   (string-to-number
@@ -989,7 +987,7 @@ operator (RATORFN)."
      (lambda() (templatel--scanner-range scanner ?0 ?9))))
    10))
 
-;; FLOAT         <- [0-9]* '.' [0-9]+       _
+;; GR: FLOAT               <- [0-9]* '.' [0-9]+       _
 (defun templatel--parser-float (scanner)
   "Read float from SCANNER."
   (append
@@ -997,7 +995,7 @@ operator (RATORFN)."
    (templatel--scanner-matchs scanner ".")
    (templatel--scanner-one-or-more scanner (lambda() (templatel--scanner-range scanner ?0 ?9)))))
 
-;; BIN           <- '0b' [0-1]+             _
+;; GR: BIN                 <- '0b' [0-1]+             _
 (defun templatel--parser-bin (scanner)
   "Read binary number from SCANNER."
   (templatel--scanner-matchs scanner "0b")
@@ -1009,7 +1007,7 @@ operator (RATORFN)."
       (lambda() (templatel--scanner-range scanner ?0 ?1)))))
    2))
 
-;; HEX           <- '0x' [0-9a-fA-F]+       _
+;; GR: HEX                 <- '0x' [0-9a-fA-F]+       _
 (defun templatel--parser-hex (scanner)
   "Read hex number from SCANNER."
   (templatel--scanner-matchs scanner "0x")
@@ -1026,7 +1024,7 @@ operator (RATORFN)."
                (lambda() (templatel--scanner-range scanner ?A ?F))))))))
    16))
 
-;; BOOL          <- ('true' / 'false')         _
+;; GR: BOOL                <- ('true' / 'false')         _
 (defun templatel--parser-bool (scanner)
   "Read boolean value from SCANNER."
   (cons
@@ -1036,13 +1034,13 @@ operator (RATORFN)."
     (list (lambda() (templatel--scanner-matchs scanner "true") t)
           (lambda() (templatel--scanner-matchs scanner "false") nil)))))
 
-;; NIL           <- 'nil'                      _
+;; GR: NIL                 <- 'nil'                      _
 (defun templatel--parser-nil (scanner)
   "Read nil constant from SCANNER."
   (templatel--scanner-matchs scanner "nil")
   (cons "Nil" nil))
 
-;; String        <- _QUOTE (!_QUOTE .)* _QUOTE _
+;; GR: String              <- _QUOTE (!_QUOTE .)* _QUOTE _
 (defun templatel--parser-string (scanner)
   "Read a double quoted string from SCANNER."
   (templatel--scanner-match scanner ?\")
@@ -1056,7 +1054,7 @@ operator (RATORFN)."
     (templatel--scanner-match scanner ?\")
     (cons "String" (templatel--parser-join-chars str))))
 
-;; IdentStart    <- [a-zA-Z_]
+;; GR: IdentStart          <- [a-zA-Z_]
 (defun templatel--parser-identstart (scanner)
   "Read the first character of an identifier from SCANNER."
   (templatel--scanner-or
@@ -1065,7 +1063,7 @@ operator (RATORFN)."
          (lambda() (templatel--scanner-range scanner ?A ?Z))
          (lambda() (templatel--scanner-match scanner ?_)))))
 
-;; IdentCont    <- [a-zA-Z0-9_]*  _
+;; GR: IdentCont           <- [a-zA-Z0-9_]*  _
 (defun templatel--parser-identcont (scanner)
   "Read the rest of an identifier from SCANNER."
   (templatel--scanner-zero-or-more
@@ -1078,7 +1076,7 @@ operator (RATORFN)."
             (lambda() (templatel--scanner-range scanner ?0 ?9))
             (lambda() (templatel--scanner-match scanner ?_)))))))
 
-;; Identifier   <- IdentStart IdentCont
+;; GR: Identifier          <- IdentStart IdentCont
 (defun templatel--parser-identifier (scanner)
   "Read Identifier entry from SCANNER."
   (cons
@@ -1089,7 +1087,7 @@ operator (RATORFN)."
      (templatel--parser-_ scanner)
      identifier)))
 
-;; _               <- (Space / Comment)*
+;; GR: _                   <- (Space / Comment)*
 (defun templatel--parser-_ (scanner)
   "Read whitespaces from SCANNER."
   (templatel--scanner-zero-or-more
@@ -1101,7 +1099,7 @@ operator (RATORFN)."
        (lambda() (templatel--parser-space scanner))
        (lambda() (templatel--parser-comment scanner)))))))
 
-;; Space           <- ' ' / '\t' / _EOL
+;; GR: Space               <- ' ' / '\t' / _EOL
 (defun templatel--parser-space (scanner)
   "Consume spaces off SCANNER."
   (templatel--scanner-or
@@ -1111,7 +1109,7 @@ operator (RATORFN)."
     (lambda() (templatel--scanner-matchs scanner "\t"))
     (lambda() (templatel--parser-eol scanner)))))
 
-;; _EOL            <- '\r\n' / '\n' / '\r'
+;; GR: _EOL                <- '\r\n' / '\n' / '\r'
 (defun templatel--parser-eol (scanner)
   "Read end of line from SCANNER."
   (let ((eol (templatel--scanner-or
@@ -1123,7 +1121,7 @@ operator (RATORFN)."
     (templatel--scanner-line-incr scanner)
     eol))
 
-;; Comment         <- "{#" (!"#}" .)* "#}"
+;; GR: Comment             <- "{#" (!"#}" .)* "#}"
 (defun templatel--parser-comment (scanner)
   "Read comment from SCANNER."
   (templatel--token-comment-op scanner)
