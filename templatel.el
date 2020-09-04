@@ -1295,7 +1295,7 @@ function call."
     `(let ((entry ,(templatel--compiler-get-filter fname)))
        (if (null entry)
            (signal
-            'templatel-syntax-error
+            'templatel-runtime-error
             (format "Filter `%s' doesn't exist" ,fname))
          (push (apply
                 (cdr entry)
@@ -1321,7 +1321,7 @@ function call."
     `(let ((entry ,(templatel--compiler-get-filter fname)))
        (if (null entry)
            (signal
-            'templatel-syntax-error
+            'templatel-runtime-error
             (format "Filter `%s' doesn't exist" ,fname))
          (car
           (progn
