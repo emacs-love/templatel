@@ -525,6 +525,76 @@
                 ("Template"
                  ("Text" . "default"))))))))
 
+(ert-deftest template-fncall-positional-and-named-params ()
+  (let* ((s (templatel--scanner-new "{{ stuff(x, y, a=1, b=\"other\") }}" "<string>"))
+         (tree (templatel--parser-template s)))
+    (should (equal
+             tree
+             '("Template"
+               ("Expression"
+                ("Expr"
+                 ("Element"
+                  ("FnCall"
+                   ("Identifier" . "stuff")
+                   ("NamedParams"
+                    (("Identifier" . "a")
+                     ("Expr"
+                      ("Element"
+                       ("Number" . 1))))
+                    (("Identifier" . "b")
+                     ("Expr"
+                      ("Element"
+                       ("String" . "other")))))
+                   ("Expr"
+                     ("Element"
+                      ("Identifier" . "x")))
+                   ("Expr"
+                     ("Element"
+                      ("Identifier" . "y"))))))))))))
+
+(ert-deftest template-fncall-named-params ()
+  (let* ((s (templatel--scanner-new "{{ stuff(a=1, b=\"other\") }}" "<string>"))
+         (tree (templatel--parser-template s)))
+    (should (equal
+             tree
+             '("Template"
+               ("Expression"
+                ("Expr"
+                 ("Element"
+                  ("FnCall"
+                   ("Identifier" . "stuff")
+                   ("NamedParams"
+                    (("Identifier" . "a")
+                     ("Expr" ("Element" ("Number" . 1))))
+                    (("Identifier" . "b")
+                     ("Expr" ("Element" ("String" . "other"))))))))))))))
+
+(ert-deftest template-fncall-positional-params ()
+  (let* ((s (templatel--scanner-new "{{ stuff(1, \"other\") }}" "<string>"))
+         (tree (templatel--parser-template s)))
+    (should (equal
+             tree
+             '("Template"
+               ("Expression"
+                ("Expr"
+                 ("Element"
+                  ("FnCall"
+                   ("Identifier" . "stuff")
+                   ("Expr" ("Element" ("Number" . 1)))
+                   ("Expr" ("Element" ("String" . "other"))))))))))))
+
+(ert-deftest template-fncall-no-params ()
+  (let* ((s (templatel--scanner-new "{{ stuff() }}" "<string>"))
+         (tree (templatel--parser-template s)))
+    (should (equal
+             tree
+             '("Template"
+               ("Expression"
+                ("Expr"
+                 ("Element"
+                  ("FnCall"
+                   ("Identifier" . "stuff"))))))))))
+
 (ert-deftest template-for ()
   (let* ((s (templatel--scanner-new "
 {% for name in names %}

@@ -370,6 +370,12 @@
     (templatel--parser-_ scanner)
     (templatel--parser-join-chars m)))
 
+(defun templatel--token-= (scanner)
+  "Read '=' off SCANNER's input."
+  (let ((m (templatel--scanner-matchs scanner "=")))
+    (templatel--parser-_ scanner)
+    (templatel--parser-join-chars m)))
+
 (defun templatel--token-== (scanner)
   "Read '==' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "==")))
@@ -916,6 +922,13 @@ operator (RATORFN)."
       (lambda() (templatel--parser-fncall scanner))
       (lambda() (templatel--parser-identifier scanner)))))))
 
+(defun templatel--parser-paren-cl (scanner)
+  "Read a closed parentheses with a cutting point from SCANNER."
+  (templatel--parser-cut
+   scanner
+   (lambda() (templatel--token-paren-cl scanner))
+   "Unclosed parentheses"))
+
 ;; GR: FnCall              <- Identifier ParamList
 (defun templatel--parser-fncall (scanner)
   "Read FnCall off SCANNER."
@@ -925,31 +938,82 @@ operator (RATORFN)."
     (templatel--parser-identifier scanner)
     (templatel--parser-paramlist scanner))))
 
-;; GR: _paramlist          <- _PAREN_OPEN Expr (_COMMA Expr)* _PAREN_CLOSE
-(defun templatel--parser--paramlist (scanner)
-  "Read parameter list from SCANNER."
-  (templatel--token-paren-op scanner)
-  (let ((first (templatel--parser-expr scanner))
-        (rest (templatel--scanner-zero-or-more
-               scanner
-               (lambda()
-                 (templatel--token-comma scanner)
-                 (templatel--parser-expr scanner)))))
-    (templatel--token-paren-cl scanner)
-    (cons first rest)))
-
-;; GR: ParamList           <- _paramlist
+;; GR: ParamList           <- _ParamListOnlyNamed
+;; GR:                      / _ParamListPosNamed
+;; GR:                      / _ParamListOnlyPos
 ;; GR:                      / _PAREN_OPEN _PAREN_CLOSE
 (defun templatel--parser-paramlist (scanner)
   "Read parameter list off SCANNER."
   (templatel--scanner-or
    scanner
    (list
-    (lambda() (templatel--parser--paramlist scanner))
+    (lambda() (templatel--parser--paramlist-only-named scanner))
+    (lambda() (templatel--parser--paramlist-pos-named scanner))
+    (lambda() (templatel--parser--paramlist-only-pos scanner))
     (lambda()
       (templatel--token-paren-op scanner)
-      (templatel--token-paren-cl scanner)
+      (templatel--parser-paren-cl scanner)
       nil))))
+
+;; GR: _ParamListOnlyNamed <- _PAREN_OPEN NamedParams _PAREN_CLOSE
+(defun templatel--parser--paramlist-only-named (scanner)
+  "Read exclusively named params from SCANNER."
+  (templatel--token-paren-op scanner)
+  (let ((params (templatel--parser-namedparams scanner)))
+    (templatel--parser-paren-cl scanner)
+    params))
+
+;; GR: _ParamListPosNamed  <- _PAREN_OPEN Params NamedParams _PAREN_CLOSE
+(defun templatel--parser--paramlist-pos-named (scanner)
+  "Read positionnal and named parameters from SCANNER."
+  (templatel--token-paren-op scanner)
+  (let* ((positional (templatel--parser-params scanner))
+         (_ (templatel--token-comma scanner))
+         (named (templatel--parser-namedparams scanner)))
+    (templatel--parser-paren-cl scanner)
+    (append named positional)))
+
+;; GR: _ParamListOnlyPos   <- _PAREN_OPEN Params _PAREN_CLOSE
+(defun templatel--parser--paramlist-only-pos (scanner)
+  "Read parameter list from SCANNER."
+  (templatel--token-paren-op scanner)
+  (let ((params (templatel--parser-params scanner)))
+    (templatel--parser-paren-cl scanner)
+    params))
+
+;; GR: Params              <- Expr (_COMMA Expr !_EQ)*
+(defun templatel--parser-params (scanner)
+  "Read a list of parameters off SCANNER."
+  (let ((first (templatel--parser-expr scanner))
+        (rest (templatel--scanner-zero-or-more
+               scanner
+               (lambda()
+                 (templatel--token-comma scanner)
+                 (let ((expr (templatel--parser-expr scanner)))
+                   ;; Only named params have this extra sign
+                   (templatel--scanner-not
+                    scanner
+                    (lambda() (templatel--token-= scanner)))
+                   expr)))))
+    (cons first rest)))
+
+;; GR: NamedParams         <- NamedParam (_COMMA NamedParam)*
+(defun templatel--parser-namedparams (scanner)
+  "Read a list of named parameters off SCANNER."
+  (let ((first (templatel--parser-namedparam scanner))
+        (rest (templatel--scanner-zero-or-more
+               scanner
+               (lambda()
+                 (templatel--token-comma scanner)
+                 (templatel--parser-namedparam scanner)))))
+    (list (cons "NamedParams" (cons first rest)))))
+
+;; GR: NamedParam          <- Identifier _EQ Expr
+(defun templatel--parser-namedparam (scanner)
+  "Read one named parameter off SCANNER."
+  (let ((id (templatel--parser-identifier scanner)))
+    (templatel--token-= scanner)
+    (list id (templatel--parser-expr scanner))))
 
 ;; GR: Value               <- Number / BOOL / NIL / String
 (defun templatel--parser-value (scanner)
