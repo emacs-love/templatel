@@ -89,6 +89,39 @@
 
 ;; --- Renderer --
 
+(ert-deftest render-filter-named-parameter-syntax ()
+  (let* ((env (templatel-env-new))
+         ;; Register the filter within the template environment
+         (_ (templatel-env-add-filter
+             env "accepts_named_params"
+             (lambda(opts)
+               (string-join (mapcar (lambda(pair) (format "%s=%s" (car pair) (cdr pair))) opts) ","))))
+         ;; Add the template that contains the function call with just
+         ;; named parameters
+         (_ (templatel-env-add-template
+             env "page.html"
+             (templatel-new "{{ accepts_named_params(a=1, b=\"oi\") }}")))
+         (out (templatel-env-render env "page.html" '())))
+    (should (equal out "a=1,b=oi")))
+
+  (let* ((env (templatel-env-new))
+         ;; Register the filter within the template environment
+         (_ (templatel-env-add-filter
+             env "accepts_named_params"
+             (lambda(v1 opts)
+               ;;(message "V1: %s" v1)
+               (string-join (cons (format "%d" v1)
+                                  (mapcar (lambda(pair) (format "%s=%s" (car pair) (cdr pair))) opts)) ","))))
+         ;; Add the template that contains the function call with just
+         ;; named parameters
+         (_ (templatel-env-add-template
+             env "page.html"
+             (templatel-new "{{ accepts_named_params(v1, a=v2, b=v3) }}")))
+         (out (templatel-env-render env "page.html" '(("v1" . 10)
+                                                      ("v2" . 42)
+                                                      ("v3" . 55)))))
+    (should (equal out "10,a=42,b=55"))))
+
 (ert-deftest render-standalone-filter-syntax ()
   (condition-case err
       (templatel-render-string "{{ stuff() }}" '())

@@ -1351,6 +1351,19 @@ call `templatel--compiler-filter-item' on each entry."
      ,(templatel--compiler-run (car tree))
      ,@(mapcar #'templatel--compiler-filter-item (cdr tree))))
 
+
+(defun templatel--compiler-named-param (tree)
+  "Compile named param from TREE."
+  `(progn
+     ;; pushes the value of the evaluated expression to the stack then
+     ;; assemble the named return value
+     ,@(templatel--compiler-run (cdr tree))
+     (cons ,(cdar tree) (pop rt/valstk))))
+
+(defun templatel--compiler-named-params (tree)
+  "Compile a list of named params from TREE."
+  `(push (list ,@(mapcar #'templatel--compiler-named-param tree)) rt/valstk))
+
 (defun templatel--compiler-expression (tree)
   "Compile an expression from TREE."
   `(progn
@@ -1495,6 +1508,7 @@ call `templatel--compiler-filter-item' on each entry."
     (`("Attribute"      . ,a) (templatel--compiler-attribute a))
     (`("Filter"         . ,a) (templatel--compiler-filter-list a))
     (`("FnCall"         . ,a) (templatel--compiler-filter-fncall-standalone a))
+    (`("NamedParams"    . ,a) (templatel--compiler-named-params a))
     (`("Expr"           . ,a) (templatel--compiler-expr a))
     (`("Expression"     . ,a) (templatel--compiler-expression a))
     (`("Element"        . ,a) (templatel--compiler-element a))
