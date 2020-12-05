@@ -65,6 +65,7 @@
 (if (string= (getenv "ENV") "prod")
     (setq blorg-default-url "https://clarete.li/templatel"))
 
+;; Set site wide configuration
 (blorg-site :theme "autodoc")
 
 ;; Generate Index Page
