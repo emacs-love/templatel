@@ -39,8 +39,8 @@
 ;; blocks with syntax highlighting.
 (use-package htmlize :config :ensure t)
 ;; Use the latest version of templatel by importing it from the
-;; current directory
-(add-to-list 'load-path ".")
+;; directory above
+(add-to-list 'load-path "../")
 ;; Use the latest version of blorg, by either using a cloned version
 ;; or cloning it from scratch if we're running on the CI. Maybe we'll
 ;; move this require to use `use-package' after blorg is available via
@@ -61,20 +61,40 @@
 ;; directly formatting the output.
 (setq org-html-htmlize-output-type 'css)
 
+;; Defaults to localhost:8000
+(if (string= (getenv "ENV") "prod")
+    (setq blorg-default-url "https://clarete.li/templatel"))
+
+(blorg-site :theme "autodoc")
+
 ;; Generate Index Page
-(blorg-cli
+(blorg-route
+ :name "index"
  :input-pattern "docs/src/index.org$"
  :template "index.html"
- :output "docs/index.html")
+ :output "index.html"
+ :url "/")
 
 ;; Generate API Reference
-(blorg-cli
+(blorg-route
+ :name "api"
  :input-source (blorg-input-source-autodoc-sections
                 `(("Render template strings" . "^templatel-render")
                   ("Template environments" . "^templatel-env")
                   ("Filters" . "^templatel-filter")
-                  ("Exceptions" . ,(concat "templatel-" (regexp-opt '("syntax-error" "runtime-error" "backtracking"))))))
+                  ("Exceptions" . ,(concat "templatel-" (regexp-opt '("syntax-error"
+                                                                      "runtime-error"
+                                                                      "backtracking"))))))
  :template "autodoc.html"
- :output "docs/api.html")
+ :output "api.html"
+ :url "/api.html")
+
+(blorg-copy-static
+ :output "static/{{ file }}"
+ :url "/static/{{ file }}")
+
+;(setq debug-on-error t)
+
+(blorg-export)
 
 ;;; publish.el ends here

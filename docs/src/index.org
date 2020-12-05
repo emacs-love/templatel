@@ -19,6 +19,8 @@
   {% endblock %}
   #+END_SRC
 
+  Visit the [[url_for:api][API Reference]] for more details
+
 * Installation
 
 ** Via Melpa
