@@ -58,6 +58,13 @@
 
 * Changelog
 
+** 0.1.3
+   * Support for named arguments on filters.  They are passed to the
+     handler as an ~assoc~ list. E.g.: ~{{ foo(var1="val", var2=2) }}~
+     will get ~((var1 . val) (var2 . 2))~ as the only parameter.
+     Named and positional arguments can be mixed, but the Emacs-Lisp
+     handler will have to deal with the order.
+
 ** 0.1.2
    * Support for user defined filter functions via
      ~templatel-env-add-filter~ and ~templatel-env-remove-filter~.

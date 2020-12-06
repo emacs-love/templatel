@@ -123,13 +123,26 @@ itself.
 </div>
 </div>
 
-<div id="outline-container-org3736ebf" class="outline-2">
-<h2 id="org3736ebf">Changelog</h2>
-<div class="outline-text-2" id="text-org3736ebf">
+<div id="outline-container-org37365f1" class="outline-2">
+<h2 id="org37365f1">Changelog</h2>
+<div class="outline-text-2" id="text-org37365f1">
 </div>
-<div id="outline-container-org029ea1c" class="outline-3">
-<h3 id="org029ea1c">0.1.2</h3>
-<div class="outline-text-3" id="text-org029ea1c">
+<div id="outline-container-org487316d" class="outline-3">
+<h3 id="org487316d">0.1.3</h3>
+<div class="outline-text-3" id="text-org487316d">
+<ul class="org-ul">
+<li>Support for named arguments on filters.  They are passed to the
+handler as an <code>assoc</code> list. E.g.: <code>{{ foo(var1="val", var2=2) }}</code>
+will get <code>((var1 . val) (var2 . 2))</code> as the only parameter.
+Named and positional arguments can be mixed, but the Emacs-Lisp
+handler will have to deal with the order.</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgbdaf174" class="outline-3">
+<h3 id="orgbdaf174">0.1.2</h3>
+<div class="outline-text-3" id="text-orgbdaf174">
 <ul class="org-ul">
 <li>Support for user defined filter functions via
 <code>templatel-env-add-filter</code> and <code>templatel-env-remove-filter</code>.</li>
