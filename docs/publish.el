@@ -71,7 +71,7 @@
 ;; Generate Index Page
 (blorg-route
  :name "index"
- :input-pattern "docs/src/index.org$"
+ :input-pattern "src/index.org"
  :template "index.html"
  :output "index.html"
  :url "/")
