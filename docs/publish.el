@@ -45,17 +45,17 @@
 ;; or cloning it from scratch if we're running on the CI. Maybe we'll
 ;; move this require to use `use-package' after blorg is available via
 ;; melpa as well.
-(if (file-directory-p "~/src/github.com/clarete/blorg")
-    (add-to-list 'load-path "~/src/github.com/clarete/blorg")
+(if (file-directory-p "~/src/github.com/emacs-love/weblorg")
+    (add-to-list 'load-path "~/src/github.com/emacs-love/weblorg")
   (shell-command
-   "cd /tmp &&       # go somewhere we can't break things
-    rm -rf blorg &&  # clean up previous runs and get it
-    git clone https://github.com/clarete/blorg")
+   "cd /tmp &&         # go somewhere we can't break things
+    rm -rf weblorg &&  # clean up previous runs and get it
+    git clone https://github.com/emacs-love/weblorg")
   (add-to-list 'load-path "/tmp/blorg"))
 
 ;; --- Actual HTML generation setup ---
 
-(require 'blorg)
+(require 'weblorg)
 
 ;; Tells `htmlize' library to output HTML with css classes instead of
 ;; directly formatting the output.
@@ -63,13 +63,13 @@
 
 ;; Defaults to localhost:8000
 (if (string= (getenv "ENV") "prod")
-    (setq blorg-default-url "https://clarete.li/templatel"))
+    (setq weblorg-default-url "https://clarete.li/templatel"))
 
 ;; Set site wide configuration
-(blorg-site :theme "autodoc")
+(weblorg-site :theme "autodoc")
 
 ;; Generate Index Page
-(blorg-route
+(weblorg-route
  :name "index"
  :input-pattern "src/index.org"
  :template "index.html"
@@ -77,9 +77,9 @@
  :url "/")
 
 ;; Generate API Reference
-(blorg-route
+(weblorg-route
  :name "api"
- :input-source (blorg-input-source-autodoc-sections
+ :input-source (weblorg-input-source-autodoc-sections
                 `(("Render template strings" . "^templatel-render")
                   ("Template environments" . "^templatel-env")
                   ("Filters" . "^templatel-filter")
@@ -90,12 +90,12 @@
  :output "api.html"
  :url "/api.html")
 
-(blorg-copy-static
+(weblorg-copy-static
  :output "static/{{ file }}"
  :url "/static/{{ file }}")
 
-;(setq debug-on-error t)
+(setq debug-on-error t)
 
-(blorg-export)
+(weblorg-export)
 
 ;;; publish.el ends here
