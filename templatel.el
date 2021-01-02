@@ -1368,7 +1368,10 @@ call `templatel--compiler-filter-item' on each entry."
   "Compile an expression from TREE."
   `(progn
      ,@(templatel--compiler-run tree)
-     (insert (format "%s" (pop rt/valstk)))))
+     (insert
+      (if (templatel-env-get-autoescape env)
+          (templatel-escape-string (format "%s" (pop rt/valstk)))
+        (format "%s" (pop rt/valstk))))))
 
 (defun templatel--compiler-text (tree)
   "Compile text from TREE."
@@ -1557,6 +1560,20 @@ call `templatel--compiler-filter-item' on each entry."
         (cadr val)
       default)))
 
+(defun templatel-escape-string (s)
+  "Escape string S."
+  (let ((output s))
+    (dolist (replacement '((?& . "&amp;")
+                           (?> . "&gt;")
+                           (?< . "&lt;")
+                           (?\' . "&#39;")
+                           (?\" . "&#34;")))
+      (setq output (replace-regexp-in-string
+                    (regexp-quote (format "%c" (car replacement)))
+                    (cdr replacement)
+               output nil 'literal)))
+    output))
+
 ;; --- Public Environment API ---
 
 (defun templatel-env-new (&rest options)
@@ -1597,7 +1614,9 @@ environment via ~:importfn~ parameter.
       ,(templatel--get opt :importfn
                        (lambda(_e _n) (error "Import function not defined")))
       ;; 2. Where we keep the filter functions
-      ,(make-hash-table :test 'equal)]))
+      ,(make-hash-table :test 'equal)
+      ;; 3. Autoescape flag that defaults to true
+      t]))
 
 (defun templatel-env-add-template (env name template)
   "Add TEMPLATE to ENV under key NAME."
@@ -1647,6 +1666,14 @@ This function reverts the effect of a previous call to
     (if importfn
         (funcall importfn env name))))
 
+(defun templatel-env-get-autoescape (env)
+  "Get autoescape flag of ENV."
+  (elt env 3))
+
+(defun templatel-env-set-autoescape (env autoescape)
+  "Set AUTOESCAPE flag of ENV to either true or false."
+  (aset env 3 autoescape))
+
 (defun templatel-env-render (env name vars)
   "Render template NAME within ENV with VARS as parameters."
   (funcall (eval (templatel--env-source env name)) vars env))
@@ -1669,7 +1696,7 @@ This function reverts the effect of a previous call to
 
 ;; ------ Public API without Environment
 
-(defun templatel-render-string (template variables)
+(defun templatel-render-string (template variables &optional autoescape-off)
   "Render TEMPLATE string with VARIABLES.
 
 This is the simplest way to use *templatel*, since it only takes
@@ -1680,14 +1707,19 @@ refer to the next section
 [[anchor:section-template-environments][Template Environments]]
 to learn how to use the API that enables template inheritance.
 
+The AUTOESCAPE-OFF flag disables the otherwise automatically
+enabled HTML escaping.
+
 #+BEGIN_SRC emacs-lisp
 \(templatel-render-string \"Hello, {{ name }}!\" '((\"name\" . \"GNU!\")))
 #+END_SRC"
   (let ((env (templatel-env-new)))
+    (when autoescape-off
+      (templatel-env-set-autoescape env nil))
     (templatel-env-add-template env "<string>" (templatel-new template))
     (templatel-env-render env "<string>" variables)))
 
-(defun templatel-render-file (path variables)
+(defun templatel-render-file (path variables &optional autoescape-off)
   "Render template file at PATH with VARIABLES.
 
 Just like with
@@ -1695,8 +1727,13 @@ Just like with
 templates rendered with this function also can't use ~{% extends
 %}~ statements.  Please refer to the section
 [[anchor:section-template-environments][Template Environments]]
-to learn how to use the API that enables template inheritance."
+to learn how to use the API that enables template inheritance.
+
+The AUTOESCAPE-OFF flag disables the otherwise automatically
+enabled HTML escaping."
   (let ((env (templatel-env-new)))
+    (when autoescape-off
+      (templatel-env-set-autoescape env nil))
     (templatel-env-add-template env path (templatel-new-from-file path))
     (templatel-env-render env path variables)))
 

@@ -87,6 +87,42 @@
     (templatel-error
      (should (equal err '(templatel-syntax-error . "<string> at 1,8: Unclosed bracket"))))))
 
+;; --- Auto escaping ---
+
+(ert-deftest autoescaping ()
+  ;; Ensure string replacemet function works; thanks to this:
+  ;; https://github.com/pallets/markupsafe/blob/337a79f8caeff25422b28771e851c140d5d744ac/tests/test_escape.py#L6
+  (dolist (test
+           '(("" . "")
+             ;; ascii
+             ("abcd&><'\"efgh" . "abcd&amp;&gt;&lt;&#39;&#34;efgh")
+             ("&><'\"efgh" . "&amp;&gt;&lt;&#39;&#34;efgh")
+             ("abcd&><'\"" . "abcd&amp;&gt;&lt;&#39;&#34;")
+             ;; 2 byte
+             ("こんにちは&><'\"こんばんは" . "こんにちは&amp;&gt;&lt;&#39;&#34;こんばんは")
+             ("&><'\"こんばんは" . "&amp;&gt;&lt;&#39;&#34;こんばんは")
+             ("こんにちは&><'\"" . "こんにちは&amp;&gt;&lt;&#39;&#34;")
+             ;; 4 byte
+             ("<🥕 & 🌽 & 🌶>" . "&lt;🥕 &amp; 🌽 &amp; 🌶&gt;")))
+    (let ((input (car test))
+          (expected (cdr test)))
+      (should (equal expected (templatel-escape-string input)))))
+
+  ;; Ensure it's correctly used in the template
+  (should (equal
+           (templatel-render-string
+            "<p>{{ post }}</p>"
+            '(("post" . "<script>alert(1)</script>")))
+           "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>"))
+
+  ;; Disable autoescaping
+  (let ((env (templatel-env-new)))
+    (templatel-env-set-autoescape env nil)
+    (templatel-env-add-template env "<string>" (templatel-new "<p>{{ post }}</p>"))
+    (should (equal
+             (templatel-env-render env "<string>" '(("post" . "<script>alert(1)</script>")))
+             "<p><script>alert(1)</script></p>"))))
+
 ;; --- Renderer --
 
 (ert-deftest render-filter-named-parameter-syntax ()
