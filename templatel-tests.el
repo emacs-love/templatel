@@ -115,6 +115,13 @@
             '(("post" . "<script>alert(1)</script>")))
            "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>"))
 
+  ;; Test out the `safe` filter
+  (should (equal
+           (templatel-render-string
+            "<p>{{ post|safe }}</p>"
+            '(("post" . "<script>alert(1)</script>")))
+           "<p><script>alert(1)</script></p>"))
+
   ;; Disable autoescaping
   (let ((env (templatel-env-new)))
     (templatel-env-set-autoescape env nil)

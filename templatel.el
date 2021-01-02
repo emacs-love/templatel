@@ -1214,7 +1214,8 @@ operator (RATORFN)."
                           ("lower" . templatel-filters-lower)
                           ("sum" . templatel-filters-sum)
                           ("plus1" . templatel-filters-plus1)
-                          ("int" . templatel-filters-int)))
+                          ("int" . templatel-filters-int)
+                          ("safe" . templatel-filters-safe)))
             (rt/lookup-var
              (lambda(name)
                (catch '-brk
@@ -1368,10 +1369,19 @@ call `templatel--compiler-filter-item' on each entry."
   "Compile an expression from TREE."
   `(progn
      ,@(templatel--compiler-run tree)
-     (insert
-      (if (templatel-env-get-autoescape env)
-          (templatel-escape-string (format "%s" (pop rt/valstk)))
-        (format "%s" (pop rt/valstk))))))
+     (insert (templatel--compiler-value env (pop rt/valstk)))))
+
+(defun templatel--compiler-value (env value)
+  "Compile VALUE within ENV.
+
+This mostly handles autoescaping of values.  If the string is a
+safe string.  e.g.: `(safe . x)' then it is just printed out.
+Otherwise its HTML entities are escaped."
+  (if (templatel-env-get-autoescape env)
+      (pcase value
+        (`(safe . ,x) x)
+        (x (templatel-escape-string (format "%s" x))))
+    (format "%s" value)))
 
 (defun templatel--compiler-text (tree)
   "Compile text from TREE."
@@ -1532,13 +1542,19 @@ call `templatel--compiler-filter-item' on each entry."
 
 
 
+(defun templatel--string-apply (s fn)
+  "Apply FN to S taking safe strings into account."
+  (pcase s
+    (`(safe . ,x) (cons 'safe (funcall fn x)))
+    (x (funcall fn x))))
+
 (defun templatel-filters-upper (s)
   "Upper case all chars of S."
-  (upcase s))
+  (templatel--string-apply s #'upcase))
 
 (defun templatel-filters-lower (s)
   "Lower case all chars of S."
-  (downcase s))
+  (templatel--string-apply s #'downcase))
 
 (defun templatel-filters-sum (s)
   "Sum all entries in S."
@@ -1552,6 +1568,10 @@ call `templatel--compiler-filter-item' on each entry."
   "Convert S into integer of base BASE."
   (string-to-number
    (replace-regexp-in-string "^0[xXbB]" "" s) base))
+
+(defun templatel-filters-safe (s)
+  "Mark string S as safe -- which means don't escape."
+  `(safe . ,s))
 
 (defun templatel--get (lst sym default)
   "Pick SYM from LST or return DEFAULT."
