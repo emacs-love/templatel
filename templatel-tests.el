@@ -130,6 +130,51 @@
              (templatel-env-render env "<string>" '(("post" . "<script>alert(1)</script>")))
              "<p><script>alert(1)</script></p>"))))
 
+(ert-deftest autoescaping-blocks ()
+  ;; The base template DID NOT escape the variable
+  (let ((env (templatel-env-new
+              :importfn #'(lambda(e name)
+                            (templatel-env-add-template
+                             e name
+                             (templatel-new "{% block greeting %}Hello {{ name }}{% endblock %}"))))))
+    ;; The override that calls super also didn't escape anything
+    (templatel-env-add-template
+     env "page.html"
+     (templatel-new "{% extends \"nav.html\" %}{% block greeting %}{{ super() }} and world{% endblock %}"))
+    ;; The output should be escaped
+    (should (equal (templatel-env-render env "page.html" '(("name" . "<h1>Title</h1>")))
+                   "Hello &lt;h1&gt;Title&lt;/h1&gt; and world")))
+
+  ;; The base template ESCAPED the variable
+  (let ((env (templatel-env-new
+              :importfn #'(lambda(e name)
+                            ;; Base template define the block
+                            (templatel-env-add-template
+                             e name
+                             (templatel-new "{% block greeting %}Hello {{ name|safe }}{% endblock %}"))))))
+    ;; The override that calls super trusts what the base template did
+    (templatel-env-add-template
+     env "page.html"
+     (templatel-new "{% extends \"nav.html\" %}{% block greeting %}{{ super() }} and world{% endblock %}"))
+    ;; the output should be safe
+    (should (equal (templatel-env-render env "page.html" '(("name" . "<h1>Title</h1>")))
+                   "Hello <h1>Title</h1> and world")))
+
+  ;; The base template DID NOT escape the variable
+  (let ((env (templatel-env-new
+              :importfn #'(lambda(e name)
+                            ;; Base template define the block
+                            (templatel-env-add-template
+                             e name
+                             (templatel-new "{% block greeting %}Hello {{ name }}{% endblock %}"))))))
+    ;; The override that calls super trusts what the base template did
+    (templatel-env-add-template
+     env "page.html"
+     (templatel-new "{% extends \"nav.html\" %}{% block greeting %}{{ super()|safe }} and world{% endblock %}"))
+    ;; the output won't have been escaped
+    (should (equal (templatel-env-render env "page.html" '(("name" . "<h1>Title</h1>")))
+                   "Hello &lt;h1&gt;Title&lt;/h1&gt; and world"))))
+
 ;; --- Renderer --
 
 (ert-deftest render-filter-named-parameter-syntax ()
