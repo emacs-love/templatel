@@ -1369,9 +1369,9 @@ call `templatel--compiler-filter-item' on each entry."
   "Compile an expression from TREE."
   `(progn
      ,@(templatel--compiler-run tree)
-     (insert (templatel--compiler-value env (pop rt/valstk)))))
+     (insert (templatel--runtime-value env (pop rt/valstk)))))
 
-(defun templatel--compiler-value (env value)
+(defun templatel--runtime-value (env value)
   "Compile VALUE within ENV.
 
 This mostly handles autoescaping of values.  If the string is a
@@ -1498,7 +1498,13 @@ Otherwise its HTML entities are escaped."
                 (code (and blocks (gethash ,name blocks))))
            (if (not (null code))
                (progn
-                 (templatel-env-add-filter env "super" (lambda() (funcall super-code vars env)))
+                 (templatel-env-add-filter
+                  env "super"
+                  (lambda()
+                    (let ((super-output (funcall super-code vars env)))
+                      (if (templatel-env-get-autoescape env)
+                          (templatel-mark-safe super-output)
+                        super-output))))
                  (insert (funcall code vars env rt/blocks))
                  (templatel-env-remove-filter env "super"))
              ,@body))
@@ -1571,7 +1577,7 @@ Otherwise its HTML entities are escaped."
 
 (defun templatel-filters-safe (s)
   "Mark string S as safe -- which means don't escape."
-  `(safe . ,s))
+  (templatel-mark-safe s))
 
 (defun templatel--get (lst sym default)
   "Pick SYM from LST or return DEFAULT."
@@ -1579,6 +1585,12 @@ Otherwise its HTML entities are escaped."
     (if val
         (cadr val)
       default)))
+
+(defun templatel-mark-safe (s)
+  "Mark string S as safe."
+  (pcase s
+    (`(safe . ,x) s)
+    (x (cons 'safe x))))
 
 (defun templatel-escape-string (s)
   "Escape string S."
