@@ -1576,7 +1576,21 @@ Otherwise its HTML entities are escaped."
    (replace-regexp-in-string "^0[xXbB]" "" s) base))
 
 (defun templatel-filters-safe (s)
-  "Mark string S as safe -- which means don't escape."
+  "Mark string S as safe.
+
+That is useful if one wants to allow variables to contain HTML
+code.  e.g.:
+
+#+BEGIN_SRC emacs-lisp
+\(templatel-render-string \"Hi {{ name|safe }}!\" '((\"name\" . \"<b>you</b>\")) t)
+#+END_SRC
+
+The above snippet would output the HTML entities untouched even
+though the flag for auto escaping is true:
+
+#+BEGIN_SRC text
+Hi <b>you</b>!
+#+END_SRC"
   (templatel-mark-safe s))
 
 (defun templatel--get (lst sym default)
@@ -1648,7 +1662,7 @@ environment via ~:importfn~ parameter.
       ;; 2. Where we keep the filter functions
       ,(make-hash-table :test 'equal)
       ;; 3. Autoescape flag that defaults to true
-      t]))
+      nil]))
 
 (defun templatel-env-add-template (env name template)
   "Add TEMPLATE to ENV under key NAME."
@@ -1728,7 +1742,7 @@ This function reverts the effect of a previous call to
 
 ;; ------ Public API without Environment
 
-(defun templatel-render-string (template variables &optional autoescape-off)
+(defun templatel-render-string (template variables &rest options)
   "Render TEMPLATE string with VARIABLES.
 
 This is the simplest way to use *templatel*, since it only takes
@@ -1739,19 +1753,21 @@ refer to the next section
 [[anchor:section-template-environments][Template Environments]]
 to learn how to use the API that enables template inheritance.
 
-The AUTOESCAPE-OFF flag disables the otherwise automatically
-enabled HTML escaping.
+The argument OPTIONS can have the following entries:
+
+- *AUTOESCAPE*: enables automatic HTML entity escaping.  Defaults
+   to ~nil~.
 
 #+BEGIN_SRC emacs-lisp
 \(templatel-render-string \"Hello, {{ name }}!\" '((\"name\" . \"GNU!\")))
 #+END_SRC"
-  (let ((env (templatel-env-new)))
-    (when autoescape-off
-      (templatel-env-set-autoescape env nil))
+  (let ((env (templatel-env-new))
+        (opt (seq-partition options 2)))
+    (templatel-env-set-autoescape env (templatel--get opt :autoescape nil))
     (templatel-env-add-template env "<string>" (templatel-new template))
     (templatel-env-render env "<string>" variables)))
 
-(defun templatel-render-file (path variables &optional autoescape-off)
+(defun templatel-render-file (path variables &rest opt)
   "Render template file at PATH with VARIABLES.
 
 Just like with
@@ -1761,11 +1777,27 @@ templates rendered with this function also can't use ~{% extends
 [[anchor:section-template-environments][Template Environments]]
 to learn how to use the API that enables template inheritance.
 
-The AUTOESCAPE-OFF flag disables the otherwise automatically
-enabled HTML escaping."
+Given the HTML template ~file.html~:
+#+BEGIN_SRC jinja2
+Hi {{ name }}
+#+END_SRC
+
+And the following Lisp code:
+#+BEGIN_SRC emacs-lisp
+\(templatel-render-file \"file.html\" '((\"name\" . \"test\")))
+#+END_SRC
+
+The argument OPT can have the following entries:
+
+- *AUTOESCAPE-EXT*: list contains which file extensions enable
+automatic enabled HTML escaping.  In the example above, HTML
+entities present in `name` will be escaped.  Notice that the
+comparison is case sensitive.  Defaults to ~'(\"html\" \"xml\")~."
   (let ((env (templatel-env-new)))
-    (when autoescape-off
-      (templatel-env-set-autoescape env nil))
+    (templatel-env-set-autoescape
+     env (member (file-name-extension path)
+                 (templatel-env-set-autoescape
+                  env (templatel--get opt :autoescape-ext '("html" "xml")))))
     (templatel-env-add-template env path (templatel-new-from-file path))
     (templatel-env-render env path variables)))
 

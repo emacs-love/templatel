@@ -108,14 +108,32 @@
           (expected (cdr test)))
       (should (equal expected (templatel-escape-string input)))))
 
-  ;; Ensure it's correctly used in the template
+  ;; Comes disabled by default
   (should (equal
            (templatel-render-string
             "<p>{{ post }}</p>"
             '(("post" . "<script>alert(1)</script>")))
+           "<p><script>alert(1)</script></p>"))
+
+  ;; Can be enabled with the autoescape flag
+  (should (equal
+           (templatel-render-string
+            "<p>{{ post }}</p>"
+            '(("post" . "<script>alert(1)</script>"))
+            :autoescape t)
            "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>"))
 
-  ;; Test out the `safe` filter
+  ;; Test out the `safe` filter when auto escaping is enabled; should
+  ;; disable escaping locally
+  (should (equal
+           (templatel-render-string
+            "<p>{{ post|safe }}</p>"
+            '(("post" . "<script>alert(1)</script>"))
+            :autoescape t)
+           "<p><script>alert(1)</script></p>"))
+
+  ;; Test out the `safe` filter when auto escaping is disabled; should
+  ;; be a no-op
   (should (equal
            (templatel-render-string
             "<p>{{ post|safe }}</p>"
@@ -137,6 +155,7 @@
                             (templatel-env-add-template
                              e name
                              (templatel-new "{% block greeting %}Hello {{ name }}{% endblock %}"))))))
+    (templatel-env-set-autoescape env t)
     ;; The override that calls super also didn't escape anything
     (templatel-env-add-template
      env "page.html"
@@ -152,6 +171,7 @@
                             (templatel-env-add-template
                              e name
                              (templatel-new "{% block greeting %}Hello {{ name|safe }}{% endblock %}"))))))
+    (templatel-env-set-autoescape env t)
     ;; The override that calls super trusts what the base template did
     (templatel-env-add-template
      env "page.html"
@@ -167,6 +187,7 @@
                             (templatel-env-add-template
                              e name
                              (templatel-new "{% block greeting %}Hello {{ name }}{% endblock %}"))))))
+    (templatel-env-set-autoescape env t)
     ;; The override that calls super trusts what the base template did
     (templatel-env-add-template
      env "page.html"
