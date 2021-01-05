@@ -1377,11 +1377,12 @@ call `templatel--compiler-filter-item' on each entry."
 This mostly handles autoescaping of values.  If the string is a
 safe string.  e.g.: `(safe . x)' then it is just printed out.
 Otherwise its HTML entities are escaped."
-  (if (templatel-env-get-autoescape env)
-      (pcase value
-        (`(safe . ,x) x)
-        (x (templatel-escape-string (format "%s" x))))
-    (format "%s" value)))
+  (let ((fn (if (templatel-env-get-autoescape env)
+                #'templatel-escape-string
+              #'identity)))
+    (pcase value
+      (`(safe . ,x) x)
+      (x (funcall fn (format "%s" x))))))
 
 (defun templatel--compiler-text (tree)
   "Compile text from TREE."
