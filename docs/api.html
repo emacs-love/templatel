@@ -46,11 +46,15 @@
           
             <li><a href="#symbol-templatel-env-add-template">templatel-env-add-template</a></li>
           
+            <li><a href="#symbol-templatel-env-get-autoescape">templatel-env-get-autoescape</a></li>
+          
             <li><a href="#symbol-templatel-env-new">templatel-env-new</a></li>
           
             <li><a href="#symbol-templatel-env-remove-filter">templatel-env-remove-filter</a></li>
           
             <li><a href="#symbol-templatel-env-render">templatel-env-render</a></li>
+          
+            <li><a href="#symbol-templatel-env-set-autoescape">templatel-env-set-autoescape</a></li>
           
         </ul>
       
@@ -64,6 +68,8 @@
             <li><a href="#symbol-templatel-filters-lower">templatel-filters-lower</a></li>
           
             <li><a href="#symbol-templatel-filters-plus1">templatel-filters-plus1</a></li>
+          
+            <li><a href="#symbol-templatel-filters-safe">templatel-filters-safe</a></li>
           
             <li><a href="#symbol-templatel-filters-sum">templatel-filters-sum</a></li>
           
@@ -95,7 +101,7 @@
             
               <div class="symbol" id="symbol-templatel-render-file">
                 
-                  <h2>(templatel-render-file (path variables))</h2>
+                  <h2>(templatel-render-file (path variables &rest opt))</h2>
                 
 
                 
@@ -110,7 +116,36 @@ Just like with
 templates rendered with this function also can’t use <code>{% extends
 %}</code> statements.  Please refer to the section
 <a href="#section-template-environments">Template Environments</a>
-to learn how to use the API that enables template inheritance.</p>
+to learn how to use the API that enables template inheritance.
+</p>
+
+<p>
+Given the HTML template <code>file.html</code>:
+</p>
+<div class="org-src-container">
+<pre class="src src-jinja2">Hi <span class="org-type">{{</span> <span class="org-variable-name">name</span> <span class="org-type">}}</span>
+</pre>
+</div>
+
+<p>
+And the following Lisp code:
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(templatel-render-file <span class="org-string">"file.html"</span> <span class="org-warning">&#8217;</span>((<span class="org-string">"name"</span> . <span class="org-string">"test"</span>)))
+</pre>
+</div>
+
+<p>
+The argument OPT can have the following entries:
+</p>
+
+<ul class="org-ul">
+<li><b>AUTOESCAPE-EXT</b>: list contains which file extensions enable</li>
+</ul>
+<p>
+automatic enabled HTML escaping.  In the example above, HTML
+entities present in ‘name‘ will be escaped.  Notice that the
+comparison is case sensitive.  Defaults to <code>’("html" "xml")</code>.</p>
 
                   </div>
                 
@@ -118,7 +153,7 @@ to learn how to use the API that enables template inheritance.</p>
             
               <div class="symbol" id="symbol-templatel-render-string">
                 
-                  <h2>(templatel-render-string (template variables))</h2>
+                  <h2>(templatel-render-string (template variables &rest options))</h2>
                 
 
                 
@@ -136,6 +171,15 @@ refer to the next section
 <a href="#section-template-environments">Template Environments</a>
 to learn how to use the API that enables template inheritance.
 </p>
+
+<p>
+The argument OPTIONS can have the following entries:
+</p>
+
+<ul class="org-ul">
+<li><b>AUTOESCAPE</b>: enables automatic HTML entity escaping.  Defaults
+to <code>nil</code>.</li>
+</ul>
 
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">(templatel-render-string <span class="org-string">"Hello, {{ name }}!"</span> <span class="org-warning">&#8217;</span>((<span class="org-string">"name"</span> . <span class="org-string">"GNU!"</span>)))
@@ -201,6 +245,20 @@ to remove filters added with this function.</p>
                   <div class="docstring">
                     <p>
 Add TEMPLATE to ENV under key NAME.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-env-get-autoescape">
+                
+                  <h2>(templatel-env-get-autoescape (env))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Get autoescape flag of ENV.</p>
 
                   </div>
                 
@@ -290,6 +348,20 @@ Render template NAME within ENV with VARS as parameters.</p>
                 
               </div>
             
+              <div class="symbol" id="symbol-templatel-env-set-autoescape">
+                
+                  <h2>(templatel-env-set-autoescape (env autoescape))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Set AUTOESCAPE flag of ENV to either true or false.</p>
+
+                  </div>
+                
+              </div>
+            
           </div>
         </article>
       
@@ -335,6 +407,41 @@ Lower case all chars of S.</p>
                   <div class="docstring">
                     <p>
 Add one to S.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-filters-safe">
+                
+                  <h2>(templatel-filters-safe (s))</h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Mark string S as safe.
+</p>
+
+<p>
+That is useful if one wants to allow variables to contain HTML
+code.  e.g.:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(templatel-render-string <span class="org-string">"Hi {{ name|safe }}!"</span> <span class="org-warning">&#8217;</span>((<span class="org-string">"name"</span> . <span class="org-string">"&lt;b&gt;you&lt;/b&gt;"</span>)) t)
+</pre>
+</div>
+
+<p>
+The above snippet would output the HTML entities untouched even
+though the flag for auto escaping is true:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">Hi &lt;b&gt;you&lt;/b&gt;!
+</pre>
+</div>
 
                   </div>
                 
