@@ -56,6 +56,35 @@
   reach 1.0, expect changes in the ~API~ as well as in the language
   itself.
 
+* Differences from Jinja
+
+  There are a few things that won't ever be the same, because jinja
+  was designed for Python and templatel is designed for Emacs Lisp.
+  Most of these differences come out subtly like the rules for
+  truthiness in the two host languages.
+
+  Templatel doesn't implement the following features:
+
+  - Many built-in filters
+  - For loop variables (loop.index, loop.first, loop.last, etc)
+  - Include statement
+  - Whitespace Control
+  - Undefined Variables
+  - List and tuple literals
+  - Else branch in for loops
+  - Macros, Macro Calls and Import
+  - Named Block End-Tags
+  - Extensible Syntax
+  - Autoescape Overrides
+  - Assignments/Block Assignments
+  - With Statement
+  - Dictionary Syntax (access items with square brackets)
+  - Line Statements
+
+  They are roughly sorted by how likely it would be for them to be
+  implemented in templatel.  Pull requests for making templatel more
+  compatible to jinja are always welcome.
+
 * Changelog
 
 ** 0.1.3

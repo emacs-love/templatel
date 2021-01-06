@@ -120,13 +120,53 @@ itself.
 </div>
 </div>
 
-<div id="outline-container-org474bfaa" class="outline-2">
-<h2 id="org474bfaa">Changelog</h2>
-<div class="outline-text-2" id="text-org474bfaa">
+<div id="outline-container-org322b687" class="outline-2">
+<h2 id="org322b687">Differences from Jinja</h2>
+<div class="outline-text-2" id="text-org322b687">
+<p>
+There are a few things that won't ever be the same, because jinja
+was designed for Python and templatel is designed for Emacs Lisp.
+Most of these differences come out subtly like the rules for
+truthiness in the two host languages.
+</p>
+
+<p>
+Templatel doesn't implement the following features:
+</p>
+
+<ul class="org-ul">
+<li>Many built-in filters</li>
+<li>For loop variables (loop.index, loop.first, loop.last, etc)</li>
+<li>Include statement</li>
+<li>Whitespace Control</li>
+<li>Undefined Variables</li>
+<li>List and tuple literals</li>
+<li>Else branch in for loops</li>
+<li>Macros, Macro Calls and Import</li>
+<li>Named Block End-Tags</li>
+<li>Extensible Syntax</li>
+<li>Autoescape Overrides</li>
+<li>Assignments/Block Assignments</li>
+<li>With Statement</li>
+<li>Dictionary Syntax (access items with square brackets)</li>
+<li>Line Statements</li>
+</ul>
+
+<p>
+They are roughly sorted by how likely it would be for them to be
+implemented in templatel.  Pull requests for making templatel more
+compatible to jinja are always welcome.
+</p>
 </div>
-<div id="outline-container-org8c3965f" class="outline-3">
-<h3 id="org8c3965f">0.1.3</h3>
-<div class="outline-text-3" id="text-org8c3965f">
+</div>
+
+<div id="outline-container-org0899f62" class="outline-2">
+<h2 id="org0899f62">Changelog</h2>
+<div class="outline-text-2" id="text-org0899f62">
+</div>
+<div id="outline-container-org7af80b9" class="outline-3">
+<h3 id="org7af80b9">0.1.3</h3>
+<div class="outline-text-3" id="text-org7af80b9">
 <ul class="org-ul">
 <li>Support for named arguments on filters.  They are passed to the
 handler as an <code>assoc</code> list. E.g.: <code>{{ foo(var1="val", var2=2) }}</code>
