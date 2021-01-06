@@ -12,6 +12,12 @@
   /templatel/ brings a high level language for expanding variables
   with conditional and loop control flow structures.
 
+** Documentation
+
+   * Website: https://clarete.li/templatel
+   * Code: https://github.com/clarete/templatel
+   * Issues: https://github.com/clarete/templatel/issues
+
 ** How does it look like
 
    #+begin_src jinja
@@ -33,9 +39,3 @@
                                         (("url" . "http://gnu.org")
                                          ("name" . "Gnu!!"))))))
    #+end_src
-
-** Documentation
-
-   * Website: https://clarete.li/templatel
-   * Code: https://github.com/clarete/templatel
-   * Issues: https://github.com/clarete/templatel/issues
