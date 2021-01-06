@@ -66,7 +66,11 @@
     (setq weblorg-default-url "https://clarete.li/templatel"))
 
 ;; Set site wide configuration
-(weblorg-site :theme "autodoc")
+(weblorg-site
+ :theme "autodoc"
+ :template-vars '(("project_name" . "'templatel")
+                  ("project_github" . "https://github.com/clarete/templatel")
+                  ("project_description" . "A modern templating language for Emacs-Lisp")))
 
 ;; Generate Index Page
 (weblorg-route
@@ -75,6 +79,21 @@
  :template "index.html"
  :output "index.html"
  :url "/")
+
+(weblorg-route
+ :name "doc"
+ :input-pattern "src/docs/*.org"
+ :input-aggregate #'weblorg-input-aggregate-all
+ :template "docs.html"
+ :output "doc/index.html"
+ :url "/doc/")
+
+(weblorg-route
+ :name "docs"
+ :input-pattern "src/docs/*.org"
+ :template "doc.html"
+ :output "doc/{{ slug }}.html"
+ :url "/doc/{{ slug }}.html")
 
 ;; Generate API Reference
 (weblorg-route

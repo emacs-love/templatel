@@ -3,10 +3,10 @@
   <head>
     
       <meta charset="utf-8">
-      <title>'templatel - Home</title>
+      <title>&#39;templatel - Home</title>
       <meta name="description" content="">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="stylesheet" href="static/style.css">
+      <link rel="stylesheet" href="https://clarete.li/templatel/static/style.css" type="text/css" />
     
   </head>
   <body>
@@ -18,7 +18,7 @@
       
   <div class="index">
     <div class="banner">
-      <h1>'templatel</h1>
+      <h1>&#39;templatel</h1>
       <div class="sub">
         A modern templating language for Emacs-Lisp
       </div>
@@ -26,21 +26,18 @@
 
     <div class="menu">
       <ul>
-        <li><a href="api.html">API Docs</a></li>
-        <li>
-          <a href="https://github.com/clarete/templatel" target="_blank">
-            Github
-          </a>
-        </li>
+        <li><a href="https://clarete.li/templatel/doc/">documentation</a></li>
+        <li><a href="https://clarete.li/templatel/api.html">api reference</a></li>
+        <li><a href="https://github.com/clarete/templatel" target="_blank">github</a></li>
       </ul>
     </div>
 
     <div class="page">
       <article>
         
-<div id="outline-container-orgedc0d5f" class="outline-2">
-<h2 id="orgedc0d5f">Introduction</h2>
-<div class="outline-text-2" id="text-orgedc0d5f">
+<div id="outline-container-org7d40ad7" class="outline-2">
+<h2 id="org7d40ad7">Introduction</h2>
+<div class="outline-text-2" id="text-org7d40ad7">
 <p>
 <i>templatel</i> is the modern templating language that was missing for
 Emacs-Lisp.  It provides variable substitution and control flow
@@ -66,13 +63,13 @@ Visit the <a href="https://clarete.li/templatel/api.html">API Reference</a> for 
 </div>
 </div>
 
-<div id="outline-container-org948f361" class="outline-2">
-<h2 id="org948f361">Installation</h2>
-<div class="outline-text-2" id="text-org948f361">
+<div id="outline-container-orgb6e0a73" class="outline-2">
+<h2 id="orgb6e0a73">Installation</h2>
+<div class="outline-text-2" id="text-orgb6e0a73">
 </div>
-<div id="outline-container-orgf480d7f" class="outline-3">
-<h3 id="orgf480d7f">Via Melpa</h3>
-<div class="outline-text-3" id="text-orgf480d7f">
+<div id="outline-container-org7461520" class="outline-3">
+<h3 id="org7461520">Via Melpa</h3>
+<div class="outline-text-3" id="text-org7461520">
 <p>
 The simplest and recommended way to get yourself a copy of
 <code>templatel</code> is to install it via <a href="https://melpa.org">MELPA</a>.  You must have something
@@ -93,9 +90,9 @@ haven't done that in a while.
 </div>
 </div>
 
-<div id="outline-container-org7400cd0" class="outline-3">
-<h3 id="org7400cd0">Manually</h3>
-<div class="outline-text-3" id="text-org7400cd0">
+<div id="outline-container-orgd9aea8e" class="outline-3">
+<h3 id="orgd9aea8e">Manually</h3>
+<div class="outline-text-3" id="text-orgd9aea8e">
 <p>
 If you don't want to use any package installer, you can just clone
 the repository somewhere on your computer, let's say
@@ -111,9 +108,9 @@ your Emacs configuration so the library can be found by <code>require</code>.
 </div>
 </div>
 
-<div id="outline-container-orgb30c8ab" class="outline-2">
-<h2 id="orgb30c8ab">Project Status</h2>
-<div class="outline-text-2" id="text-orgb30c8ab">
+<div id="outline-container-org10f2a77" class="outline-2">
+<h2 id="org10f2a77">Project Status</h2>
+<div class="outline-text-2" id="text-org10f2a77">
 <p>
 Although <i>templatel</i> has been been functional since it's very first
 lil version, it's still too early to say it's stable.  Until we
@@ -123,13 +120,13 @@ itself.
 </div>
 </div>
 
-<div id="outline-container-org37365f1" class="outline-2">
-<h2 id="org37365f1">Changelog</h2>
-<div class="outline-text-2" id="text-org37365f1">
+<div id="outline-container-org474bfaa" class="outline-2">
+<h2 id="org474bfaa">Changelog</h2>
+<div class="outline-text-2" id="text-org474bfaa">
 </div>
-<div id="outline-container-org487316d" class="outline-3">
-<h3 id="org487316d">0.1.3</h3>
-<div class="outline-text-3" id="text-org487316d">
+<div id="outline-container-org8c3965f" class="outline-3">
+<h3 id="org8c3965f">0.1.3</h3>
+<div class="outline-text-3" id="text-org8c3965f">
 <ul class="org-ul">
 <li>Support for named arguments on filters.  They are passed to the
 handler as an <code>assoc</code> list. E.g.: <code>{{ foo(var1="val", var2=2) }}</code>
@@ -140,9 +137,9 @@ handler will have to deal with the order.</li>
 </div>
 </div>
 
-<div id="outline-container-orgbdaf174" class="outline-3">
-<h3 id="orgbdaf174">0.1.2</h3>
-<div class="outline-text-3" id="text-orgbdaf174">
+<div id="outline-container-orgc10464a" class="outline-3">
+<h3 id="orgc10464a">0.1.2</h3>
+<div class="outline-text-3" id="text-orgc10464a">
 <ul class="org-ul">
 <li>Support for user defined filter functions via
 <code>templatel-env-add-filter</code> and <code>templatel-env-remove-filter</code>.</li>
@@ -155,9 +152,9 @@ anymore.  But still only exists while blocks are evaluated</li>
 </div>
 </div>
 
-<div id="outline-container-org19f2d46" class="outline-3">
-<h3 id="org19f2d46">0.1.1</h3>
-<div class="outline-text-3" id="text-org19f2d46">
+<div id="outline-container-org0151332" class="outline-3">
+<h3 id="org0151332">0.1.1</h3>
+<div class="outline-text-3" id="text-org0151332">
 <ul class="org-ul">
 <li>Fix <code>elif</code> without else statements</li>
 <li>Make <code>templatel-env-{source,run-importfn}</code> private</li>
@@ -177,14 +174,15 @@ anymore.  But still only exists while blocks are evaluated</li>
       
         <div class="footer">
           <ul>
-            <li><a href="https://clarete.li/templatel/">Home</a></li>
-            <li><a href="https://clarete.li/templatel/api.html">API Docs</a></li>
-            <li><a href="https://github.com/clarete/templatel" target="_blank">Github</a></li>
+            <li><a href="https://clarete.li/templatel/">home</a></li>
+            <li><a href="https://clarete.li/templatel/doc/">documentation</a></li>
+            <li><a href="https://clarete.li/templatel/api.html">api reference</a></li>
+            <li><a href="https://github.com/clarete/templatel" target="_blank">github</a></li>
           </ul>
           <div class="ack">
             Made with &#x2665; and
             <a href="https://www.gnu.org/software/emacs/" target="_blank" class="M-x">
-              <img src="static/emacs-bw.svg" width="16" height="16" />
+              <img src="https://clarete.li/templatel/static/emacs-bw.svg" width="16" height="16" />
             </a>
             by
             <a href="https://clarete.li" target="_blank">

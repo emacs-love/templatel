@@ -1,0 +1,73 @@
+#+TITLE: HTML Entity Auto Escaping
+#+OPTIONS: toc:nil num:nil
+
+
+Since /templatel/ was initially designed for serving as a template
+language in a static site generator, most of its input will be HTML or
+XML.  This demanded adding an optional mechanism to distinguish
+expressions deemed as safe from the ones that should have its contents
+escaped.
+
+* Enable and Disable Auto Escaping
+
+  The state of auto escaping will depend on which API one is using.
+  Let's see each of them:
+
+  *With [[url_for:api,anchor=symbol-templatel-render-string][templatel-render-string]]*
+
+  #+BEGIN_SRC emacs-lisp
+  ;; auto escaping comes disabled by default
+  (templatel-render-string "hi {{ name }}" '(("name" . "<b>you</b>")))
+  ;; "hi <b>you</b>"
+
+  ;; pass t to auto-escape to enable it
+  (templatel-render-string "hi {{ name }}" '(("name" . "<b>you</b>"))
+   :autoescape t)
+  ;; "hi &lt;b&gt;you&lt;/b&gt;"
+  #+END_SRC
+
+  *With [[url_for:api,anchor=symbol-templatel-render-file][templatel-render-file]]*
+
+  #+BEGIN_SRC emacs-lisp
+  ;; auto escaping comes enabled by default for html and xml files
+  (templatel-render-file "path/to/file.html" '(("name" . "<b>you</b>")))
+  ;; "hi &lt;b&gt;you&lt;/b&gt;"
+  (templatel-render-file "path/to/file.txt" '(("name" . "<b>you</b>")))
+  ;; "hi <b>you</b>"
+
+  ;; pass the list of extensions that should have auto escape enabled
+  (templatel-render-file
+   "path/to/file.rest"
+   '(("name" . "<b>you</b>"))
+   :autoescape-ext '(".rest"))
+  ;; "hi &lt;b&gt;you&lt;/b&gt;"
+  #+END_SRC
+
+  *With [[url_for:api,anchor=symbol-templatel-env-new][templatel-env-new]] and [[url_for:api,anchor=symbol-templatel-env-set-autoescape][templatel-env-set-autoescape]]*
+
+  The flag for HTML entity auto escaping defaults to false and can
+  be enabled (or disabled again) with [[url_for:api,anchor=symbol-templatel-env-set-autoescape][templatel-env-set-autoescape]].
+
+  #+BEGIN_SRC emacs-lisp
+  (let ((env (templatel-env-new)))
+   ;; all templates within this environment will have auto
+   ;; escaping enabled
+   (templatel-env-set-autoescape env t)
+   ;; (...) add templates and such
+   (templatel-env-render env path variables))
+  #+END_SRC
+
+* Render non-escaped content
+
+  When auto escaping is enabled, the template writer must mark each
+  value that is safe to contain HTML entities and not be escaped.
+  That can be done using the [[url_for:api,anchor=symbol-templatel-filters-safe][safe]] filter:
+
+  #+BEGIN_SRC emacs-lisp
+  (templatel-render-string "Hi {{ name|safe }}!" ’(("name" . "<b>you</b>")) t)
+  #+END_SRC
+
+  The above will render
+  #+BEGIN_SRC text
+  Hi <b>you</b>
+  #+END_SRC
