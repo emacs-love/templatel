@@ -196,6 +196,15 @@
     (should (equal (templatel-env-render env "page.html" '(("name" . "<h1>Title</h1>")))
                    "Hello &lt;h1&gt;Title&lt;/h1&gt; and world"))))
 
+;; --- Unicode ---
+
+(ert-deftest render-unicode ()
+  ;; "render the same way 🥕 🌽 🌶"
+  (should (equal (templatel-render-string "0" '()) "0"))
+  (should (equal (templatel-render-string "0a" '()) "0a"))
+  (should (equal (templatel-render-string "render the same way 🥕 🌽 🌶" '())
+                 "render the same way 🥕 🌽 🌶")))
+
 ;; --- Renderer --
 
 (ert-deftest render-filter-named-parameter-syntax ()

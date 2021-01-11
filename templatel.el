@@ -39,6 +39,37 @@
 
 (define-error 'templatel-backtracking "Backtracking" 'templatel-internal)
 
+;; --- String utilities ---
+
+(defun templatel--decoded (&rest bytes)
+  "Decode BYTES as a utf-8 string."
+  (decode-coding-string (apply #'unibyte-string bytes) 'utf-8))
+
+(defun templatel--string (rune)
+  "Convert RUNE numeric value into a UTF-8 string."
+  (cond
+   ((<= rune (- (ash 1 7) 1))
+    (byte-to-string rune))
+   ((<= rune (- (ash 1 11) 1))
+    (templatel--decoded
+     (logior #xC0 (ash rune -6))
+     (logior #x80 (logand rune #x3F))))
+   ((<= rune (- (ash 1 16) 1))
+    (templatel--decoded
+     (logior #xE0 (ash rune -12))
+     (logior #x80 (logand (ash rune -6) #x3F))
+     (logior #x80 (logand rune #x3F))))
+   (t
+    (templatel--decoded
+     (logior #xF0 (ash rune -18))
+     (logior #x80 (logand (ash rune -12) #x3F))
+     (logior #x80 (logand (ash rune -6) #x3F))
+     (logior #x80 (logand rune #x3F))))))
+
+(defun templatel--join-chars (chars)
+  "Join all the CHARS forming a string."
+  (string-join (mapcar #'templatel--string chars) ""))
+
 ;; --- Scanner ---
 
 (defun templatel--scanner-new (input file-name)
@@ -105,7 +136,7 @@
   (if (templatel--scanner-eos scanner)
       (templatel--scanner-error scanner "EOF")
     (elt (templatel--scanner-input scanner)
-         (templatel--scanner-cursor scanner))))
+       (templatel--scanner-cursor scanner))))
 
 (defun templatel--scanner-error (_scanner msg)
   "Generate error in SCANNER and document with MSG."
@@ -292,25 +323,25 @@
   "Read 'in' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "in")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-and (scanner)
   "Read 'and' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "and")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-not (scanner)
   "Read 'not' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "not")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-or (scanner)
   "Read 'or' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "or")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-paren-op (scanner)
   "Read '(' off SCANNER's input."
@@ -326,115 +357,115 @@
   "Read '|' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "|")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-|| (scanner)
   "Read '||' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "||")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-+ (scanner)
   "Read '+' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "+")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-- (scanner)
   "Read '-' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "-")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-* (scanner)
   "Read '*' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "*")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-** (scanner)
   "Read '**' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "**")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-slash (scanner)
   "Read '/' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "/")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-dslash (scanner)
   "Read '//' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "//")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-= (scanner)
   "Read '=' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "=")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-== (scanner)
   "Read '==' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "==")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-!= (scanner)
   "Read '!=' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "!=")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-> (scanner)
   "Read '>' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner ">")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-< (scanner)
   "Read '<' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "<")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token->= (scanner)
   "Read '>=' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner ">=")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-<= (scanner)
   "Read '<=' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "<=")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-<< (scanner)
   "Read '<<' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "<<")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token->> (scanner)
   "Read '>>' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner ">>")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-& (scanner)
   "Read '&' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "&")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-~ (scanner)
   "Read '~' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "~")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-% (scanner)
   "Read '%' off SCANNER's input."
@@ -443,17 +474,13 @@
   (templatel--scanner-not scanner (lambda() (templatel--token-stm-cl scanner)))
   (let ((m (templatel--scanner-matchs scanner "%")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
+    (templatel--join-chars m)))
 
 (defun templatel--token-^ (scanner)
   "Read '^' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "^")))
     (templatel--parser-_ scanner)
-    (templatel--parser-join-chars m)))
-
-(defun templatel--parser-join-chars (chars)
-  "Join all the CHARS forming a string."
-  (string-join (mapcar #'byte-to-string chars) ""))
+    (templatel--join-chars m)))
 
 
 
@@ -488,7 +515,7 @@
   "Parse Text entries from SCANNER's input."
   (cons
    "Text"
-   (templatel--parser-join-chars
+   (templatel--join-chars
     (templatel--scanner-one-or-more
      scanner
      (lambda()
@@ -1045,7 +1072,7 @@ operator (RATORFN)."
 (defun templatel--parser-int (scanner)
   "Read integer off SCANNER."
   (string-to-number
-   (templatel--parser-join-chars
+   (templatel--join-chars
     (templatel--scanner-one-or-more
      scanner
      (lambda() (templatel--scanner-range scanner ?0 ?9))))
@@ -1064,7 +1091,7 @@ operator (RATORFN)."
   "Read binary number from SCANNER."
   (templatel--scanner-matchs scanner "0b")
   (string-to-number
-   (templatel--parser-join-chars
+   (templatel--join-chars
     (append
      (templatel--scanner-one-or-more
       scanner
@@ -1076,7 +1103,7 @@ operator (RATORFN)."
   "Read hex number from SCANNER."
   (templatel--scanner-matchs scanner "0x")
   (string-to-number
-   (templatel--parser-join-chars
+   (templatel--join-chars
     (append
      (templatel--scanner-one-or-more
       scanner
@@ -1116,7 +1143,7 @@ operator (RATORFN)."
                  (lambda() (templatel--scanner-match scanner ?\")))
                 (templatel--scanner-any scanner)))))
     (templatel--scanner-match scanner ?\")
-    (cons "String" (templatel--parser-join-chars str))))
+    (cons "String" (templatel--join-chars str))))
 
 ;; GR: IdentStart          <- [a-zA-Z_]
 (defun templatel--parser-identstart (scanner)
@@ -1145,7 +1172,7 @@ operator (RATORFN)."
   "Read Identifier entry from SCANNER."
   (cons
    "Identifier"
-   (let ((identifier (templatel--parser-join-chars
+   (let ((identifier (templatel--join-chars
                       (cons (templatel--parser-identstart scanner)
                             (templatel--parser-identcont scanner)))))
      (templatel--parser-_ scanner)
@@ -1197,7 +1224,7 @@ operator (RATORFN)."
                  (lambda() (templatel--token-comment-cl scanner)))
                 (templatel--scanner-any scanner)))))
     (templatel--token-comment-cl scanner)
-    (cons "Comment" (templatel--parser-join-chars str))))
+    (cons "Comment" (templatel--join-chars str))))
 
 
 
