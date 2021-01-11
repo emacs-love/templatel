@@ -15,6 +15,7 @@
 ** Documentation
 
    * Website: https://clarete.li/templatel
+   * Documentation: https://clarete.li/templatel/doc
    * Code: https://github.com/clarete/templatel
    * Issues: https://github.com/clarete/templatel/issues
 

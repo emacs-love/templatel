@@ -1,0 +1,114 @@
+#+TITLE: Documentation
+#+OPTIONS: num:nil
+
+* Quick Start
+
+  If the template is available as a string and doesn't use any
+  template inheritance, then [[url_for:api,anchor=symbol-templatel-render-string][templatel-render-string]] is the tool for
+  the job:
+
+  #+BEGIN_SRC emacs-lisp
+  (require 'templatel)
+  (templatel-render-string "Happy {{ thing }}" '(("thing" . "Hacking")))
+  #+END_SRC
+
+  There are some other steps to take to use [[url_for:docs,slug=template-inheritance][Template Inheritance]].
+
+* Expressions
+
+  Anything that is surounded by the double curly brackets is evaluated
+  as an expression. e.g. ~{{ 3 * 5 }}~ will evaluate to 15.
+
+** Literals
+
+   The most basic type of expression in /templatel/ is a literal
+   value.
+
+   * integer: decimals ~42~, ~52~. hex numbers ~0xff~,
+     ~0xC0FFEE~. binary numbers ~0b1010~.
+   * float: ~3.14~, ~.5~
+   * boolean: ~true~, ~false~
+   * string: ~"something quoted"~
+   * nil: ~nil~
+
+** Arithmetic Expressions
+
+   They apply only for numbers and always return numbers (or NaN):
+
+   * Unary Negative: ~-10~, ~-0b1010~, ~-3.5~, ~-variable~
+   * Unary Positive: ~+3~
+   * Binary Sum: ~a + b~
+   * Binary Subtraction: ~a - b~
+   * Binary Multiplication: ~a * b~
+   * Binary Division: ~a / b~
+
+** Comparison Expressions
+
+   They always return a boolean value.
+
+   * Equal to: ~a == b~
+   * Different from: ~a != b~
+   * Member in list: ~a in b~ (~b~ *must* be a list)
+
+   These ones only take numbers are input:
+
+   * Greater than: ~a > b~
+   * Greater or equal than: ~a >= b~
+   * Lower then: ~a < b~
+   * Lower or equal than: ~a <= b~
+
+** Logic Expressions
+
+   * And: ~a and b~ true if ~a~ and ~b~ are true
+   * Or: ~a or b~ true if either ~a~ or ~b~ are true
+   * Not: ~not a~ negate ~a~
+   * Bitwise and: ~a & b~
+   * Bitwise or: ~a || b~
+   * Bitwise exclusive or: ~a ^ b~
+   * Bitwise not: ~~a~
+
+* Statements
+
+  In the code, statements are surounded by ~{%~ and ~%}~.
+
+** if
+
+   The conditional statement /if/ has the general syntax
+
+   #+BEGIN_SRC jinja2
+   {% if TEST_EXPRESSION %}
+     test_expression evaluated to true
+   [{% elif TEST_EXPRESSION_2 %}]
+     test_expression_2 evaluated to true
+   [{% else %}]
+     neither test_expression nor test_expression_2
+     evaluated to true
+   {% endif %}
+   #+END_SRC
+
+   The statement can have as many ~elif~ branches as needed.
+
+** for
+
+   The statement /for/ allows looping through sequences.
+
+   #+BEGIN_SRC jinja2
+   {% for name in names %}
+     {{ name }}
+   {% endfor %}
+   #+END_SRC
+
+   /for/ loop statements are compiled down to a [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Mapping-Functions.html#index-mapc][mapc]] call so the
+   variable ~names~ can be any of sequence type. e.g.:
+
+   #+BEGIN_SRC emacs-lisp
+   '(("names" . ("Lisp" "C" "Smalltalk")))
+   #+END_SRC
+
+** block
+
+   See the [[url_for:docs,slug=template-inheritance][Template Inheritance]] document.
+
+** extends
+
+   See the [[url_for:docs,slug=template-inheritance][Template Inheritance]] document.

@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en-us">
   <head>
@@ -33,12 +34,37 @@
 
       
       
-  <div class="doc">
-    <div class="page">
+  <div class="page doc">
+
+    <div class="left-pane">
+      <h3>
+        <a href="https://clarete.li/templatel/doc/">
+          Getting Started
+        </a>
+      </h3>
+
+      
+        <h3>
+          <a href="https://clarete.li/templatel/doc/html-entity-auto-escaping.html">
+            HTML Entity Auto Escaping
+          </a>
+        </h3>
+      
+        <h3>
+          <a href="https://clarete.li/templatel/doc/template-inheritance.html">
+            Template Inheritance
+          </a>
+        </h3>
+      
+    </div>
+
+    <div class="content">
       <article>
+        
         <div class="title">
           <h1>HTML Entity Auto Escaping</h1>
         </div>
+        
 
         <div class="content">
           <p>
@@ -49,9 +75,9 @@ expressions deemed as safe from the ones that should have its contents
 escaped.
 </p>
 
-<div id="outline-container-org2ce45d6" class="outline-2">
-<h2 id="org2ce45d6">Enable and Disable Auto Escaping</h2>
-<div class="outline-text-2" id="text-org2ce45d6">
+<div id="outline-container-orgc8baeb1" class="outline-2">
+<h2 id="orgc8baeb1">Enable and Disable Auto Escaping</h2>
+<div class="outline-text-2" id="text-orgc8baeb1">
 <p>
 The state of auto escaping will depend on which API one is using.
 Let's see each of them:
@@ -114,9 +140,9 @@ be enabled (or disabled again) with <a href="https://clarete.li/templatel/api.ht
 </div>
 </div>
 
-<div id="outline-container-org577cea4" class="outline-2">
-<h2 id="org577cea4">Render non-escaped content</h2>
-<div class="outline-text-2" id="text-org577cea4">
+<div id="outline-container-orgc8c1f7c" class="outline-2">
+<h2 id="orgc8c1f7c">Render non-escaped content</h2>
+<div class="outline-text-2" id="text-orgc8c1f7c">
 <p>
 When auto escaping is enabled, the template writer must mark each
 value that is safe to contain HTML entities and not be escaped.

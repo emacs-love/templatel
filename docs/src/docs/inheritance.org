@@ -1,0 +1,133 @@
+#+TITLE: Template Inheritance
+#+OPTIONS: toc:nil num:nil
+
+The need for modularizing template code arises often in the work of
+template authors.  It is common for websites with multiple pages to
+share a good amount of code through a /base/ template.
+
+One of the ways to do that with /templatel/ is through template
+inheritance.  Let's imagine a website with three types of
+pages: 1. index, 2. article and 3. about page.  We can have one
+template for each type of page and have an extra one, called
+~base.html~ to keep the common code shared between the templates for
+each page type.
+
+We'll be using two statements to take advantage of template
+inheritance: ~block~ and ~extends~.  We must have at least one
+template that is considered the "root" of the inheritance tree.  In
+other words, at least one template must not inherit from any other
+templates. Other templates can use the statement ~extends~ to have
+access to blocks declared in base templates.
+
+* base.html
+
+  The base template is where the structure of the HTML document can go
+  and where optional pieces can be made available.  A whoever decides
+  to extend this template gets to choose which blocks are filled up
+  and with which content.
+
+  #+BEGIN_SRC jinja2
+<!doctype html>
+<html lang="en-us">
+  <head>
+    {% block head %}
+      <meta charset="utf-8">
+      <title>{% block title %}Cool Website{% endblock %}</title>
+      <meta name="description" content="{% block description %}{% endblock %}">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% endblock %}
+  </head>
+  <body>
+    {% block nav %}
+      <div class="nav">
+        <li><a href="/">Home</a></li>
+        <li><a href="/about">About</a></li>
+      </div>
+    {% endblock %}
+  
+    <div class="document">
+      {% block page %}{% endblock %}
+    </div>
+
+    {% block footer %}
+      <div class="footer">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/about">About</a></li>
+        </ul>
+      </div>
+    {% endblock %}
+  </body>
+</html>
+  #+END_SRC
+
+* index.html
+
+  The template that renders the index page inheriting from the base
+  template might not necessarily need to display the footer.  In that
+  case, overriding the ~block~ named /footer/ with an empty content is
+  the solution for that.
+
+  #+BEGIN_SRC jinja2
+{% extends "base.html" %}
+
+{% block page %}
+  <div class="page index">
+    <h1>Cool Website</h1>
+
+    thoroughly written content...
+  </div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+  #+END_SRC
+
+* article.html
+
+  The article page does need both the navigation and the footer, so
+  we're not overriding those blocks here.
+
+  One thing that could be nice tough is to display the article title
+  alongside with the website name in the title.  When overriding the
+  /title/ block, we have the option to use ~super()~ to use the
+  content of the /title/ block of the ~base.html~ template in our
+  override:
+
+  #+BEGIN_SRC jinja2
+{% extends "base.html" %}
+
+{% block title %}{{ super() }} - {{ article.title }}{% endblock %}
+
+{% block page %}
+  <div class="page article">
+    <article>
+      <h1>{{ article.title }}</h1>
+      {{ article.html | safe }}
+    </article>
+  </div>
+{% endblock %}
+  #+END_SRC
+
+* about.html
+
+  The about page is very similar to the index page.  It also doesn't
+  need a /footer/.  We can extend from this template to take advantage
+  of that or any other modifications the ~index.html~ template did to
+  ~base.html~.  Notice that we can still override blocks declared in
+  the base template:
+
+  #+BEGIN_SRC jinja2
+{% extends "index.html" %}
+
+{% block title %}{{ super() }} - About{% endblock %}
+
+{% block page %}
+  <div class="page about">
+    <article>
+      <h1>About</h1>
+
+      Here goes some content about something
+    </article>
+  </div>
+{% endblock %}
+  #+END_SRC

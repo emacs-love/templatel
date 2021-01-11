@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en-us">
   <head>
@@ -33,21 +34,251 @@
 
       
       
-  <div class="doc">
-    <div class="page">
+  <div class="page doc">
+
+    <div class="left-pane">
+      <h3>
+        <a href="https://clarete.li/templatel/doc/">
+          Getting Started
+        </a>
+      </h3>
+
+      
+        <h3>
+          <a href="https://clarete.li/templatel/doc/html-entity-auto-escaping.html">
+            HTML Entity Auto Escaping
+          </a>
+        </h3>
+      
+        <h3>
+          <a href="https://clarete.li/templatel/doc/template-inheritance.html">
+            Template Inheritance
+          </a>
+        </h3>
+      
+    </div>
+
+    <div class="content">
       <article>
+        
         <div class="title">
-          <h1>Topics</h1>
+          <h1>Documentation</h1>
         </div>
+        
 
         <div class="content">
-          <ul>
-            
-              <li class="post-title">
-                <a href="https://clarete.li/templatel/doc/html-entity-auto-escaping.html">HTML Entity Auto Escaping</a>
-              </li>
-            
-          </ul>
+          <div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#orge070729">Quick Start</a></li>
+<li><a href="#org3e018bc">Expressions</a>
+<ul>
+<li><a href="#org7227ce4">Literals</a></li>
+<li><a href="#orgd58f0a7">Arithmetic Expressions</a></li>
+<li><a href="#org3811d2e">Comparison Expressions</a></li>
+<li><a href="#org0f75990">Logic Expressions</a></li>
+</ul>
+</li>
+<li><a href="#org6c29450">Statements</a>
+<ul>
+<li><a href="#orgd625875">if</a></li>
+<li><a href="#org62d87c8">for</a></li>
+<li><a href="#org14addc7">block</a></li>
+<li><a href="#org4956817">extends</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orge070729" class="outline-2">
+<h2 id="orge070729">Quick Start</h2>
+<div class="outline-text-2" id="text-orge070729">
+<p>
+If the template is available as a string and doesn't use any
+template inheritance, then <a href="https://clarete.li/templatel/api.html#symbol-templatel-render-string">templatel-render-string</a> is the tool for
+the job:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span class="org-keyword">require</span> '<span class="org-constant">templatel</span>)
+(templatel-render-string <span class="org-string">"Happy {{ thing }}"</span> '((<span class="org-string">"thing"</span> . <span class="org-string">"Hacking"</span>)))
+</pre>
+</div>
+
+<p>
+There are some other steps to take to use <a href="https://clarete.li/templatel/doc/template-inheritance.html">Template Inheritance</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org3e018bc" class="outline-2">
+<h2 id="org3e018bc">Expressions</h2>
+<div class="outline-text-2" id="text-org3e018bc">
+<p>
+Anything that is surounded by the double curly brackets is evaluated
+as an expression. e.g. <code>{{ 3 * 5 }}</code> will evaluate to 15.
+</p>
+</div>
+
+<div id="outline-container-org7227ce4" class="outline-3">
+<h3 id="org7227ce4">Literals</h3>
+<div class="outline-text-3" id="text-org7227ce4">
+<p>
+The most basic type of expression in <i>templatel</i> is a literal
+value.
+</p>
+
+<ul class="org-ul">
+<li>integer: decimals <code>42</code>, <code>52</code>. hex numbers <code>0xff</code>,
+<code>0xC0FFEE</code>. binary numbers <code>0b1010</code>.</li>
+<li>float: <code>3.14</code>, <code>.5</code></li>
+<li>boolean: <code>true</code>, <code>false</code></li>
+<li>string: <code>"something quoted"</code></li>
+<li>nil: <code>nil</code></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-orgd58f0a7" class="outline-3">
+<h3 id="orgd58f0a7">Arithmetic Expressions</h3>
+<div class="outline-text-3" id="text-orgd58f0a7">
+<p>
+They apply only for numbers and always return numbers (or NaN):
+</p>
+
+<ul class="org-ul">
+<li>Unary Negative: <code>-10</code>, <code>-0b1010</code>, <code>-3.5</code>, <code>-variable</code></li>
+<li>Unary Positive: <code>+3</code></li>
+<li>Binary Sum: <code>a + b</code></li>
+<li>Binary Subtraction: <code>a - b</code></li>
+<li>Binary Multiplication: <code>a * b</code></li>
+<li>Binary Division: <code>a / b</code></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org3811d2e" class="outline-3">
+<h3 id="org3811d2e">Comparison Expressions</h3>
+<div class="outline-text-3" id="text-org3811d2e">
+<p>
+They always return a boolean value.
+</p>
+
+<ul class="org-ul">
+<li>Equal to: <code>a == b</code></li>
+<li>Different from: <code>a != b</code></li>
+<li>Member in list: <code>a in b</code> (<code>b</code> <b>must</b> be a list)</li>
+</ul>
+
+<p>
+These ones only take numbers are input:
+</p>
+
+<ul class="org-ul">
+<li>Greater than: <code>a &gt; b</code></li>
+<li>Greater or equal than: <code>a &gt;= b</code></li>
+<li>Lower then: <code>a &lt; b</code></li>
+<li>Lower or equal than: <code>a &lt;= b</code></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org0f75990" class="outline-3">
+<h3 id="org0f75990">Logic Expressions</h3>
+<div class="outline-text-3" id="text-org0f75990">
+<ul class="org-ul">
+<li>And: <code>a and b</code> true if <code>a</code> and <code>b</code> are true</li>
+<li>Or: <code>a or b</code> true if either <code>a</code> or <code>b</code> are true</li>
+<li>Not: <code>not a</code> negate <code>a</code></li>
+<li>Bitwise and: <code>a &amp; b</code></li>
+<li>Bitwise or: <code>a || b</code></li>
+<li>Bitwise exclusive or: <code>a ^ b</code></li>
+<li>Bitwise not: <code>~a</code></li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6c29450" class="outline-2">
+<h2 id="org6c29450">Statements</h2>
+<div class="outline-text-2" id="text-org6c29450">
+<p>
+In the code, statements are surounded by <code>{%</code> and <code>%}</code>.
+</p>
+</div>
+
+<div id="outline-container-orgd625875" class="outline-3">
+<h3 id="orgd625875">if</h3>
+<div class="outline-text-3" id="text-orgd625875">
+<p>
+The conditional statement <i>if</i> has the general syntax
+</p>
+
+<div class="org-src-container">
+<pre class="src src-jinja2"><span class="org-function-name">{%</span> <span class="org-keyword">if</span> TEST_EXPRESSION <span class="org-function-name">%}</span>
+  test_expression evaluated to <span class="org-builtin">true</span>
+[<span class="org-function-name">{%</span> <span class="org-keyword">elif</span> TEST_EXPRESSION_2 <span class="org-function-name">%}</span>]
+  test_expression_2 evaluated to <span class="org-builtin">true</span>
+[<span class="org-function-name">{%</span> <span class="org-keyword">else</span> <span class="org-function-name">%}</span>]
+  neither test_expression nor test_expression_2
+  evaluated to <span class="org-builtin">true</span>
+<span class="org-function-name">{%</span> <span class="org-keyword">endif</span> <span class="org-function-name">%}</span>
+</pre>
+</div>
+
+<p>
+The statement can have as many <code>elif</code> branches as needed.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org62d87c8" class="outline-3">
+<h3 id="org62d87c8">for</h3>
+<div class="outline-text-3" id="text-org62d87c8">
+<p>
+The statement <i>for</i> allows looping through sequences.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-jinja2"><span class="org-function-name">{%</span> <span class="org-keyword">for</span> name <span class="org-builtin">in</span> names <span class="org-function-name">%}</span>
+  <span class="org-type">{{</span> <span class="org-variable-name">name</span> <span class="org-type">}}</span>
+<span class="org-function-name">{%</span> <span class="org-keyword">endfor</span> <span class="org-function-name">%}</span>
+</pre>
+</div>
+
+<p>
+<i>for</i> loop statements are compiled down to a <a href="https://www.gnu.org/software/emacs/manual/html_node/elisp/Mapping-Functions.html#index-mapc">mapc</a> call so the
+variable <code>names</code> can be any of sequence type. e.g.:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">'((<span class="org-string">"names"</span> . (<span class="org-string">"Lisp"</span> <span class="org-string">"C"</span> <span class="org-string">"Smalltalk"</span>)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org14addc7" class="outline-3">
+<h3 id="org14addc7">block</h3>
+<div class="outline-text-3" id="text-org14addc7">
+<p>
+See the <a href="https://clarete.li/templatel/doc/template-inheritance.html">Template Inheritance</a> document.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org4956817" class="outline-3">
+<h3 id="org4956817">extends</h3>
+<div class="outline-text-3" id="text-org4956817">
+<p>
+See the <a href="https://clarete.li/templatel/doc/template-inheritance.html">Template Inheritance</a> document.
+</p>
+</div>
+</div>
+</div>
+
         </div>
       </article>
     </div>

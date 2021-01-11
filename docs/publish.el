@@ -41,10 +41,10 @@
 ;; Use the latest version of templatel by importing it from the
 ;; directory above
 (add-to-list 'load-path "../")
-;; Use the latest version of blorg, by either using a cloned version
+;; Use the latest version of weblorg, by either using a cloned version
 ;; or cloning it from scratch if we're running on the CI. Maybe we'll
-;; move this require to use `use-package' after blorg is available via
-;; melpa as well.
+;; move this require to use `use-package' after weblorg is available
+;; via melpa as well.
 (if (file-directory-p "~/src/github.com/emacs-love/weblorg")
     (add-to-list 'load-path "~/src/github.com/emacs-love/weblorg")
   (shell-command
@@ -64,6 +64,8 @@
 ;; Defaults to localhost:8000
 (if (string= (getenv "ENV") "prod")
     (setq weblorg-default-url "https://clarete.li/templatel"))
+(if (string= (getenv "ENV") "local")
+    (setq weblorg-default-url "http://guinho.local:8000"))
 
 ;; Set site wide configuration
 (weblorg-site
@@ -81,19 +83,19 @@
  :url "/")
 
 (weblorg-route
- :name "doc"
- :input-pattern "src/docs/*.org"
- :input-aggregate #'weblorg-input-aggregate-all
- :template "docs.html"
- :output "doc/index.html"
- :url "/doc/")
-
-(weblorg-route
  :name "docs"
  :input-pattern "src/docs/*.org"
+ :input-exclude "index.org"
  :template "doc.html"
  :output "doc/{{ slug }}.html"
  :url "/doc/{{ slug }}.html")
+
+(weblorg-route
+ :name "doc"
+ :input-pattern "src/docs/index.org"
+ :template "doc.html"
+ :output "doc/index.html"
+ :url "/doc/")
 
 ;; Generate API Reference
 (weblorg-route
@@ -116,5 +118,7 @@
 (setq debug-on-error t)
 
 (weblorg-export)
+
+;;(weblorg-devsrv :watch t :bind 0.0.0.0 :port 8080)
 
 ;;; publish.el ends here
