@@ -151,10 +151,10 @@
 (ert-deftest autoescaping-blocks ()
   ;; The base template DID NOT escape the variable
   (let ((env (templatel-env-new
-              :importfn #'(lambda(e name)
-                            (templatel-env-add-template
-                             e name
-                             (templatel-new "{% block greeting %}Hello {{ name }}{% endblock %}"))))))
+              :importfn (lambda(e name)
+                          (templatel-env-add-template
+                           e name
+                           (templatel-new "{% block greeting %}Hello {{ name }}{% endblock %}"))))))
     (templatel-env-set-autoescape env t)
     ;; The override that calls super also didn't escape anything
     (templatel-env-add-template
@@ -166,11 +166,11 @@
 
   ;; The base template ESCAPED the variable
   (let ((env (templatel-env-new
-              :importfn #'(lambda(e name)
-                            ;; Base template define the block
-                            (templatel-env-add-template
-                             e name
-                             (templatel-new "{% block greeting %}Hello {{ name|safe }}{% endblock %}"))))))
+              :importfn (lambda(e name)
+                          ;; Base template define the block
+                          (templatel-env-add-template
+                           e name
+                           (templatel-new "{% block greeting %}Hello {{ name|safe }}{% endblock %}"))))))
     (templatel-env-set-autoescape env t)
     ;; The override that calls super trusts what the base template did
     (templatel-env-add-template
@@ -182,11 +182,11 @@
 
   ;; The base template DID NOT escape the variable
   (let ((env (templatel-env-new
-              :importfn #'(lambda(e name)
-                            ;; Base template define the block
-                            (templatel-env-add-template
-                             e name
-                             (templatel-new "{% block greeting %}Hello {{ name }}{% endblock %}"))))))
+              :importfn (lambda(e name)
+                          ;; Base template define the block
+                          (templatel-env-add-template
+                           e name
+                           (templatel-new "{% block greeting %}Hello {{ name }}{% endblock %}"))))))
     (templatel-env-set-autoescape env t)
     ;; The override that calls super trusts what the base template did
     (templatel-env-add-template
@@ -264,11 +264,11 @@
 
 (ert-deftest render-block-extends-override-some-empty-blocks ()
   (let ((env (templatel-env-new
-              :importfn #'(lambda(e name)
-                            ;; Base template define the block
-                            (templatel-env-add-template
-                             e name
-                             (templatel-new "{% block first %}{% endblock %} {% block second %}second-default{% endblock %}"))))))
+              :importfn (lambda(e name)
+                          ;; Base template define the block
+                          (templatel-env-add-template
+                           e name
+                           (templatel-new "{% block first %}{% endblock %} {% block second %}second-default{% endblock %}"))))))
     ;; Template that extends the layout and override the block
     (templatel-env-add-template
      env "page.html"
@@ -277,11 +277,11 @@
 
 (ert-deftest render-block-extends-override-some ()
   (let ((env (templatel-env-new
-              :importfn #'(lambda(e name)
-                             ;; Base template define the block
-                             (templatel-env-add-template
-                              e name
-                              (templatel-new "{% block first %}first-default{% endblock %} {% block second %}second-default{% endblock %}"))))))
+              :importfn (lambda(e name)
+                          ;; Base template define the block
+                          (templatel-env-add-template
+                           e name
+                           (templatel-new "{% block first %}first-default{% endblock %} {% block second %}second-default{% endblock %}"))))))
     ;; Template that extends the layout and override the block
     (templatel-env-add-template
      env "page.html"
@@ -290,11 +290,11 @@
 
 (ert-deftest render-block-extends ()
   (let* ((env (templatel-env-new
-               :importfn #'(lambda(e name)
-                             ;; Base template define the block
-                             (templatel-env-add-template
-                              e name
-                              (templatel-new "Always {% block stuff %}default{% endblock %}"))))))
+               :importfn (lambda(e name)
+                           ;; Base template define the block
+                           (templatel-env-add-template
+                            e name
+                            (templatel-new "Always {% block stuff %}default{% endblock %}"))))))
     ;; Template that extends the layout and override the block
     (templatel-env-add-template
      env "page.html"
@@ -303,11 +303,11 @@
 
 (ert-deftest render-block-extends-super ()
   (let ((env (templatel-env-new
-               :importfn #'(lambda(e name)
-                             ;; Base template define the block
-                             (templatel-env-add-template
-                              e name
-                              (templatel-new "{% block greeting %}Hello{% endblock %}"))))))
+              :importfn (lambda(e name)
+                          ;; Base template define the block
+                          (templatel-env-add-template
+                           e name
+                           (templatel-new "{% block greeting %}Hello{% endblock %}"))))))
     ;; Template that extends the layout and override the block
     (templatel-env-add-template
      env "page.html"
