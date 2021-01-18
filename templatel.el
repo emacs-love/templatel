@@ -5,7 +5,7 @@
 ;; Version: 0.1.4
 ;; Package-Requires: ((emacs "25.1"))
 ;;
-;; Copyright (C) 2020  Lincoln Clarete
+;; Copyright (C) 2020-2021  Lincoln Clarete
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
