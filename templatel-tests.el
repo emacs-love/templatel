@@ -436,6 +436,33 @@
                   '())
                  "153")))
 
+(ert-deftest render-expr-filter-first-getattr ()
+  (should (equal (templatel-render-string
+                  "Hi {{ users | first | getattr(\"name\") }}!"
+                  '(("users" . ((("name" . "Jaci"))
+                                (("name" . "Moon"))
+                                (("name" . "Lua"))))))
+                 "Hi Jaci!")))
+
+(ert-deftest render-expr-filter-getattr ()
+  (should (equal (templatel-render-string
+                  "Hi {{ user | getattr(\"name\") }}, you are a {{ user | getattr(\"editor\") }} user!"
+                  '(("user" . (("name" . "Jaci")
+                               ("editor" . "Emacs")))))
+                 "Hi Jaci, you are a Emacs user!")))
+
+(ert-deftest render-expr-filter-first ()
+  (should (equal (templatel-render-string
+                  "Hi {{ users | first }}!"
+                  '(("users" . ("Jaci" "Moon" "Lua"))))
+                 "Hi Jaci!")))
+
+(ert-deftest render-expr-filter-last ()
+  (should (equal (templatel-render-string
+                  "Hi {{ users | last }}!"
+                  '(("users" . ("Jaci" "Moon" "Lua"))))
+                 "Hi Lua!")))
+
 (ert-deftest render-expr-filter-pipe ()
   (should (equal (templatel-render-string
                   "Awww {{ qts|sum|plus1 }}."
@@ -453,6 +480,13 @@
                   "You won {{ user.byte|int(16) }} in bars of gold"
                   '(("user" . (("byte" . "0xFF")))))
                  "You won 255 in bars of gold")))
+
+(ert-deftest render-expr-attr ()
+  (should (equal (templatel-render-string
+                  "Hi {{ user.name }}, happy {{ user.greeting }}"
+                  '(("user" . (("name" . "Gnu")
+                               ("greeting" . "Hacking")))))
+                 "Hi Gnu, happy Hacking")))
 
 (ert-deftest render-expr-attr ()
   (should (equal (templatel-render-string

@@ -1262,7 +1262,10 @@ operator (RATORFN)."
                           ("sum" . templatel-filters-sum)
                           ("plus1" . templatel-filters-plus1)
                           ("int" . templatel-filters-int)
-                          ("safe" . templatel-filters-safe)))
+                          ("safe" . templatel-filters-safe)
+                          ("first" . templatel-filters-first)
+                          ("last" . templatel-filters-last)
+                          ("getattr" . templatel-filters-getattr)))
             (rt/lookup-var
              (lambda(name)
                (catch '-brk
@@ -1617,6 +1620,19 @@ Otherwise its HTML entities are escaped."
 (defun templatel-filters-plus1 (s)
   "Add one to S."
   (1+ s))
+
+(defun templatel-filters-first (s)
+  "First element of sequence S."
+  (elt s 0))
+
+(defun templatel-filters-last (s)
+  "Last element of sequence S."
+  (elt s (- (length s) 1)))
+
+(defun templatel-filters-getattr (s n)
+  "Get element N of assoc S."
+  (let ((element (assoc n s)))
+    (if element (cdr element))))
 
 (defun templatel-filters-int (s base)
   "Convert S into integer of base BASE."
