@@ -85,17 +85,9 @@
 (weblorg-route
  :name "docs"
  :input-pattern "src/docs/*.org"
- :input-exclude "index.org"
  :template "doc.html"
  :output "doc/{{ slug }}.html"
  :url "/doc/{{ slug }}.html")
-
-(weblorg-route
- :name "doc"
- :input-pattern "src/docs/index.org"
- :template "doc.html"
- :output "doc/index.html"
- :url "/doc/")
 
 ;; Generate API Reference
 (weblorg-route

@@ -1,5 +1,6 @@
 #+TITLE: Documentation
 #+OPTIONS: num:nil
+#+SLUG: index
 
 * Quick Start
 
