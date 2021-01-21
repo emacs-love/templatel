@@ -23,7 +23,7 @@
           <div class="menu">
             <ul>
               <li><a href="https://clarete.li/templatel/">home</a></li>
-              <li><a href="https://clarete.li/templatel/doc/">documentation</a></li>
+              <li><a href="https://clarete.li/templatel/doc/index.html">documentation</a></li>
               <li><a href="https://clarete.li/templatel/api.html">api reference</a></li>
               <li><a href="https://github.com/clarete/templatel" target="_blank">github</a></li>
             </ul>
@@ -38,23 +38,29 @@
 
     <div class="left-pane">
       <h3>
-        <a href="https://clarete.li/templatel/doc/">
+        <a href="https://clarete.li/templatel/doc/index.html">
           Getting Started
         </a>
       </h3>
 
       
-        <h3>
-          <a href="https://clarete.li/templatel/doc/html-entity-auto-escaping.html">
-            HTML Entity Auto Escaping
-          </a>
-        </h3>
+        
+          <h3>
+            <a href="https://clarete.li/templatel/doc/html-entity-auto-escaping.html">
+              HTML Entity Auto Escaping
+            </a>
+          </h3>
+        
       
-        <h3>
-          <a href="https://clarete.li/templatel/doc/template-inheritance.html">
-            Template Inheritance
-          </a>
-        </h3>
+        
+      
+        
+          <h3>
+            <a href="https://clarete.li/templatel/doc/template-inheritance.html">
+              Template Inheritance
+            </a>
+          </h3>
+        
       
     </div>
 
@@ -71,30 +77,30 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orge070729">Quick Start</a></li>
-<li><a href="#org3e018bc">Expressions</a>
+<li><a href="#orgb4fce17">Quick Start</a></li>
+<li><a href="#org2df7598">Expressions</a>
 <ul>
-<li><a href="#org7227ce4">Literals</a></li>
-<li><a href="#orgd58f0a7">Arithmetic Expressions</a></li>
-<li><a href="#org3811d2e">Comparison Expressions</a></li>
-<li><a href="#org0f75990">Logic Expressions</a></li>
+<li><a href="#org1e3f972">Literals</a></li>
+<li><a href="#orge0e7af3">Arithmetic Expressions</a></li>
+<li><a href="#org2de77cc">Comparison Expressions</a></li>
+<li><a href="#orgc320190">Logic Expressions</a></li>
 </ul>
 </li>
-<li><a href="#org6c29450">Statements</a>
+<li><a href="#org7bbe192">Statements</a>
 <ul>
-<li><a href="#orgd625875">if</a></li>
-<li><a href="#org62d87c8">for</a></li>
-<li><a href="#org14addc7">block</a></li>
-<li><a href="#org4956817">extends</a></li>
+<li><a href="#org11e3ce1">if</a></li>
+<li><a href="#org0960408">for</a></li>
+<li><a href="#orgb9c064a">block</a></li>
+<li><a href="#org704155a">extends</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orge070729" class="outline-2">
-<h2 id="orge070729">Quick Start</h2>
-<div class="outline-text-2" id="text-orge070729">
+<div id="outline-container-orgb4fce17" class="outline-2">
+<h2 id="orgb4fce17">Quick Start</h2>
+<div class="outline-text-2" id="text-orgb4fce17">
 <p>
 If the template is available as a string and doesn't use any
 template inheritance, then <a href="https://clarete.li/templatel/api.html#symbol-templatel-render-string">templatel-render-string</a> is the tool for
@@ -113,18 +119,18 @@ There are some other steps to take to use <a href="https://clarete.li/templatel/
 </div>
 </div>
 
-<div id="outline-container-org3e018bc" class="outline-2">
-<h2 id="org3e018bc">Expressions</h2>
-<div class="outline-text-2" id="text-org3e018bc">
+<div id="outline-container-org2df7598" class="outline-2">
+<h2 id="org2df7598">Expressions</h2>
+<div class="outline-text-2" id="text-org2df7598">
 <p>
 Anything that is surounded by the double curly brackets is evaluated
 as an expression. e.g. <code>{{ 3 * 5 }}</code> will evaluate to 15.
 </p>
 </div>
 
-<div id="outline-container-org7227ce4" class="outline-3">
-<h3 id="org7227ce4">Literals</h3>
-<div class="outline-text-3" id="text-org7227ce4">
+<div id="outline-container-org1e3f972" class="outline-3">
+<h3 id="org1e3f972">Literals</h3>
+<div class="outline-text-3" id="text-org1e3f972">
 <p>
 The most basic type of expression in <i>templatel</i> is a literal
 value.
@@ -141,9 +147,9 @@ value.
 </div>
 </div>
 
-<div id="outline-container-orgd58f0a7" class="outline-3">
-<h3 id="orgd58f0a7">Arithmetic Expressions</h3>
-<div class="outline-text-3" id="text-orgd58f0a7">
+<div id="outline-container-orge0e7af3" class="outline-3">
+<h3 id="orge0e7af3">Arithmetic Expressions</h3>
+<div class="outline-text-3" id="text-orge0e7af3">
 <p>
 They apply only for numbers and always return numbers (or NaN):
 </p>
@@ -159,9 +165,9 @@ They apply only for numbers and always return numbers (or NaN):
 </div>
 </div>
 
-<div id="outline-container-org3811d2e" class="outline-3">
-<h3 id="org3811d2e">Comparison Expressions</h3>
-<div class="outline-text-3" id="text-org3811d2e">
+<div id="outline-container-org2de77cc" class="outline-3">
+<h3 id="org2de77cc">Comparison Expressions</h3>
+<div class="outline-text-3" id="text-org2de77cc">
 <p>
 They always return a boolean value.
 </p>
@@ -185,9 +191,9 @@ These ones only take numbers are input:
 </div>
 </div>
 
-<div id="outline-container-org0f75990" class="outline-3">
-<h3 id="org0f75990">Logic Expressions</h3>
-<div class="outline-text-3" id="text-org0f75990">
+<div id="outline-container-orgc320190" class="outline-3">
+<h3 id="orgc320190">Logic Expressions</h3>
+<div class="outline-text-3" id="text-orgc320190">
 <ul class="org-ul">
 <li>And: <code>a and b</code> true if <code>a</code> and <code>b</code> are true</li>
 <li>Or: <code>a or b</code> true if either <code>a</code> or <code>b</code> are true</li>
@@ -201,17 +207,17 @@ These ones only take numbers are input:
 </div>
 </div>
 
-<div id="outline-container-org6c29450" class="outline-2">
-<h2 id="org6c29450">Statements</h2>
-<div class="outline-text-2" id="text-org6c29450">
+<div id="outline-container-org7bbe192" class="outline-2">
+<h2 id="org7bbe192">Statements</h2>
+<div class="outline-text-2" id="text-org7bbe192">
 <p>
 In the code, statements are surounded by <code>{%</code> and <code>%}</code>.
 </p>
 </div>
 
-<div id="outline-container-orgd625875" class="outline-3">
-<h3 id="orgd625875">if</h3>
-<div class="outline-text-3" id="text-orgd625875">
+<div id="outline-container-org11e3ce1" class="outline-3">
+<h3 id="org11e3ce1">if</h3>
+<div class="outline-text-3" id="text-org11e3ce1">
 <p>
 The conditional statement <i>if</i> has the general syntax
 </p>
@@ -235,9 +241,9 @@ optional <code>else</code> statement.
 </div>
 </div>
 
-<div id="outline-container-org62d87c8" class="outline-3">
-<h3 id="org62d87c8">for</h3>
-<div class="outline-text-3" id="text-org62d87c8">
+<div id="outline-container-org0960408" class="outline-3">
+<h3 id="org0960408">for</h3>
+<div class="outline-text-3" id="text-org0960408">
 <p>
 The statement <i>for</i> allows looping through sequences.
 </p>
@@ -261,18 +267,18 @@ variable <code>names</code> can be any of sequence type. e.g.:
 </div>
 </div>
 
-<div id="outline-container-org14addc7" class="outline-3">
-<h3 id="org14addc7">block</h3>
-<div class="outline-text-3" id="text-org14addc7">
+<div id="outline-container-orgb9c064a" class="outline-3">
+<h3 id="orgb9c064a">block</h3>
+<div class="outline-text-3" id="text-orgb9c064a">
 <p>
 See the <a href="https://clarete.li/templatel/doc/template-inheritance.html">Template Inheritance</a> document.
 </p>
 </div>
 </div>
 
-<div id="outline-container-org4956817" class="outline-3">
-<h3 id="org4956817">extends</h3>
-<div class="outline-text-3" id="text-org4956817">
+<div id="outline-container-org704155a" class="outline-3">
+<h3 id="org704155a">extends</h3>
+<div class="outline-text-3" id="text-org704155a">
 <p>
 See the <a href="https://clarete.li/templatel/doc/template-inheritance.html">Template Inheritance</a> document.
 </p>
@@ -291,7 +297,7 @@ See the <a href="https://clarete.li/templatel/doc/template-inheritance.html">Tem
         <div class="footer">
           <ul>
             <li><a href="https://clarete.li/templatel/">home</a></li>
-            <li><a href="https://clarete.li/templatel/doc/">documentation</a></li>
+            <li><a href="https://clarete.li/templatel/doc/index.html">documentation</a></li>
             <li><a href="https://clarete.li/templatel/api.html">api reference</a></li>
             <li><a href="https://github.com/clarete/templatel" target="_blank">github</a></li>
           </ul>
