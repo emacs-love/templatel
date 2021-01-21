@@ -219,9 +219,9 @@ The conditional statement <i>if</i> has the general syntax
 <div class="org-src-container">
 <pre class="src src-jinja2"><span class="org-function-name">{%</span> <span class="org-keyword">if</span> TEST_EXPRESSION <span class="org-function-name">%}</span>
   test_expression evaluated to <span class="org-builtin">true</span>
-[<span class="org-function-name">{%</span> <span class="org-keyword">elif</span> TEST_EXPRESSION_2 <span class="org-function-name">%}</span>]
+<span class="org-function-name">{%</span> <span class="org-keyword">elif</span> TEST_EXPRESSION_2 <span class="org-function-name">%}</span>
   test_expression_2 evaluated to <span class="org-builtin">true</span>
-[<span class="org-function-name">{%</span> <span class="org-keyword">else</span> <span class="org-function-name">%}</span>]
+<span class="org-function-name">{%</span> <span class="org-keyword">else</span> <span class="org-function-name">%}</span>
   neither test_expression nor test_expression_2
   evaluated to <span class="org-builtin">true</span>
 <span class="org-function-name">{%</span> <span class="org-keyword">endif</span> <span class="org-function-name">%}</span>
@@ -229,7 +229,8 @@ The conditional statement <i>if</i> has the general syntax
 </div>
 
 <p>
-The statement can have as many <code>elif</code> branches as needed.
+The statement can have zero or more many <code>elif</code> branches and the
+optional <code>else</code> statement.
 </p>
 </div>
 </div>

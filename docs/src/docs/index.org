@@ -78,15 +78,16 @@
    #+BEGIN_SRC jinja2
    {% if TEST_EXPRESSION %}
      test_expression evaluated to true
-   [{% elif TEST_EXPRESSION_2 %}]
+   {% elif TEST_EXPRESSION_2 %}
      test_expression_2 evaluated to true
-   [{% else %}]
+   {% else %}
      neither test_expression nor test_expression_2
      evaluated to true
    {% endif %}
    #+END_SRC
 
-   The statement can have as many ~elif~ branches as needed.
+   The statement can have zero or more many ~elif~ branches and the
+   optional ~else~ statement.
 
 ** for
 
