@@ -1667,7 +1667,7 @@ Hi <b>you</b>!
 (defun templatel-mark-safe (s)
   "Mark string S as safe."
   (pcase s
-    (`(safe . ,x) s)
+    (`(safe . ,_) s)
     (x (cons 'safe x))))
 
 (defun templatel-escape-string (s)
