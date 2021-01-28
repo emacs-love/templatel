@@ -1,5 +1,5 @@
 .POSIX:
-EMACS = emacs
+EMACS ?= emacs
 
 SRC = templatel.el
 TESTSRC = templatel-tests.el
