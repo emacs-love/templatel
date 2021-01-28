@@ -1646,7 +1646,9 @@ That is useful if one wants to allow variables to contain HTML
 code.  e.g.:
 
 #+BEGIN_SRC emacs-lisp
-\(templatel-render-string \"Hi {{ name|safe }}!\" '((\"name\" . \"<b>you</b>\")) t)
+\(templatel-render-string
+ \"Hi {{ name|safe }}!\" '((\"name\" . \"<b>you</b>\"))
+ :autoescape t)
 #+END_SRC
 
 The above snippet would output the HTML entities untouched even
