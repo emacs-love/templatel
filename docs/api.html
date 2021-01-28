@@ -19,7 +19,6 @@
             <a href="https://clarete.li/templatel/">&#39;templatel</a>
             api reference
           </h1>
-
           <div class="menu">
             <ul>
               <li><a href="https://clarete.li/templatel/">home</a></li>
@@ -27,8 +26,7 @@
               <li><a href="https://clarete.li/templatel/api.html">api reference</a></li>
               <li><a href="https://github.com/clarete/templatel" target="_blank">github</a></li>
             </ul>
-        </div>
-
+          </div>
         </div>
       
 
@@ -488,7 +486,9 @@ code.  e.g.:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(templatel-render-string <span class="org-string">"Hi {{ name|safe }}!"</span> <span class="org-warning">&#8217;</span>((<span class="org-string">"name"</span> . <span class="org-string">"&lt;b&gt;you&lt;/b&gt;"</span>)) t)
+<pre class="src src-emacs-lisp">(templatel-render-string
+ <span class="org-string">"Hi {{ name|safe }}!"</span> <span class="org-warning">&#8217;</span>((<span class="org-string">"name"</span> . <span class="org-string">"&lt;b&gt;you&lt;/b&gt;"</span>))
+ <span class="org-builtin">:autoescape</span> t)
 </pre>
 </div>
 
