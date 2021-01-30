@@ -36,9 +36,9 @@
     <div class="content">
       <article>
         
-<div id="outline-container-orgc79b82f" class="outline-2">
-<h2 id="orgc79b82f">Introduction</h2>
-<div class="outline-text-2" id="text-orgc79b82f">
+<div class="outline-2">
+<h2 id="introduction">Introduction</h2>
+<div class="outline-text-2">
 <p>
 <i>templatel</i> is the modern templating language that was missing for
 Emacs-Lisp.  It provides variable substitution and control flow
@@ -64,13 +64,13 @@ Visit the <a href="https://clarete.li/templatel/api.html">API Reference</a> for 
 </div>
 </div>
 
-<div id="outline-container-org025e5d7" class="outline-2">
-<h2 id="org025e5d7">Installation</h2>
-<div class="outline-text-2" id="text-org025e5d7">
+<div class="outline-2">
+<h2 id="installation">Installation</h2>
+<div class="outline-text-2" id="text-installation">
 </div>
-<div id="outline-container-orgb7cef86" class="outline-3">
-<h3 id="orgb7cef86">Via Melpa</h3>
-<div class="outline-text-3" id="text-orgb7cef86">
+<div class="outline-3">
+<h3 id="via-melpa">Via Melpa</h3>
+<div class="outline-text-3">
 <p>
 The simplest and recommended way to get yourself a copy of
 <code>templatel</code> is to install it via <a href="https://melpa.org">MELPA</a>.  You must have something
@@ -91,9 +91,9 @@ haven't done that in a while.
 </div>
 </div>
 
-<div id="outline-container-org162e6b6" class="outline-3">
-<h3 id="org162e6b6">Manually</h3>
-<div class="outline-text-3" id="text-org162e6b6">
+<div class="outline-3">
+<h3 id="manually">Manually</h3>
+<div class="outline-text-3">
 <p>
 If you don't want to use any package installer, you can just clone
 the repository somewhere on your computer, let's say
@@ -109,9 +109,9 @@ your Emacs configuration so the library can be found by <code>require</code>.
 </div>
 </div>
 
-<div id="outline-container-orge35a16e" class="outline-2">
-<h2 id="orge35a16e">Project Status</h2>
-<div class="outline-text-2" id="text-orge35a16e">
+<div class="outline-2">
+<h2 id="project-status">Project Status</h2>
+<div class="outline-text-2">
 <p>
 Although <i>templatel</i> has been been functional since it's very first
 lil version, it's still too early to say it's stable.  Until we
@@ -122,9 +122,9 @@ compatibility with previous versions.
 </div>
 </div>
 
-<div id="outline-container-org4fd21f4" class="outline-2">
-<h2 id="org4fd21f4">Differences from Jinja</h2>
-<div class="outline-text-2" id="text-org4fd21f4">
+<div class="outline-2">
+<h2 id="differences-from-jinja">Differences from Jinja</h2>
+<div class="outline-text-2">
 <p>
 There are a few things that won't ever be the same, because jinja
 was designed for Python and templatel is designed for Emacs Lisp.
@@ -162,13 +162,13 @@ compatible to jinja are always welcome.
 </div>
 </div>
 
-<div id="outline-container-org71f6eee" class="outline-2">
-<h2 id="org71f6eee">Changelog</h2>
-<div class="outline-text-2" id="text-org71f6eee">
+<div class="outline-2">
+<h2 id="changelog">Changelog</h2>
+<div class="outline-text-2" id="text-changelog">
 </div>
-<div id="outline-container-org9b56319" class="outline-3">
-<h3 id="org9b56319">0.1.4</h3>
-<div class="outline-text-3" id="text-org9b56319">
+<div class="outline-3">
+<h3 id="0.1.4">0.1.4</h3>
+<div class="outline-text-3">
 <ul class="org-ul">
 <li>Add support for automatic HTML entity escaping</li>
 <li>Fix reading UTF-8 characters with more than one byte</li>
@@ -177,9 +177,9 @@ compatible to jinja are always welcome.
 </div>
 </div>
 
-<div id="outline-container-org4f28352" class="outline-3">
-<h3 id="org4f28352">0.1.3</h3>
-<div class="outline-text-3" id="text-org4f28352">
+<div class="outline-3">
+<h3 id="0.1.3">0.1.3</h3>
+<div class="outline-text-3">
 <ul class="org-ul">
 <li>Support for named arguments on filters.  They are passed to the
 handler as an <code>assoc</code> list. E.g.: <code>{{ foo(var1="val", var2=2) }}</code>
@@ -190,9 +190,9 @@ handler will have to deal with the order.</li>
 </div>
 </div>
 
-<div id="outline-container-org7ae20fb" class="outline-3">
-<h3 id="org7ae20fb">0.1.2</h3>
-<div class="outline-text-3" id="text-org7ae20fb">
+<div class="outline-3">
+<h3 id="0.1.2">0.1.2</h3>
+<div class="outline-text-3">
 <ul class="org-ul">
 <li>Support for user defined filter functions via
 <code>templatel-env-add-filter</code> and <code>templatel-env-remove-filter</code>.</li>
@@ -205,9 +205,9 @@ anymore.  But still only exists while blocks are evaluated</li>
 </div>
 </div>
 
-<div id="outline-container-orgabd24ca" class="outline-3">
-<h3 id="orgabd24ca">0.1.1</h3>
-<div class="outline-text-3" id="text-orgabd24ca">
+<div class="outline-3">
+<h3 id="0.1.1">0.1.1</h3>
+<div class="outline-text-3">
 <ul class="org-ul">
 <li>Fix <code>elif</code> without else statements</li>
 <li>Make <code>templatel-env-{source,run-importfn}</code> private</li>

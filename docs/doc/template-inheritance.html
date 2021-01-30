@@ -19,7 +19,6 @@
             <a href="https://clarete.li/templatel/">&#39;templatel</a>
             documentation
           </h1>
-
           <div class="menu">
             <ul>
               <li><a href="https://clarete.li/templatel/">home</a></li>
@@ -27,8 +26,7 @@
               <li><a href="https://clarete.li/templatel/api.html">api reference</a></li>
               <li><a href="https://github.com/clarete/templatel" target="_blank">github</a></li>
             </ul>
-        </div>
-
+          </div>
         </div>
       
 
@@ -36,6 +34,7 @@
       
   <div class="page doc">
 
+    
     <div class="left-pane">
       <h3>
         <a href="https://clarete.li/templatel/doc/index.html">
@@ -64,6 +63,7 @@
       
     </div>
 
+    
     <div class="content">
       <article>
         
@@ -97,9 +97,9 @@ templates. Other templates can use the statement <code>extends</code> to have
 access to blocks declared in base templates.
 </p>
 
-<div id="outline-container-org55070d6" class="outline-2">
-<h2 id="org55070d6">base.html</h2>
-<div class="outline-text-2" id="text-org55070d6">
+<div class="outline-2">
+<h2 id="base.html">base.html</h2>
+<div class="outline-text-2">
 <p>
 The base template is where the structure of the HTML document can go
 and where optional pieces can be made available.  A whoever decides
@@ -145,9 +145,9 @@ and with which content.
 </div>
 </div>
 
-<div id="outline-container-org6dc977f" class="outline-2">
-<h2 id="org6dc977f">index.html</h2>
-<div class="outline-text-2" id="text-org6dc977f">
+<div class="outline-2">
+<h2 id="index.html">index.html</h2>
+<div class="outline-text-2">
 <p>
 The template that renders the index page inheriting from the base
 template might not necessarily need to display the footer.  In that
@@ -172,9 +172,9 @@ the solution for that.
 </div>
 </div>
 
-<div id="outline-container-org37dc57c" class="outline-2">
-<h2 id="org37dc57c">article.html</h2>
-<div class="outline-text-2" id="text-org37dc57c">
+<div class="outline-2">
+<h2 id="article.html">article.html</h2>
+<div class="outline-text-2">
 <p>
 The article page does need both the navigation and the footer, so
 we're not overriding those blocks here.
@@ -206,9 +206,9 @@ override:
 </div>
 </div>
 
-<div id="outline-container-org7edc240" class="outline-2">
-<h2 id="org7edc240">about.html</h2>
-<div class="outline-text-2" id="text-org7edc240">
+<div class="outline-2">
+<h2 id="about.html">about.html</h2>
+<div class="outline-text-2">
 <p>
 The about page is very similar to the index page.  It also doesn't
 need a <i>footer</i>.  We can extend from this template to take advantage
