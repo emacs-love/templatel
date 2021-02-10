@@ -93,7 +93,7 @@
 ;; --- Scanner ---
 
 (defun templatel--scanner-new (input file-name)
-  "Create scanner for INPUT named FILE-NAME."
+  "Create scanner state for INPUT named FILE-NAME."
   (list input 0 0 0 file-name))
 
 (defun templatel--scanner-input (scanner)
