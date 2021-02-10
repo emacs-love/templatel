@@ -69,7 +69,7 @@
 
 ;; Set site wide configuration
 (weblorg-site
- :theme "autodoc"
+ :theme #'weblorg-theme-autodoc
  :template-vars '(("project_name" . "'templatel")
                   ("project_github" . "https://github.com/clarete/templatel")
                   ("project_description" . "A modern templating language for Emacs-Lisp")))
