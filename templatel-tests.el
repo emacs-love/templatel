@@ -262,6 +262,41 @@
     (templatel-env-add-template env "page.html" (templatel-new "{{ name|greetings(\"!\") }}"))
     (should (equal (templatel-env-render env "page.html" '(("name" . "GNU"))) "Hello GNU!!!"))))
 
+(ert-deftest render-block-extends-sub-sub ()
+  (let ((env (templatel-env-new
+              :importfn (lambda(e name)
+                          (templatel-env-add-template
+                           e name
+                           (let ((templates (make-hash-table :test 'equal)))
+                             (puthash "base.html"
+                                      (templatel-new "BASE:
+{% block block0 %}base0{% endblock %}
+{% block block1 %}base1{% endblock %}
+{% block block2 %}base2{% endblock %}
+{% block block3 %}base3{% endblock %}
+base-end")
+                                      templates)
+                             (puthash "post.html"
+                                      (templatel-new "{% extends \"base.html\" %}
+{% block block0 %}post0{% endblock %}won't be rendered
+{% block block1 %}post1{% endblock %}")
+                                      templates)
+                             (gethash name templates)))))))
+    (templatel-env-add-template
+     env "log/post.html"
+     (templatel-new
+      "{% extends \"post.html\" %}
+{% block block0 %}log0{% endblock %}
+{% block block2 %}log2{% endblock %}"))
+    (should (equal
+             (templatel-env-render env "log/post.html" '())
+             "BASE:
+log0
+post1
+log2
+base3
+base-end"))))
+
 (ert-deftest render-block-extends-override-some-empty-blocks ()
   (let ((env (templatel-env-new
               :importfn (lambda(e name)
