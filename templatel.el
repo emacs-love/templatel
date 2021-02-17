@@ -156,7 +156,7 @@
   (if (templatel--scanner-eos scanner)
       (templatel--scanner-error scanner "EOF")
     (elt (templatel--scanner-input scanner)
-       (templatel--scanner-cursor scanner))))
+         (templatel--scanner-cursor scanner))))
 
 (defun templatel--scanner-error (_scanner msg)
   "Generate error in SCANNER and document with MSG."
@@ -1704,7 +1704,7 @@ Hi <b>you</b>!
       (setq output (replace-regexp-in-string
                     (regexp-quote (format "%c" (car replacement)))
                     (cdr replacement)
-               output nil 'literal)))
+                    output nil 'literal)))
     output))
 
 ;; --- Public Environment API ---
