@@ -1277,6 +1277,14 @@ operator (RATORFN)."
                   'templatel-runtime-error
                   (format "%s: Variable `%s' not declared" name)))))
 
+            (rt/lookup-block
+             (lambda(name)
+               (catch '-brk
+                 (dolist (iblocks (reverse (append (list rt/blocks) blocks)))
+                   (let ((value (and iblocks (gethash name iblocks))))
+                     (unless (null value)
+                       (throw '-brk value)))))))
+
             ;; The rendering of the template; here the blocks of the
             ;; current template are going to be executed and put into
             ;; the rt/blocks hash table.
@@ -1284,17 +1292,12 @@ operator (RATORFN)."
              (with-temp-buffer
                ,@tree
                (buffer-string))))
-       ;; copy blocks received recursively into the set of blocks of
-       ;; the current template so blocks coming from leaf templates
-       ;; take precedence
-       (if blocks
-           (maphash (lambda(k v) (puthash k v rt/blocks)) blocks))
        (if (null rt/parent-template)
            rt/data
          (funcall (templatel--compiler-code rt/parent-template)
                   vars
                   env
-                  rt/blocks)))))
+                  (append (list rt/blocks) blocks))))))
 
 (defun templatel--compiler-element (tree)
   "Compile an element from TREE."
@@ -1571,7 +1574,7 @@ will collect the blocks of the current template within
         (body (templatel--compiler-run (cadr tree))))
     `(if (null rt/parent-template)
          (let* ((super-code ',(templatel--compiler-code body))
-                (code (and blocks (gethash ,name blocks))))
+                (code (funcall rt/lookup-block ,name)))
            (if (not (null code))
                (progn
                  (templatel-env-add-filter
