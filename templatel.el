@@ -1276,6 +1276,7 @@ operator (RATORFN)."
                  (signal
                   'templatel-runtime-error
                   (format "%s: Variable `%s' not declared" name)))))
+
             ;; The rendering of the template; here the blocks of the
             ;; current template are going to be executed and put into
             ;; the rt/blocks hash table.
@@ -1290,7 +1291,10 @@ operator (RATORFN)."
            (maphash (lambda(k v) (puthash k v rt/blocks)) blocks))
        (if (null rt/parent-template)
            rt/data
-         (funcall (templatel--env-source env rt/parent-template) vars env rt/blocks)))))
+         (funcall (templatel--compiler-code rt/parent-template)
+                  vars
+                  env
+                  rt/blocks)))))
 
 (defun templatel--compiler-element (tree)
   "Compile an element from TREE."
@@ -1584,10 +1588,8 @@ will collect the blocks of the current template within
 
 (defun templatel--compiler-extends (tree)
   "Compile an extends statement from TREE."
-  `(progn
-     (setq rt/parent-template ,(cdar tree))
-     (if env
-         (templatel--env-run-importfn env rt/parent-template))))
+  `(setq rt/parent-template
+         (templatel--env-run-importfn env ,(cdar tree))))
 
 (defun templatel--compiler-run (tree)
   "Compile TREE into bytecode."
@@ -1785,8 +1787,7 @@ This function reverts the effect of a previous call to
 
 (defun templatel--env-source (env name)
   "Get source code of template NAME within ENV."
-  (let ((entry (gethash name (elt env 0))))
-    (cdr (assoc 'source entry))))
+  (gethash name (elt env 0)))
 
 (defun templatel--env-filter (env name)
   "Get filter NAME within ENV."
@@ -1809,14 +1810,14 @@ This function reverts the effect of a previous call to
 
 (defun templatel-env-render (env name vars)
   "Render template NAME within ENV with VARS as parameters."
-  (funcall (eval (templatel--env-source env name)) vars env))
+  (funcall (templatel--compiler-code (templatel--env-source env name))
+           vars env))
 
 (defun templatel-new (source)
   "Create a template off SOURCE."
-  `((source . ,(templatel--compiler-code
-                (templatel--compiler-run
-                 (templatel--parser-template
-                  (templatel--scanner-new source "<string>")))))))
+  (templatel--compiler-run
+   (templatel--parser-template
+    (templatel--scanner-new source "<string>"))))
 
 (defun templatel-new-from-file (path)
   "Create a template from file at PATH."
@@ -1824,8 +1825,8 @@ This function reverts the effect of a previous call to
     (insert-file-contents path)
     (let* ((scanner (templatel--scanner-new (buffer-string) path))
            (tree (templatel--parser-template scanner))
-           (code (templatel--compiler-code (templatel--compiler-run tree))))
-      `((source . ,code)))))
+           (code (templatel--compiler-run tree)))
+      code)))
 
 ;; ------ Public API without Environment
 
