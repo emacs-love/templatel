@@ -297,6 +297,52 @@ log2
 base3
 base-end"))))
 
+
+(ert-deftest render-block-extends-sub-sub-super ()
+  (let ((env (templatel-env-new
+              :importfn (lambda(e name)
+                          (templatel-env-add-template
+                           e name
+                           (let ((templates (make-hash-table :test 'equal)))
+                             (puthash "base.html"
+                                      (templatel-new "BASE:
+{% block block0 %}base0{% endblock %}
+{% block block1 %}base1{% endblock %}
+{% block block2 %}base2{% endblock %}
+{% block block3 %}base3{% endblock %}
+base-end")
+                                      templates)
+                             (puthash "p0.html"
+                                      (templatel-new "{% extends \"base.html\" %}
+{% block block0 %}p0;{{ super() }}{% endblock %}won't be rendered
+{% block block1 %}p0;{{ super() }}{% endblock %}won't be rendered
+{% block block2 %}p0{% endblock %}")
+                                      templates)
+                             (puthash "p1.html"
+                                      (templatel-new "{% extends \"p0.html\" %}
+{% block block0 %}p1;{{ super() }}{% endblock %}won't be rendered
+{% block block1 %}p1;{{ super() }}{% endblock %}")
+                                      templates)
+                             (gethash name templates)))))))
+    (templatel-env-add-template
+     env "p2.html"
+     (templatel-new
+      "{% extends \"p1.html\" %}
+{% block block0 %}p2;{{ super() }}{% endblock %}
+{% block block2 %}p2;{{ super() }}{% endblock %}"))
+
+    (let ((text (templatel-env-render env "p2.html" '())))
+      (should (equal
+               text
+               "BASE:
+p2;p1;p0;base0
+p1;p0;base1
+p2;p0
+base3
+base-end")))
+
+    ))
+
 (ert-deftest render-block-extends-override-some-empty-blocks ()
   (let ((env (templatel-env-new
               :importfn (lambda(e name)
