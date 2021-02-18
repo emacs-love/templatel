@@ -1411,7 +1411,7 @@ blocks, stored in `rt/parent-blocks'."
             (templatel-mark-safe parent-block)
           parent-block)))
      (if (rt/get :get-data)
-         ,@body
+         (progn ,@body)
        (puthash ,name
                 (funcall (templatel--compiler-block-code ',body rt/template-name)
                          :env (rt/get :env)

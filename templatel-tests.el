@@ -343,6 +343,19 @@ base-end")))
 
     ))
 
+(ert-deftest render-block-extends-override-full-block-with-empty-one ()
+  (let ((env (templatel-env-new
+              :importfn (lambda(e name)
+                          ;; Base template define the block
+                          (templatel-env-add-template
+                           e name
+                           (templatel-new "-{% block blk %}something{% endblock %}-"))))))
+    ;; Template that extends the layout and override the block
+    (templatel-env-add-template
+     env "page.html"
+     (templatel-new "{% extends \"layout.html\" %}{% block blk %}{% endblock %}"))
+    (should (equal (templatel-env-render env "page.html" '()) "--"))))
+
 (ert-deftest render-block-extends-override-some-empty-blocks ()
   (let ((env (templatel-env-new
               :importfn (lambda(e name)
