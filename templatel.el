@@ -1281,7 +1281,8 @@ finished."
                           ("safe" . templatel-filters-safe)
                           ("first" . templatel-filters-first)
                           ("last" . templatel-filters-last)
-                          ("getattr" . templatel-filters-getattr)))
+                          ("getattr" . templatel-filters-getattr)
+                          ("default" . templatel-filters-default)))
 
             (rt/lookup-var
              (lambda(name)
@@ -1785,6 +1786,10 @@ though the flag for auto escaping is true:
 Hi <b>you</b>!
 #+END_SRC"
   (templatel-mark-safe s))
+
+(defun templatel-filters-default (value default)
+  "Return DEFAULT if VALUE is nil or return VALUE."
+  (or value default))
 
 (defun templatel--get (lst sym default)
   "Pick SYM from LST or return DEFAULT."

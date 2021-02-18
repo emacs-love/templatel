@@ -533,6 +533,12 @@ base-end")))))
                   '())
                  "153")))
 
+(ert-deftest render-expr-filter-default ()
+  (should (equal (templatel-render-string
+                  "Hi {{ user | default(\"valuable human\") }}!"
+                  '(("user" . nil)))
+                 "Hi valuable human!")))
+
 (ert-deftest render-expr-filter-first-getattr ()
   (should (equal (templatel-render-string
                   "Hi {{ users | first | getattr(\"name\") }}!"
