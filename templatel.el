@@ -1572,7 +1572,9 @@ call `templatel--compiler-filter-item' on each entry."
   "Compile an expression from TREE."
   `(progn
      ,@(templatel--compiler-run tree)
-     (insert (templatel--runtime-value (rt/get :env) (pop rt/valstk)))))
+     (insert (templatel--runtime-value
+              (rt/get :env)
+              (or (pop rt/valstk) "")))))
 
 (defun templatel--runtime-value (env value)
   "Compile VALUE within ENV.

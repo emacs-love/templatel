@@ -297,7 +297,6 @@ log2
 base3
 base-end"))))
 
-
 (ert-deftest render-block-extends-sub-sub-super ()
   (let ((env (templatel-env-new
               :importfn (lambda(e name)
@@ -339,9 +338,7 @@ p2;p1;p0;base0
 p1;p0;base1
 p2;p0
 base3
-base-end")))
-
-    ))
+base-end")))))
 
 (ert-deftest render-block-extends-override-full-block-with-empty-one ()
   (let ((env (templatel-env-new
@@ -411,24 +408,28 @@ base-end")))
 (ert-deftest render-block-default ()
   (should (equal (templatel-render-string "{% block stuff %}default{% endblock %}" '()) "default")))
 
+(ert-deftest render-nil-value ()
+  (should (equal (templatel-render-string "{{ myvar }}" '(("myvar" . nil))) ""))
+  (should (equal (templatel-render-string "{{ nil }}" '()) "")))
+
 (ert-deftest render-expr-logic ()
   (should (equal (templatel-render-string "{{ true }}" '()) "t"))
-  (should (equal (templatel-render-string "{{ false }}" '()) "nil"))
+  (should (equal (templatel-render-string "{{ false }}" '()) ""))
   (should (equal (templatel-render-string "{{ false or true }}" '()) "t"))
-  (should (equal (templatel-render-string "{{ false and true }}" '()) "nil"))
+  (should (equal (templatel-render-string "{{ false and true }}" '()) ""))
   (should (equal (templatel-render-string "{{ true and true }}" '()) "t"))
   (should (equal (templatel-render-string "{{ true or false }}" '()) "t"))
   (should (equal (templatel-render-string "{{ false or true }}" '()) "t"))
   (should (equal (templatel-render-string "{{ not not a }}" '(("a" . t))) "t"))
   (should (equal (templatel-render-string "{{ a or b }}" '(("a" . nil) ("b" . t))) "t"))
   (should (equal (templatel-render-string "{{ a or b }}" '(("a" . t) ("b" . nil))) "t"))
-  (should (equal (templatel-render-string "{{ a or b }}" '(("a" . nil) ("b" . nil))) "nil"))
+  (should (equal (templatel-render-string "{{ a or b }}" '(("a" . nil) ("b" . nil))) ""))
   (should (equal (templatel-render-string "{{ not a }}" '(("a" . nil))) "t"))
   (should (equal (templatel-render-string "{{ not not a }}" '(("a" . t))) "t"))
   (should (equal (templatel-render-string "{{ not a and not b }}"
                                           '(("a" . nil)
                                             ("b" . t)))
-                 "nil"))
+                 ""))
   (should (equal (templatel-render-string "{{ not a and not b }}"
                                           '(("a" . nil)
                                             ("b" . nil)))
@@ -448,21 +449,23 @@ base-end")))
 
 (ert-deftest render-expr-all-cmp ()
   (should (equal (templatel-render-string "{{ a == 10 }}" '(("a" . 10))) "t"))
-  (should (equal (templatel-render-string "{{ a == 11 }}" '(("a" . 10))) "nil"))
+  (should (equal (templatel-render-string "{{ a == 11 }}" '(("a" . 10))) ""))
   (should (equal (templatel-render-string "{{ a != 11 }}" '(("a" . 10))) "t"))
-  (should (equal (templatel-render-string "{{ a != 10 }}" '(("a" . 10))) "nil"))
+  (should (equal (templatel-render-string "{{ a != 10 }}" '(("a" . 10))) ""))
   (should (equal (templatel-render-string "{{ a >= 10 }}" '(("a" . 10))) "t"))
-  (should (equal (templatel-render-string "{{ a >= 11 }}" '(("a" . 10))) "nil"))
+  (should (equal (templatel-render-string "{{ a >= 11 }}" '(("a" . 10))) ""))
   (should (equal (templatel-render-string "{{ a <= 11 }}" '(("a" . 10))) "t"))
-  (should (equal (templatel-render-string "{{ a <=  9 }}" '(("a" . 10))) "nil"))
+  (should (equal (templatel-render-string "{{ a <=  9 }}" '(("a" . 10))) ""))
   (should (equal (templatel-render-string "{{ a  < 11 }}" '(("a" . 10))) "t"))
-  (should (equal (templatel-render-string "{{ a  < 10 }}" '(("a" . 10))) "nil"))
+  (should (equal (templatel-render-string "{{ a  < 10 }}" '(("a" . 10))) ""))
   (should (equal (templatel-render-string "{{ a  >  9 }}" '(("a" . 10))) "t"))
-  (should (equal (templatel-render-string "{{ a  > 10 }}" '(("a" . 10))) "nil"))
+  (should (equal (templatel-render-string "{{ a  > 10 }}" '(("a" . 10))) ""))
   (should (equal (templatel-render-string "{{ a in b }}" '(("a" . 10)
-                                                           ("b" . (0 5 10)))) "t"))
+                                                           ("b" . (0 5 10))))
+                 "t"))
   (should (equal (templatel-render-string "{{ a in b }}" '(("a" . 10)
-                                                           ("b" . (0 5 15)))) "nil")))
+                                                           ("b" . (0 5 15))))
+                 "")))
 
 (ert-deftest render-if-elif-expr-cmp ()
   (should (equal (templatel-render-string
