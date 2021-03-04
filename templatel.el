@@ -2,7 +2,7 @@
 ;;
 ;; Author: Lincoln Clarete <lincoln@clarete.li>
 ;; URL: https://clarete.li/templatel
-;; Version: 0.1.4
+;; Version: 0.1.5
 ;; Package-Requires: ((emacs "25.1"))
 ;;
 ;; Copyright (C) 2020-2021  Lincoln Clarete
