@@ -1866,6 +1866,13 @@ environment via ~:importfn~ parameter.
   "Add TEMPLATE to ENV under key NAME."
   (puthash name template (elt env 0)))
 
+(defun templatel-env-remove-template (env name)
+  "Remove template NAME from ENV.
+
+This function reverts the effect of a previous call to
+[[anchor:symbol-templatel-env-add-template][templatel-env-add-template]]."
+  (remhash name (elt env 0)))
+
 (defun templatel-env-add-filter (env name filter)
   "Add FILTER to ENV under key NAME.
 
