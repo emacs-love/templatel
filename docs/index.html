@@ -166,6 +166,22 @@ compatible to jinja are always welcome.
 <h2 id="changelog">Changelog</h2>
 <div class="outline-text-2" id="text-changelog">
 </div>
+<div id="outline-container-0-1-5" class="outline-3">
+<h3 id="0-1-5">0.1.5</h3>
+<div class="outline-text-3">
+<ul class="org-ul">
+<li>New filters added: <code>first</code>, <code>last</code>, <code>getattr</code> and <code>default</code></li>
+<li>New API for removing a template from an environment by name:
+<code>templatel-env-remove-template</code></li>
+<li>Fix inheritance so both <code>extends</code> and <code>super()</code> work
+recursively. E.g.: <code>post.html</code> extends <code>base_post.html</code> that
+extends <code>base.html</code>.</li>
+<li>Render <code>nil</code> value as an empty string instead of inserting the
+<code>"nil"</code> string into the output file</li>
+</ul>
+</div>
+</div>
+
 <div id="outline-container-0-1-4" class="outline-3">
 <h3 id="0-1-4">0.1.4</h3>
 <div class="outline-text-3">

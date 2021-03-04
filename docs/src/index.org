@@ -88,6 +88,16 @@
 
 * Changelog
 
+** 0.1.5
+   - New filters added: ~first~, ~last~, ~getattr~ and ~default~
+   - New API for removing a template from an environment by name:
+     ~templatel-env-remove-template~
+   - Fix inheritance so both ~extends~ and ~super()~ work
+     recursively. E.g.: ~post.html~ extends ~base_post.html~ that
+     extends ~base.html~.
+   - Render ~nil~ value as an empty string instead of inserting the
+     ~"nil"~ string into the output file
+
 ** 0.1.4
    * Add support for automatic HTML entity escaping
    * Fix reading UTF-8 characters with more than one byte
