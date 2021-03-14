@@ -87,6 +87,14 @@
     (templatel-error
      (should (equal err '(templatel-syntax-error . "<string> at 1,8: Unclosed bracket"))))))
 
+;; --- Operator Precedence ---
+
+(ert-deftest operator-precedence ()
+  (should (equal "10" (templatel-render-string "{{ 2 * 3 + 4 }}" '())))
+  (should (equal "10" (templatel-render-string "{{ 80 / 2 ** 3 }}" '())))
+  (should (equal "5" (templatel-render-string "{{ 13 % 9 + 1 }}" '())))
+  (should (equal "5" (templatel-render-string "{{ 2 * 3 + 4 % 2 + 1 - 2 }}" '()))))
+
 ;; --- Auto escaping ---
 
 (ert-deftest autoescaping ()

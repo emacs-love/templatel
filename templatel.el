@@ -1655,6 +1655,8 @@ Otherwise its HTML entities are escaped."
                                     ("/" /)
                                     ("+" +)
                                     ("-" -)
+                                    ("%" %)
+                                    ("**" expt)
                                     ;; Logic
                                     ("and" and)
                                     ("or" or)
