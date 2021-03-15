@@ -379,12 +379,6 @@
     (templatel--parser-_ scanner)
     (templatel--join-chars m)))
 
-(defun templatel--token-|| (scanner)
-  "Read '||' off SCANNER's input."
-  (let ((m (templatel--scanner-matchs scanner "||")))
-    (templatel--parser-_ scanner)
-    (templatel--join-chars m)))
-
 (defun templatel--token-+ (scanner)
   "Read '+' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "+")))
@@ -460,30 +454,6 @@
 (defun templatel--token-<= (scanner)
   "Read '<=' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "<=")))
-    (templatel--parser-_ scanner)
-    (templatel--join-chars m)))
-
-(defun templatel--token-<< (scanner)
-  "Read '<<' off SCANNER's input."
-  (let ((m (templatel--scanner-matchs scanner "<<")))
-    (templatel--parser-_ scanner)
-    (templatel--join-chars m)))
-
-(defun templatel--token->> (scanner)
-  "Read '>>' off SCANNER's input."
-  (let ((m (templatel--scanner-matchs scanner ">>")))
-    (templatel--parser-_ scanner)
-    (templatel--join-chars m)))
-
-(defun templatel--token-& (scanner)
-  "Read '&' off SCANNER's input."
-  (let ((m (templatel--scanner-matchs scanner "&")))
-    (templatel--parser-_ scanner)
-    (templatel--join-chars m)))
-
-(defun templatel--token-~ (scanner)
-  "Read '~' off SCANNER's input."
-  (let ((m (templatel--scanner-matchs scanner "~")))
     (templatel--parser-_ scanner)
     (templatel--join-chars m)))
 
@@ -730,12 +700,12 @@
      "Unclosed bracket")
     (cons "Expression" (list expr))))
 
-;; GR: Expr                <- Filter
+;; GR: Expr                <- Logical
 (defun templatel--parser-expr (scanner)
   "Read an expression from SCANNER."
   (cons
    "Expr"
-   (list (templatel--parser-filter scanner))))
+   (list (templatel--parser-logical scanner))))
 
 (defun templatel--parser-cut (scanner fn msg)
   "Try to parse FN off SCANNER or error with MSG.
@@ -784,18 +754,13 @@ operator (RATORFN)."
         (lambda() (funcall randfn scanner))
         "Missing operand after binary operator"))))))
 
-;; GR: Filter              <- Logical (_PIPE Logical)*
-(defun templatel--parser-filter (scanner)
-  "Read Filter from SCANNER."
-  (templatel--parser-binary scanner "Filter" #'templatel--parser-logical #'templatel--token-|))
-
-;; GR: Logical             <- BitLogical ((AND / OR) BitLogical)*
+;; GR: Logical             <- Comparison ((AND / OR) Comparison)*
 (defun templatel--parser-logical (scanner)
   "Read Logical from SCANNER."
   (templatel--parser-binary
    scanner
    nil ; "Logical"
-   #'templatel--parser-bit-logical
+   #'templatel--parser-comparison
    (lambda(s)
      (templatel--scanner-or
       s
@@ -803,28 +768,13 @@ operator (RATORFN)."
        (lambda() (templatel--token-and s))
        (lambda() (templatel--token-or s)))))))
 
-;; GR: BitLogical          <- Comparison ((BAND / BXOR / BOR) Comparison)*
-(defun templatel--parser-bit-logical (scanner)
-  "Read BitLogical from SCANNER."
-  (templatel--parser-binary
-   scanner
-   nil ; "BitLogical"
-   #'templatel--parser-comparison
-   (lambda(s)
-     (templatel--scanner-or
-      s
-      (list
-       (lambda() (templatel--token-& s))
-       (lambda() (templatel--token-^ s))
-       (lambda() (templatel--token-|| s)))))))
-
-;; GR: Comparison          <- BitShifting ((EQ / NEQ / LTE / GTE / LT / GT / IN) BitShifting)*
+;; GR: Comparison          <- Term ((EQ / NEQ / LTE / GTE / LT / GT / IN) Term)*
 (defun templatel--parser-comparison (scanner)
   "Read a Comparison from SCANNER."
   (templatel--parser-binary
    scanner
    nil ; "Comparison"
-   #'templatel--parser-bit-shifting
+   #'templatel--parser-term
    (lambda(s)
      (templatel--scanner-or
       s
@@ -836,20 +786,6 @@ operator (RATORFN)."
        (lambda() (templatel--token-< s))
        (lambda() (templatel--token-> s))
        (lambda() (templatel--token-in s)))))))
-
-;; GR: BitShifting         <- Term ((RSHIFT / LSHIFT) Term)*
-(defun templatel--parser-bit-shifting (scanner)
-  "Read a BitShifting from SCANNER."
-  (templatel--parser-binary
-   scanner
-   nil ; "BitShifting"
-   #'templatel--parser-term
-   (lambda(s)
-     (templatel--scanner-or
-      s
-      (list
-       (lambda() (templatel--token->> s))
-       (lambda() (templatel--token-<< s)))))))
 
 ;; GR: Term                <- Factor ((PLUS / MINUS) Factor)*
 (defun templatel--parser-term (scanner)
@@ -880,19 +816,27 @@ operator (RATORFN)."
        (lambda() (templatel--token-slash s))
        (lambda() (templatel--token-dslash s)))))))
 
-;; GR: Power               <- Unary ((POWER / MOD) Unary)*
+;; GR: Power               <- Filter ((POWER / MOD) Filter)*
 (defun templatel--parser-power (scanner)
   "Read Power from SCANNER."
   (templatel--parser-binary
    scanner
    nil ; "Power"
-   #'templatel--parser-unary
+   #'templatel--parser-filter
    (lambda(s)
      (templatel--scanner-or
       s
       (list
        (lambda() (templatel--token-** s))
        (lambda() (templatel--token-% s)))))))
+
+;; GR: Filter              <- Unary (_PIPE Unary)*
+(defun templatel--parser-filter (scanner)
+  "Read Filter from SCANNER."
+  (templatel--parser-binary
+   scanner
+   "Filter"
+   #'templatel--parser-unary #'templatel--token-|))
 
 ;; GR: UnaryOp             <- PLUS / MINUS / NOT / BNOT
 (defun templatel--parser-unary-op (scanner)
@@ -902,7 +846,6 @@ operator (RATORFN)."
    (list
     (lambda() (templatel--token-+ scanner))
     (lambda() (templatel--token-- scanner))
-    (lambda() (templatel--token-~ scanner))
     (lambda() (templatel--token-not scanner)))))
 
 ;; GR: Unary               <- UnaryOp Unary / UnaryOp Primary / Primary
@@ -1660,10 +1603,6 @@ Otherwise its HTML entities are escaped."
                                     ;; Logic
                                     ("and" and)
                                     ("or" or)
-                                    ;; Bit Logic
-                                    ("&" logand)
-                                    ("||" logior)
-                                    ("^" logxor)
                                     ;; Comparison
                                     ("<" <)
                                     (">" >)

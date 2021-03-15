@@ -90,6 +90,11 @@
 ;; --- Operator Precedence ---
 
 (ert-deftest operator-precedence ()
+  ;; unary operators have higher precedence than filter operators
+  (should (equal "5" (templatel-render-string "{{ -5 | abs }}" '())))
+  ;; pipes (for filters) have higher precedence then other binary ops
+  (should (equal "10" (templatel-render-string "{{ 2 * 3 | plus1 | plus1 }}" '())))
+  ;; Arithmetic
   (should (equal "10" (templatel-render-string "{{ 2 * 3 + 4 }}" '())))
   (should (equal "10" (templatel-render-string "{{ 80 / 2 ** 3 }}" '())))
   (should (equal "5" (templatel-render-string "{{ 13 % 9 + 1 }}" '())))
@@ -448,12 +453,6 @@ base-end")))))
   (should (equal (templatel-render-string "{{ +a }}" '(("a" . 10))) "10"))
   (should (equal (templatel-render-string "{{ -a }}" '(("a" . -10))) "10"))
   (should (equal (templatel-render-string "{{ -a }}" '(("a" . 10))) "-10")))
-
-(ert-deftest render-expr-all-bitlogic ()
-  (should (equal (templatel-render-string "{{ a & 0b11 }}" '(("a" . 10))) "2"))
-  (should (equal (templatel-render-string "{{ a || 0b1 }}" '(("a" . 10))) "11"))
-  (should (equal (templatel-render-string "{{ a ^ 0b11 }}" '(("a" . 10))) "9"))
-  (should (equal (templatel-render-string "{{ ~a }}" '(("a" . 10))) "-11")))
 
 (ert-deftest render-expr-all-cmp ()
   (should (equal (templatel-render-string "{{ a == 10 }}" '(("a" . 10))) "t"))
