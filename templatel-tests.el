@@ -1041,6 +1041,12 @@ base-end")))))
              (templatel--parser-value s)
              '("String" . "fun with Emacs")))))
 
+(ert-deftest expr-value-float ()
+  (let ((s (templatel--scanner-new "3.14" "<string>")))
+    (should (equal
+             (templatel--parser-value s)
+             '("Number" . 3.14)))))
+
 (ert-deftest expr-value-number ()
   (let ((s (templatel--scanner-new "325" "<string>")))
     (should (equal

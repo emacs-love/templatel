@@ -1044,10 +1044,15 @@ operator (RATORFN)."
 ;; GR: FLOAT               <- [0-9]* '.' [0-9]+       _
 (defun templatel--parser-float (scanner)
   "Read float from SCANNER."
-  (append
-   (templatel--scanner-zero-or-more scanner (lambda() (templatel--scanner-range scanner ?0 ?9)))
-   (templatel--scanner-matchs scanner ".")
-   (templatel--scanner-one-or-more scanner (lambda() (templatel--scanner-range scanner ?0 ?9)))))
+  (string-to-number
+   (templatel--join-chars
+    (append
+     (templatel--scanner-zero-or-more
+      scanner (lambda() (templatel--scanner-range scanner ?0 ?9)))
+     (templatel--scanner-matchs
+      scanner ".")
+     (templatel--scanner-one-or-more
+      scanner (lambda() (templatel--scanner-range scanner ?0 ?9)))))))
 
 ;; GR: BIN                 <- '0b' [0-1]+             _
 (defun templatel--parser-bin (scanner)
