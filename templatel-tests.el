@@ -100,6 +100,7 @@
   (should (equal "5" (templatel-render-string "{{ -5 | abs }}" '())))
   ;; pipes (for filters) have higher precedence then other binary ops
   (should (equal "10" (templatel-render-string "{{ 2 * 3 | plus1 | plus1 }}" '())))
+  (should (equal "11" (templatel-render-string "{{ (2 * 3 | plus1 | plus1) | plus1 }}" '())))
   ;; Arithmetic
   (should (equal "10" (templatel-render-string "{{ 2 * 3 + 4 }}" '())))
   (should (equal "10" (templatel-render-string "{{ 80 / 2 ** 3 }}" '())))
