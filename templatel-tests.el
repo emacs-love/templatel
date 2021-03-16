@@ -90,6 +90,10 @@
 ;; --- Operator Precedence ---
 
 (ert-deftest operator-precedence ()
+  ;; attribute access operator has the highest precedence, even over
+  ;; unary operators
+  (should (equal "-5" (templatel-render-string "{{ -obj.prop }}" '(("obj" . (("prop" . 5)))))))
+  (should (equal "5" (templatel-render-string "{{ -obj.prop }}" '(("obj" . (("prop" . -5)))))))
   ;; unary operators have higher precedence than filter operators
   (should (equal "5" (templatel-render-string "{{ -5 | abs }}" '())))
   ;; pipes (for filters) have higher precedence then other binary ops
@@ -540,40 +544,170 @@ base-end")))))
                   '())
                  "153")))
 
-(ert-deftest render-expr-filter-default ()
-  (should (equal (templatel-render-string
-                  "Hi {{ user | default(\"valuable human\") }}!"
-                  '(("user" . nil)))
-                 "Hi valuable human!")))
+
 
-(ert-deftest render-expr-filter-first-getattr ()
-  (should (equal (templatel-render-string
-                  "Hi {{ users | first | getattr(\"name\") }}!"
-                  '(("users" . ((("name" . "Jaci"))
-                                (("name" . "Moon"))
-                                (("name" . "Lua"))))))
-                 "Hi Jaci!")))
+;; --- Filters ---
 
-(ert-deftest render-expr-filter-getattr ()
-  (should (equal (templatel-render-string
-                  "Hi {{ user | getattr(\"name\") }}, you are a {{ user | getattr(\"editor\") }} user!"
+(ert-deftest render-expr-filter-filter-abs ()
+  (should (equal "10" (templatel-render-string "{{ -10 | abs }}" '())))
+  (should (equal "10" (templatel-render-string "{{ 10 | abs }}" '()))))
+
+(ert-deftest render-expr-filter-attr ()
+  (should (equal "Hi Jaci, you are a Emacs user!"
+                 (templatel-render-string
+                  "Hi {{ user | attr(\"name\") }}, you are a {{ user | attr(\"editor\") }} user!"
                   '(("user" . (("name" . "Jaci")
-                               ("editor" . "Emacs")))))
-                 "Hi Jaci, you are a Emacs user!")))
+                               ("editor" . "Emacs"))))))))
+
+(ert-deftest render-expr-filter-capitalize ()
+  (should (equal "Emacs"
+                 (templatel-render-string
+                  "{{ \"emacs\" | capitalize }}"
+                  '())))
+  (should (equal "Emacs lisp"
+                 (templatel-render-string
+                  "{{ \"emacs lisp\" | capitalize }}"
+                  '()))))
+
+(ert-deftest render-expr-filter-default ()
+  (should (equal "Hi valuable human!"
+                 (templatel-render-string
+                  "Hi {{ user | default(\"valuable human\") }}!"
+                  '(("user" . nil))))))
+
+(ert-deftest render-expr-filter-escape ()
+  ;; Notice auto-escaping is off
+  (should (equal "Hi &lt;Something&gt;!"
+                 (templatel-render-string
+                  "Hi {{ content | escape }}!"
+                  '(("content" . "<Something>")))))
+  ;; Ensure alias exists
+  (should (equal "Hi &lt;Something&gt;!"
+                 (templatel-render-string
+                  "Hi {{ content | e }}!"
+                  '(("content" . "<Something>"))))))
 
 (ert-deftest render-expr-filter-first ()
-  (should (equal (templatel-render-string
+  (should (equal "Hi Jaci!"
+                 (templatel-render-string
                   "Hi {{ users | first }}!"
-                  '(("users" . ("Jaci" "Moon" "Lua"))))
-                 "Hi Jaci!")))
+                  '(("users" . ("Jaci" "Moon" "Lua")))))))
+
+(ert-deftest render-expr-filter-first-attr ()
+  (should (equal "Hi Jaci!"
+                 (templatel-render-string
+                  "Hi {{ users | first | attr(\"name\") }}!"
+                  '(("users" . ((("name" . "Jaci"))
+                                (("name" . "Moon"))
+                                (("name" . "Lua")))))))))
+
+(ert-deftest render-expr-filter-float ()
+  ;; here we see the pipe (|) takes higher precedence over the plus
+  ;; sign (+), convert the string content to float and then sum them.
+  (should (equal "1.5"
+                 (templatel-render-string
+                  "{{ 1 + content | float }}"
+                  '(("content" . "0.5")))))
+  (should (equal "3.0"
+                 (templatel-render-string
+                  "{{ 1 + content | float }}"
+                  '(("content" . 2)))))
+  ;; there will be type errors
+  (condition-case err
+      (templatel-render-string
+       "{{ 1 + content | float }}"
+       '(("content" . '(1 2))))
+    (templatel-error
+     (should (equal err
+                    '(templatel-runtime-error . "Can't convert type cons to float"))))))
+
+(ert-deftest render-expr-filter-int ()
+  (should (equal "5"
+                 (templatel-render-string
+                  "{{ content | int }}"
+                  '(("content" . "5.5")))))
+  (should (equal "3"
+                 (templatel-render-string
+                  "{{ 1 + content | int }}"
+                  '(("content" . 2)))))
+  (should (equal "You won 255 in bars of gold"
+                 (templatel-render-string
+                  "You won {{ user.byte|int(16) }} in bars of gold"
+                  '(("user" . (("byte" . "0xFF")))))))
+  (should (equal "You won 42 in bars of gold"
+                 (templatel-render-string
+                  "You won {{ user.bin|int(2) }} in bars of gold"
+                  '(("user" . (("bin" . "0b101010")))))))
+  (condition-case err
+      (templatel-render-string
+       "{{ content | int }}"
+       '(("content" . '(1 2))))
+    (templatel-error
+     (should (equal err
+                    '(templatel-runtime-error . "Can't convert type cons to int"))))))
+
+(ert-deftest render-expr-filter-join ()
+  (should (equal "1234"
+                 (templatel-render-string
+                  "{{ numbers | join }}"
+                  '(("numbers" . (1 2 3 4))))))
+  (should (equal "1, 2, 3, 4"
+                 (templatel-render-string
+                  "{{ numbers | join(\", \") }}"
+                  '(("numbers" . (1 2 3 4)))))))
 
 (ert-deftest render-expr-filter-last ()
-  (should (equal (templatel-render-string
+  (should (equal "Hi Lua!"
+                 (templatel-render-string
                   "Hi {{ users | last }}!"
-                  '(("users" . ("Jaci" "Moon" "Lua"))))
-                 "Hi Lua!")))
+                  '(("users" . ("Jaci" "Moon" "Lua")))))))
 
-(ert-deftest render-expr-filter-pipe ()
+(ert-deftest render-expr-filter-length ()
+  (should (equal "3"
+                 (templatel-render-string
+                  "{{ users | length }}"
+                  '(("users" . ("Jaci" "Moon" "Lua")))))))
+
+(ert-deftest render-expr-filter-lower ()
+  (should (equal "happy hacking"
+                 (templatel-render-string
+                  "{{ phrase | lower }}"
+                  '(("phrase" . "HApPY HaCKiNg"))))))
+
+(ert-deftest render-expr-filter-max ()
+  (should (equal "10"
+                 (templatel-render-string
+                  "{{ numbers | max }}"
+                  '(("numbers" . (5 8 10 9 7 4 3)))))))
+
+(ert-deftest render-expr-filter-min ()
+  (should (equal "3"
+                 (templatel-render-string
+                  "{{ numbers | min }}"
+                  '(("numbers" . (5 8 10 9 7 4 3)))))))
+
+(ert-deftest render-expr-filter-round ()
+  (should (equal "1"
+                 (templatel-render-string
+                  "{{ 1.49999 | round }}"
+                  '())))
+  (should (equal "2"
+                 (templatel-render-string
+                  "{{ 1.5 | round }}"
+                  '())))
+  (should (equal "2"
+                 (templatel-render-string
+                  "{{ 1.50001 | round }}"
+                  '()))))
+
+(ert-deftest render-expr-filter-title ()
+  (should (equal "What If The World Was A Cone"
+                 (templatel-render-string
+                  "{{ phrase | title }}"
+                  '(("phrase" . "what if the world was a cone"))))))
+
+
+(ert-deftest render-expr-filter-apply ()
   (should (equal (templatel-render-string
                   "Awww {{ qts|sum|plus1 }}."
                   '(("qts" . (1 2 3 4 5))))
@@ -585,25 +719,20 @@ base-end")))))
                   '(("user" . (("name" . "Gnu")))))
                  "Awww GNU.")))
 
-(ert-deftest render-expr-filter-int ()
-  (should (equal (templatel-render-string
-                  "You won {{ user.byte|int(16) }} in bars of gold"
-                  '(("user" . (("byte" . "0xFF")))))
-                 "You won 255 in bars of gold")))
+
 
-(ert-deftest render-expr-attr ()
+;; --- Attribute syntax ---
+
+(ert-deftest render-expr-attribute ()
   (should (equal (templatel-render-string
                   "Hi {{ user.name }}, happy {{ user.greeting }}"
                   '(("user" . (("name" . "Gnu")
                                ("greeting" . "Hacking")))))
                  "Hi Gnu, happy Hacking")))
 
-(ert-deftest render-expr-attr ()
-  (should (equal (templatel-render-string
-                  "Hi {{ user.name }}, happy {{ user.greeting }}"
-                  '(("user" . (("name" . "Gnu")
-                               ("greeting" . "Hacking")))))
-                 "Hi Gnu, happy Hacking")))
+
+
+;; --- Expression ---
 
 (ert-deftest render-expr-string ()
   (should (equal (templatel-render-string "{{ \"something\" }}" '()) "something")))
@@ -766,17 +895,6 @@ base-end")))))
   (should (equal
            (templatel-render-string "<h1>Hello Emacs</h1>" nil)
            "<h1>Hello Emacs</h1>")))
-
-
-
-;; --- Filters ---
-
-
-(ert-deftest filter-upper ()
-  (should (equal (templatel-filters-upper "stuff") "STUFF")))
-
-(ert-deftest filter-lower ()
-  (should (equal (templatel-filters-lower "STUFF") "stuff")))
 
 
 

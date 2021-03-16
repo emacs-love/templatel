@@ -1221,16 +1221,30 @@ finished."
             (rt/parent-blocks nil)
             (rt/varstk (list (rt/get :vars)))
             (rt/valstk (list))
-            (rt/filters '(("upper" . templatel-filters-upper)
-                          ("lower" . templatel-filters-lower)
-                          ("sum" . templatel-filters-sum)
-                          ("plus1" . templatel-filters-plus1)
-                          ("int" . templatel-filters-int)
-                          ("safe" . templatel-filters-safe)
-                          ("first" . templatel-filters-first)
-                          ("last" . templatel-filters-last)
-                          ("getattr" . templatel-filters-getattr)
-                          ("default" . templatel-filters-default)))
+            (rt/filters '(("abs"         . templatel-filters-abs)
+                          ("attr"        . templatel-filters-attr)
+                          ("capitalize"  . templatel-filters-capitalize)
+                          ("default"     . templatel-filters-default)
+                          ("escape"      . templatel-filters-escape)
+                          ("e"           . templatel-filters-escape)
+                          ("first"       . templatel-filters-first)
+                          ("float"       . templatel-filters-float)
+                          ("int"         . templatel-filters-int)
+                          ("join"        . templatel-filters-join)
+                          ("last"        . templatel-filters-last)
+                          ("length"      . templatel-filters-length)
+                          ("lower"       . templatel-filters-lower)
+                          ("max"         . templatel-filters-max)
+                          ("min"         . templatel-filters-min)
+                          ("round"       . templatel-filters-round)
+                          ("safe"        . templatel-filters-safe)
+                          ("sum"         . templatel-filters-sum)
+                          ("title"       . templatel-filters-title)
+                          ("upper"       . templatel-filters-upper)
+                          ;; Exclusive to templatel
+                          ("plus1"       . templatel-filters-plus1)
+                          ;; deprecated in favor of `attr` filter.
+                          ("getattr"     . templatel-filters-attr)))
 
             (rt/lookup-var
              (lambda(name)
@@ -1679,39 +1693,100 @@ Otherwise its HTML entities are escaped."
     (`(safe . ,x) (cons 'safe (funcall fn x)))
     (x (funcall fn x))))
 
-(defun templatel-filters-upper (s)
-  "Upper case all chars of S."
-  (templatel--string-apply s #'upcase))
+;; Filters
 
-(defun templatel-filters-lower (s)
-  "Lower case all chars of S."
-  (templatel--string-apply s #'downcase))
+(defun templatel-filters-abs (n)
+  "Absolute value of number N."
+  (abs n))
 
-(defun templatel-filters-sum (s)
-  "Sum all entries in S."
-  (apply #'+ s))
+(defun templatel-filters-attr (s n)
+  "Get element N of assoc S."
+  (let ((element (assoc n s)))
+    (if element (cdr element))))
 
-(defun templatel-filters-plus1 (s)
-  "Add one to S."
-  (1+ s))
+(defun templatel-filters-capitalize (s)
+  "Upper-case the first character of S."
+  (format "%c%s"
+   (upcase (elt s 0))
+   (seq-drop s 1)))
+
+(defun templatel-filters-default (value default)
+  "Return DEFAULT if VALUE is nil or return VALUE."
+  (or value default))
+
+(defun templatel-filters-escape (s)
+  "Convert special chars in S to their respective HTML entities."
+  (templatel-escape-string s))
 
 (defun templatel-filters-first (s)
   "First element of sequence S."
   (elt s 0))
 
+(defun templatel-filters-float (s)
+  "Parse S as float."
+  (cond
+   ((stringp s) (float (string-to-number s)))
+   ((numberp s) (float s))
+   (t (signal
+       'templatel-runtime-error
+       (format "Can't convert type %s to float" (type-of s))))))
+
+(defun templatel-filters-int (s &optional base)
+  "Convert S into integer of base BASE."
+  (cond
+   ((stringp s)
+    (truncate (string-to-number (replace-regexp-in-string "^0[xXbB]" "" s)
+                                (or base 10))))
+   ((numberp s)
+    (truncate s))
+   (t (signal
+       'templatel-runtime-error
+       (format "Can't convert type %s to int" (type-of s))))))
+
+(defun templatel-filters-join (seq &optional sep)
+  "Join al elements of SEQ with SEP."
+  ;; calling format ensure i of any type becomes a string
+  (mapconcat (lambda(i) (format "%s" i)) seq (or sep "")))
+
 (defun templatel-filters-last (s)
   "Last element of sequence S."
   (elt s (- (length s) 1)))
 
-(defun templatel-filters-getattr (s n)
-  "Get element N of assoc S."
-  (let ((element (assoc n s)))
-    (if element (cdr element))))
+(defun templatel-filters-length (seq)
+  "Return how many elements in a SEQ."
+  (length seq))
 
-(defun templatel-filters-int (s base)
-  "Convert S into integer of base BASE."
-  (string-to-number
-   (replace-regexp-in-string "^0[xXbB]" "" s) base))
+(defun templatel-filters-lower (s)
+  "Lower case all chars of S."
+  (templatel--string-apply s #'downcase))
+
+(defun templatel-filters-max (seq)
+  "Find maximum value within SEQ."
+  (apply #'max seq))
+
+(defun templatel-filters-min (seq)
+  "Find minimum value within SEQ."
+  (apply #'min seq))
+
+(defun templatel-filters-round (n)
+  "Round N."
+  (round n))
+
+(defun templatel-filters-sum (s)
+  "Sum all entries in S."
+  (apply #'+ s))
+
+(defun templatel-filters-title (s)
+  "Upper first char of each word in S."
+  (capitalize s))
+
+(defun templatel-filters-upper (s)
+  "Upper case all chars of S."
+  (templatel--string-apply s #'upcase))
+
+(defun templatel-filters-plus1 (s)
+  "Add one to S."
+  (1+ s))
 
 (defun templatel-filters-safe (s)
   "Mark string S as safe.
@@ -1733,9 +1808,8 @@ Hi <b>you</b>!
 #+END_SRC"
   (templatel-mark-safe s))
 
-(defun templatel-filters-default (value default)
-  "Return DEFAULT if VALUE is nil or return VALUE."
-  (or value default))
+
+
 
 (defun templatel--get (lst sym default)
   "Pick SYM from LST or return DEFAULT."
