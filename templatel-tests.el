@@ -26,6 +26,7 @@
 (require 'cl-lib)
 (require 'templatel)
 
+
 ;; --- Error ---
 
 (ert-deftest err-parse-incomplete ()
@@ -87,6 +88,7 @@
     (templatel-error
      (should (equal err '(templatel-syntax-error . "<string> at 1,8: Unclosed bracket"))))))
 
+
 ;; --- Operator Precedence ---
 
 (ert-deftest operator-precedence ()
@@ -104,6 +106,7 @@
   (should (equal "5" (templatel-render-string "{{ 13 % 9 + 1 }}" '())))
   (should (equal "5" (templatel-render-string "{{ 2 * 3 + 4 % 2 + 1 - 2 }}" '()))))
 
+
 ;; --- Auto escaping ---
 
 (ert-deftest autoescaping ()
@@ -213,6 +216,7 @@
     (should (equal (templatel-env-render env "page.html" '(("name" . "<h1>Title</h1>")))
                    "Hello &lt;h1&gt;Title&lt;/h1&gt; and world"))))
 
+
 ;; --- Unicode ---
 
 (ert-deftest render-unicode ()
@@ -222,6 +226,7 @@
   (should (equal (templatel-render-string "render the same way 🥕 🌽 🌶" '())
                  "render the same way 🥕 🌽 🌶")))
 
+
 ;; --- Renderer --
 
 (ert-deftest render-filter-named-parameter-syntax ()
@@ -545,7 +550,6 @@ base-end")))))
                  "153")))
 
 
-
 ;; --- Filters ---
 
 (ert-deftest render-expr-filter-filter-abs ()
@@ -720,7 +724,6 @@ base-end")))))
                  "Awww GNU.")))
 
 
-
 ;; --- Attribute syntax ---
 
 (ert-deftest render-expr-attribute ()
@@ -731,7 +734,6 @@ base-end")))))
                  "Hi Gnu, happy Hacking")))
 
 
-
 ;; --- Expression ---
 
 (ert-deftest render-expr-string ()
@@ -897,7 +899,6 @@ base-end")))))
            "<h1>Hello Emacs</h1>")))
 
 
-
 ;; --- Compiler ---
 
 (ert-deftest compile-template ()
@@ -915,7 +916,6 @@ base-end")))))
              '(insert "<h1>Hello Emacs</h1>")))))
 
 
-
 ;; --- Parser & Scanner ---
 
 (ert-deftest template-extends ()
