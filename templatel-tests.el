@@ -725,6 +725,16 @@ base-end")))))
                  "Awww GNU.")))
 
 
+;; --- Tests ---
+
+(ert-deftest render-expr-test-defined ()
+  (let ((vars '(("user" . (("name" . "Gnu"))))))
+    (should (equal ""  (templatel-render-string "{{ user is defined }}" '())))
+    (should (equal "t" (templatel-render-string "{{ user is defined }}" vars)))
+    (should (equal "t" (templatel-render-string "{{ user.name is defined }}" vars)))
+    (should (equal ""  (templatel-render-string "{{ user.online is defined }}" vars)))))
+
+
 ;; --- Attribute syntax ---
 
 (ert-deftest render-expr-attribute ()
