@@ -762,12 +762,29 @@ base-end")))))
      '())
     "b")))
 
-(ert-deftest render-template-forloop ()
+(ert-deftest render-template-for-loop ()
   (should (equal
+           "One Two Three "
            (templatel-render-string
             "{% for name in names %}{{ name }} {% endfor %}"
-            '(("names" . ("One" "Two" "Three"))))
-           "One Two Three ")))
+            '(("names" . ("One" "Two" "Three")))))))
+
+(ert-deftest render-template-for-loop-with-filter ()
+  (should (equal
+           "1 2 3 4 5 6 7 8 9 "
+           (templatel-render-string
+            "{% for i in a|sort %}{{ i }} {% endfor %}"
+            '(("a" . (3 6 1 4 9 5 8 2 7)))))))
+
+(ert-deftest render-if-with-filter ()
+  (should
+   (equal
+    "test"
+    (templatel-render-string "{% if list | first %}test{% endif %}" '(("list" . (1))))))
+  (should
+   (equal
+    "test"
+    (templatel-render-string "{% if 1.6 | round > 1.4 %}test{% endif %}" '()))))
 
 (ert-deftest render-if-else-elif-no-else ()
   (should

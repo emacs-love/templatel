@@ -1238,6 +1238,7 @@ finished."
                           ("min"         . templatel-filters-min)
                           ("round"       . templatel-filters-round)
                           ("safe"        . templatel-filters-safe)
+                          ("sort"        . templatel-filters-sort)
                           ("sum"         . templatel-filters-sum)
                           ("title"       . templatel-filters-title)
                           ("upper"       . templatel-filters-upper)
@@ -1598,7 +1599,9 @@ Otherwise its HTML entities are escaped."
   "Compile for statement off TREE."
   (let ((id (cdar tree)))
     `(let ((subenv '((,id . nil)))
-           (iterable ,(templatel--compiler-run (cadr tree))))
+           (iterable (progn
+                       ,(templatel--compiler-run (cadr tree))
+                       (pop rt/valstk))))
        (push subenv rt/varstk)
        (mapc
         (lambda(id)
@@ -1808,6 +1811,9 @@ Hi <b>you</b>!
 #+END_SRC"
   (templatel-mark-safe s))
 
+(defun templatel-filters-sort (s)
+  "Return S sorted."
+  (sort s #'<))
 
 
 
