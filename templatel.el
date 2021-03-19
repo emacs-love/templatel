@@ -1254,6 +1254,7 @@ finished."
                           ("safe"        . templatel-filters-safe)
                           ("sort"        . templatel-filters-sort)
                           ("sum"         . templatel-filters-sum)
+                          ("take"        . templatel-filters-take)
                           ("title"       . templatel-filters-title)
                           ("upper"       . templatel-filters-upper)
                           ;; Exclusive to templatel
@@ -1869,6 +1870,10 @@ Otherwise its HTML entities are escaped."
 (defun templatel-filters-sum (s)
   "Sum all entries in S."
   (apply #'+ s))
+
+(defun templatel-filters-take (s n)
+  "Take n elements of sequence S."
+  (seq-take s n))
 
 (defun templatel-filters-title (s)
   "Upper first char of each word in S."
