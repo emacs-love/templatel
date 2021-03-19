@@ -1914,6 +1914,10 @@ Hi <b>you</b>!
   "Return t if V is defined."
   (not (eq v 'undefined)))
 
+(defun templatel-tests-divisible (value d)
+  "Return t if VALUE is divisible by D."
+  (eq 0 (% value d)))
+
 
 
 (defun templatel--get (lst sym default)

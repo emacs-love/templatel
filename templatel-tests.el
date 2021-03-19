@@ -734,6 +734,10 @@ base-end")))))
     (should (equal "t" (templatel-render-string "{{ user.name is defined }}" vars)))
     (should (equal ""  (templatel-render-string "{{ user.online is defined }}" vars)))))
 
+(ert-deftest render-expr-test-divisible ()
+  (should (equal "" (templatel-render-string "{{ 10 is divisible(3) }}" '())))
+  (should (equal "t" (templatel-render-string "{{ 9 is divisible(3) }}" '()))))
+
 
 ;; --- Attribute syntax ---
 
