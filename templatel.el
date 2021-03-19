@@ -906,11 +906,11 @@ operator (RATORFN)."
    "Attribute"
    (cons
     (templatel--parser-identifier scanner)
-    (progn
-      (templatel--token-dot scanner)
-      (templatel--scanner-one-or-more
-       scanner
-       (lambda() (templatel--parser-identifier scanner)))))))
+    (templatel--scanner-one-or-more
+     scanner
+     (lambda()
+       (templatel--token-dot scanner)
+       (templatel--parser-identifier scanner))))))
 
 ;; GR: Element             <- Value / Attribute / FnCall / Identifier
 (defun templatel--parser-element (scanner)

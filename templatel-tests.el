@@ -742,11 +742,28 @@ base-end")))))
 ;; --- Attribute syntax ---
 
 (ert-deftest render-expr-attribute ()
-  (should (equal (templatel-render-string
+  (should (equal "Hi Gnu, happy Hacking"
+                 (templatel-render-string
                   "Hi {{ user.name }}, happy {{ user.greeting }}"
                   '(("user" . (("name" . "Gnu")
-                               ("greeting" . "Hacking")))))
-                 "Hi Gnu, happy Hacking")))
+                               ("greeting" . "Hacking")))))))
+  ;; with filters
+  (should (equal "GNU"
+                 (templatel-render-string
+                  "{{ user.name | upper }}"
+                  '(("user" . (("name" . "Gnu")))))))
+  ;; with tests
+  (should (equal "t"
+                 (templatel-render-string
+                  "{{ user.age is divisible(3) }}"
+                  '(("user" . (("name" . "Gnu")
+                               ("age" . 33)))))))
+  ;; is falsy when an attribute doesn't exist
+  (should (equal ""
+                 (templatel-render-string
+                  "{% if user.city %}{{ user.city }}{% endif %}"
+                  '(("user" . (("name" . "Gnu")
+                               ("greeting" . "Hacking"))))))))
 
 
 ;; --- Expression ---
