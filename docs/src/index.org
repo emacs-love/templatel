@@ -70,7 +70,7 @@
   - For loop variables (loop.index, loop.first, loop.last, etc)
   - Include statement
   - Whitespace Control
-  - Undefined Variables
+  - +Undefined Variables+
   - List and tuple literals
   - Else branch in for loops
   - Macros, Macro Calls and Import
