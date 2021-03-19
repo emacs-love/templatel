@@ -1872,7 +1872,7 @@ Otherwise its HTML entities are escaped."
   (apply #'+ s))
 
 (defun templatel-filters-take (s n)
-  "Take n elements of sequence S."
+  "Take N elements of sequence S."
   (seq-take s n))
 
 (defun templatel-filters-title (s)
