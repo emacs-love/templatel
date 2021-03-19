@@ -705,6 +705,16 @@ base-end")))))
                   "{{ 1.50001 | round }}"
                   '()))))
 
+(ert-deftest render-expr-filter-take ()
+  (should (equal "(1 2 3 4)"
+                 (templatel-render-string
+                  "{{ things | take(4) }}"
+                  '(("things" . (1 2 3 4 5 6 7 8))))))
+  (should (equal "1, 2, 3, 4, "
+                 (templatel-render-string
+                  "{% for i in things | take(4) %}{{ i }}, {% endfor %}"
+                  '(("things" . (1 2 3 4 5 6 7 8)))))))
+
 (ert-deftest render-expr-filter-title ()
   (should (equal "What If The World Was A Cone"
                  (templatel-render-string
