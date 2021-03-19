@@ -747,6 +747,11 @@ base-end")))))
                   "Hi {{ user.name }}, happy {{ user.greeting }}"
                   '(("user" . (("name" . "Gnu")
                                ("greeting" . "Hacking")))))))
+  ;; yields undefined when accessing unknown field
+  (should (equal "Hi undefined!"
+                 (templatel-render-string
+                  "Hi {{ user.name }}!"
+                  '(("user" . (("city" . "Belo Horizonte")))))))
   ;; with filters
   (should (equal "GNU"
                  (templatel-render-string
@@ -929,6 +934,9 @@ base-end")))))
     "<h1>Hello </h1>")))
 
 (ert-deftest render-template-variable ()
+  (should (equal
+           "<h1>Hello undefined</h1>"
+           (templatel-render-string "<h1>Hello {{ name }}</h1>" '())))
   (should (equal
            (templatel-render-string "<h1>Hello {{name }}</h1>" '(("name" . "Emacs")))
            "<h1>Hello Emacs</h1>"))
