@@ -55,6 +55,8 @@
           
             <li><a href="#symbol-templatel-env-add-template">templatel-env-add-template</a></li>
           
+            <li><a href="#symbol-templatel-env-add-test">templatel-env-add-test</a></li>
+          
             <li><a href="#symbol-templatel-env-get-autoescape">templatel-env-get-autoescape</a></li>
           
             <li><a href="#symbol-templatel-env-new">templatel-env-new</a></li>
@@ -62,6 +64,8 @@
             <li><a href="#symbol-templatel-env-remove-filter">templatel-env-remove-filter</a></li>
           
             <li><a href="#symbol-templatel-env-remove-template">templatel-env-remove-template</a></li>
+          
+            <li><a href="#symbol-templatel-env-remove-test">templatel-env-remove-test</a></li>
           
             <li><a href="#symbol-templatel-env-render">templatel-env-render</a></li>
           
@@ -74,23 +78,45 @@
         </h3>
         <ul>
           
+            <li><a href="#symbol-templatel-filters-abs">templatel-filters-abs</a></li>
+          
+            <li><a href="#symbol-templatel-filters-attr">templatel-filters-attr</a></li>
+          
+            <li><a href="#symbol-templatel-filters-capitalize">templatel-filters-capitalize</a></li>
+          
             <li><a href="#symbol-templatel-filters-default">templatel-filters-default</a></li>
+          
+            <li><a href="#symbol-templatel-filters-escape">templatel-filters-escape</a></li>
           
             <li><a href="#symbol-templatel-filters-first">templatel-filters-first</a></li>
           
-            <li><a href="#symbol-templatel-filters-getattr">templatel-filters-getattr</a></li>
+            <li><a href="#symbol-templatel-filters-float">templatel-filters-float</a></li>
           
             <li><a href="#symbol-templatel-filters-int">templatel-filters-int</a></li>
           
+            <li><a href="#symbol-templatel-filters-join">templatel-filters-join</a></li>
+          
             <li><a href="#symbol-templatel-filters-last">templatel-filters-last</a></li>
+          
+            <li><a href="#symbol-templatel-filters-length">templatel-filters-length</a></li>
           
             <li><a href="#symbol-templatel-filters-lower">templatel-filters-lower</a></li>
           
+            <li><a href="#symbol-templatel-filters-max">templatel-filters-max</a></li>
+          
+            <li><a href="#symbol-templatel-filters-min">templatel-filters-min</a></li>
+          
             <li><a href="#symbol-templatel-filters-plus1">templatel-filters-plus1</a></li>
+          
+            <li><a href="#symbol-templatel-filters-round">templatel-filters-round</a></li>
           
             <li><a href="#symbol-templatel-filters-safe">templatel-filters-safe</a></li>
           
+            <li><a href="#symbol-templatel-filters-sort">templatel-filters-sort</a></li>
+          
             <li><a href="#symbol-templatel-filters-sum">templatel-filters-sum</a></li>
+          
+            <li><a href="#symbol-templatel-filters-title">templatel-filters-title</a></li>
           
             <li><a href="#symbol-templatel-filters-upper">templatel-filters-upper</a></li>
           
@@ -277,6 +303,22 @@ Add TEMPLATE to ENV under key NAME.</p>
                 
               </div>
             
+              <div class="symbol" id="symbol-templatel-env-add-test">
+                
+                  <h2>
+                    (templatel-env-add-test (env name test))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Add TEST to ENV under key NAME.</p>
+
+                  </div>
+                
+              </div>
+            
               <div class="symbol" id="symbol-templatel-env-get-autoescape">
                 
                   <h2>
@@ -388,6 +430,27 @@ This function reverts the effect of a previous call to
                 
               </div>
             
+              <div class="symbol" id="symbol-templatel-env-remove-test">
+                
+                  <h2>
+                    (templatel-env-remove-test (env name))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Remove test from ENV under key NAME.
+</p>
+
+<p>
+This function reverts the effect of a previous call to
+<a href="#symbol-templatel-env-add-test">templatel-env-add-test</a>.</p>
+
+                  </div>
+                
+              </div>
+            
               <div class="symbol" id="symbol-templatel-env-render">
                 
                   <h2>
@@ -428,6 +491,54 @@ Set AUTOESCAPE flag of ENV to either true or false.</p>
 
           <div class="symbols">
             
+              <div class="symbol" id="symbol-templatel-filters-abs">
+                
+                  <h2>
+                    (templatel-filters-abs (n))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Absolute value of number N.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-filters-attr">
+                
+                  <h2>
+                    (templatel-filters-attr (s n))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Get element N of assoc S.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-filters-capitalize">
+                
+                  <h2>
+                    (templatel-filters-capitalize (s))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Upper-case the first character of S.</p>
+
+                  </div>
+                
+              </div>
+            
               <div class="symbol" id="symbol-templatel-filters-default">
                 
                   <h2>
@@ -439,6 +550,22 @@ Set AUTOESCAPE flag of ENV to either true or false.</p>
                   <div class="docstring">
                     <p>
 Return DEFAULT if VALUE is nil or return VALUE.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-filters-escape">
+                
+                  <h2>
+                    (templatel-filters-escape (s))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Convert special chars in S to their respective HTML entities.</p>
 
                   </div>
                 
@@ -460,17 +587,17 @@ First element of sequence S.</p>
                 
               </div>
             
-              <div class="symbol" id="symbol-templatel-filters-getattr">
+              <div class="symbol" id="symbol-templatel-filters-float">
                 
                   <h2>
-                    (templatel-filters-getattr (s n))
+                    (templatel-filters-float (s))
                   </h2>
                 
 
                 
                   <div class="docstring">
                     <p>
-Get element N of assoc S.</p>
+Parse S as float.</p>
 
                   </div>
                 
@@ -479,7 +606,7 @@ Get element N of assoc S.</p>
               <div class="symbol" id="symbol-templatel-filters-int">
                 
                   <h2>
-                    (templatel-filters-int (s base))
+                    (templatel-filters-int (s &amp;optional base))
                   </h2>
                 
 
@@ -487,6 +614,22 @@ Get element N of assoc S.</p>
                   <div class="docstring">
                     <p>
 Convert S into integer of base BASE.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-filters-join">
+                
+                  <h2>
+                    (templatel-filters-join (seq &amp;optional sep))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Join al elements of SEQ with SEP.</p>
 
                   </div>
                 
@@ -508,6 +651,22 @@ Last element of sequence S.</p>
                 
               </div>
             
+              <div class="symbol" id="symbol-templatel-filters-length">
+                
+                  <h2>
+                    (templatel-filters-length (seq))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Return how many elements in a SEQ.</p>
+
+                  </div>
+                
+              </div>
+            
               <div class="symbol" id="symbol-templatel-filters-lower">
                 
                   <h2>
@@ -524,6 +683,38 @@ Lower case all chars of S.</p>
                 
               </div>
             
+              <div class="symbol" id="symbol-templatel-filters-max">
+                
+                  <h2>
+                    (templatel-filters-max (seq))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Find maximum value within SEQ.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-filters-min">
+                
+                  <h2>
+                    (templatel-filters-min (seq))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Find minimum value within SEQ.</p>
+
+                  </div>
+                
+              </div>
+            
               <div class="symbol" id="symbol-templatel-filters-plus1">
                 
                   <h2>
@@ -535,6 +726,22 @@ Lower case all chars of S.</p>
                   <div class="docstring">
                     <p>
 Add one to S.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-filters-round">
+                
+                  <h2>
+                    (templatel-filters-round (n))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Round N.</p>
 
                   </div>
                 
@@ -579,6 +786,22 @@ though the flag for auto escaping is true:
                 
               </div>
             
+              <div class="symbol" id="symbol-templatel-filters-sort">
+                
+                  <h2>
+                    (templatel-filters-sort (s))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Return S sorted.</p>
+
+                  </div>
+                
+              </div>
+            
               <div class="symbol" id="symbol-templatel-filters-sum">
                 
                   <h2>
@@ -590,6 +813,22 @@ though the flag for auto escaping is true:
                   <div class="docstring">
                     <p>
 Sum all entries in S.</p>
+
+                  </div>
+                
+              </div>
+            
+              <div class="symbol" id="symbol-templatel-filters-title">
+                
+                  <h2>
+                    (templatel-filters-title (s))
+                  </h2>
+                
+
+                
+                  <div class="docstring">
+                    <p>
+Upper first char of each word in S.</p>
 
                   </div>
                 
