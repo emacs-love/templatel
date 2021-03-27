@@ -1225,7 +1225,7 @@ base-end")))))
                    ("Element"
                     ("Identifier" . "show")))))))))))
 
-9(ert-deftest template-include ()
+(ert-deftest template-include ()
   (let* ((s (templatel--scanner-new "{% include \"file.html\" %}" "<string>"))
          (txt (templatel--parser-template s)))
     (should (equal
