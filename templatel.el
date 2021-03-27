@@ -339,6 +339,11 @@
   (templatel--scanner-matchs scanner "extends")
   (templatel--parser-_ scanner))
 
+(defun templatel--token-include (scanner)
+  "Read 'include' off SCANNER's input."
+  (templatel--scanner-matchs scanner "include")
+  (templatel--parser-_ scanner))
+
 (defun templatel--token-in (scanner)
   "Read 'in' off SCANNER's input."
   (let ((m (templatel--scanner-matchs scanner "in")))
@@ -529,7 +534,11 @@
              (templatel--scanner-line-incr scanner))
          chr))))))
 
-;; GR: Statement           <- IfStatement / ForStatement / BlockStatement / ExtendsStatement
+;; GR: Statement           <- IfStatement
+;; GR:                       / ForStatement
+;; GR:                       / BlockStatement
+;; GR:                       / ExtendsStatement
+;; GR:                       / IncludeStatement
 (defun templatel--parser-statement (scanner)
   "Parse a statement from SCANNER."
   (templatel--scanner-or
@@ -538,7 +547,9 @@
     (lambda() (templatel--parser-if-stm scanner))
     (lambda() (templatel--parser-for-stm scanner))
     (lambda() (templatel--parser-block-stm scanner))
-    (lambda() (templatel--parser-extends-stm scanner)))))
+    (lambda() (templatel--parser-extends-stm scanner))
+    (lambda() (templatel--parser-include-stm scanner)))))
+
 
 ;; GR: IfStatement         <- _Elif / _Else / _If Expr _STM_CLOSE Template _EndIf
 (defun templatel--parser-if-stm (scanner)
@@ -693,6 +704,19 @@
     (templatel--parser-_ scanner)
     (templatel--parser-stm-cl scanner)
     (cons "ExtendsStatement" (list name))))
+
+;; GR: IncludeStatement    <- _STM_OPEN _include String _STM_CLOSE
+(defun templatel--parser-include-stm (scanner)
+  "Parse extends statement from SCANNER."
+  (templatel--token-stm-op scanner)
+  (templatel--token-include scanner)
+  (let ((name (templatel--parser-cut
+               scanner
+               (lambda() (templatel--parser-string scanner))
+               "Missing template name in include statement")))
+    (templatel--parser-_ scanner)
+    (templatel--parser-stm-cl scanner)
+    (cons "IncludeStatement" (list name))))
 
 ;; GR: Expression          <- _EXPR_OPEN Expr _EXPR_CLOSE
 (defun templatel--parser-expression (scanner)
@@ -1416,6 +1440,19 @@ be inspected by `rt/lookup-parent-block'."
      (setq rt/parent-blocks
            (apply (templatel--compiler-block-code rt/parent rt/parent-template) runtime))))
 
+(defun templatel--compiler-include (tree)
+  "Compile an include statement from TREE.
+
+The include statement takes a name of a template that is imported
+via ~:importfn~ (see
+[[anchor:symbol-templatel-env-new][templatel-env-new]]).
+
+The imported template is then rendered and its output is inserted
+into the output buffer."
+  `(progn
+     (templatel--env-run-importfn (rt/get :env) ,(cdar tree))
+     (insert (templatel-env-render (rt/get :env) ,(cdar tree) (rt/get :vars)))))
+
 (defun templatel--compiler-element (tree)
   "Compile an element from TREE."
   `(let ((value ,@(templatel--compiler-run tree)))
@@ -1770,6 +1807,7 @@ Otherwise its HTML entities are escaped."
     (`("ForStatement"      . ,a) (templatel--compiler-for a))
     (`("BlockStatement"    . ,a) (templatel--compiler-block a))
     (`("ExtendsStatement"  . ,a) (templatel--compiler-extends a))
+    (`("IncludeStatement"  . ,a) (templatel--compiler-include a))
     (`("BinOp"             . ,a) (templatel--compiler-binop a))
     (`("Unary"             . ,a) (templatel--compiler-unary a))
     (`("Number"            . ,a) a)

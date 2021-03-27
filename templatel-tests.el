@@ -431,6 +431,38 @@ base-end")))))
 (ert-deftest render-block-default ()
   (should (equal (templatel-render-string "{% block stuff %}default{% endblock %}" '()) "default")))
 
+(ert-deftest render-include ()
+  (let ((env (templatel-env-new
+              :importfn (lambda(e name)
+                          ;; Base template define the block
+                          (templatel-env-add-template
+                           e name
+                           (templatel-new "sub text"))))))
+
+    ;; Template that extends the layout and override the block
+    (templatel-env-add-template
+     env "page.html"
+     (templatel-new "before {% include \"foo.html\" %} after"))
+
+    (should (equal "before sub text after"
+                   (templatel-env-render env "page.html" '()))))
+
+  ;; Test with html entities
+  (let ((env (templatel-env-new
+              :importfn (lambda(e name)
+                          ;; Base template define the block
+                          (templatel-env-add-template
+                           e name
+                           (templatel-new "<script>alert(1)</script>"))))))
+
+    ;; Template that extends the layout and override the block
+    (templatel-env-add-template
+     env "page.html"
+     (templatel-new "before {% include \"foo.html\" %} after"))
+
+    (should (equal "before <script>alert(1)</script> after"
+                   (templatel-env-render env "page.html" '())))))
+
 (ert-deftest render-nil-value ()
   (should (equal (templatel-render-string "{{ myvar }}" '(("myvar" . nil))) ""))
   (should (equal (templatel-render-string "{{ nil }}" '()) "")))
@@ -1192,6 +1224,22 @@ base-end")))))
                   ("Expr"
                    ("Element"
                     ("Identifier" . "show")))))))))))
+
+9(ert-deftest template-include ()
+  (let* ((s (templatel--scanner-new "{% include \"file.html\" %}" "<string>"))
+         (txt (templatel--parser-template s)))
+    (should (equal
+             txt
+             '("Template"
+               ("IncludeStatement"
+                ("String" . "file.html"))))))
+
+  ;; Error if file isn't provided
+  (condition-case err
+      (templatel--parser-template
+       (templatel--scanner-new "{% include %}" "<string>"))
+    (templatel-error
+     (should (equal err '(templatel-syntax-error . "<string> at 1,12: Missing template name in include statement"))))))
 
 (ert-deftest template-expr-binop ()
   (let* ((s (templatel--scanner-new "Hello, {{ 1 * 2 }}!" "<string>"))
