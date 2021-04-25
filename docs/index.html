@@ -137,11 +137,9 @@ Templatel doesn't implement the following features:
 </p>
 
 <ul class="org-ul">
-<li>Many built-in filters</li>
+<li>Some built-in filters</li>
 <li>For loop variables (loop.index, loop.first, loop.last, etc)</li>
-<li>Include statement</li>
 <li>Whitespace Control</li>
-<li><del>Undefined Variables</del></li>
 <li>List and tuple literals</li>
 <li>Else branch in for loops</li>
 <li>Macros, Macro Calls and Import</li>
@@ -166,6 +164,31 @@ compatible to jinja are always welcome.
 <h2 id="changelog">Changelog</h2>
 <div class="outline-text-2" id="text-changelog">
 </div>
+<div id="outline-container-0-1-6" class="outline-3">
+<h3 id="0-1-6">0.1.6</h3>
+<div class="outline-text-3">
+<ul class="org-ul">
+<li>Default variables to <code>undefined</code> instead of raising an error</li>
+<li>Added test operator <code>is</code> that is another syntax for passing
+parameters to functions that have a defined signature, they must
+return a Boolean value. e.g.: <code>{% if something is defined %}</code>.</li>
+<li>Support <code>{% include %}</code> statements (Thanks to <a href="https://github.com/guilhermecomum/">Guilherme Guerra</a>)</li>
+<li>New tests added: <code>defined</code>, <code>divisible</code></li>
+<li>New filters added: <code>take</code> (Thanks to <a href="https://github.com/markokocic">Marko Kocić</a>), <code>abs</code>,
+capitalize, <code>escape</code> (<code>e</code>), <code>float</code>, <code>join</code>, <code>length</code>, <code>max</code>,
+<code>min</code>, <code>round</code>, and <code>title</code>.  Documentation is still ongoing, and
+help is wanted :)</li>
+<li>Filter deprecated: <code>getattr</code>, please use <code>attr</code> instead</li>
+<li>fix: for loop must access expression via value stack [<a href="https://github.com/clarete/templatel/commit/42be57bed82335636ce159bcb861f28377ec6c0c">commit</a>]</li>
+<li>fix: parsing floating point numbers [<a href="https://github.com/clarete/templatel/commit/80b2b355da92b4bb37b4ffa373cfafc562d60f1a">commit</a>]</li>
+<li>fix: filter operator precedence [<a href="https://github.com/clarete/templatel/commit/7e6034ec20b633ac6e8a9acd1b2cfc7126d1a30a">commit</a>]</li>
+<li>fix: operators for remainder of division (<code>%</code>) and exponential
+<code>**</code> implemented.  They were present in the sintax but didn't
+have an implementation</li>
+</ul>
+</div>
+</div>
+
 <div id="outline-container-0-1-5" class="outline-3">
 <h3 id="0-1-5">0.1.5</h3>
 <div class="outline-text-3">

@@ -66,11 +66,9 @@
 
   Templatel doesn't implement the following features:
 
-  - Many built-in filters
+  - Some built-in filters
   - For loop variables (loop.index, loop.first, loop.last, etc)
-  - Include statement
   - Whitespace Control
-  - +Undefined Variables+
   - List and tuple literals
   - Else branch in for loops
   - Macros, Macro Calls and Import
@@ -87,6 +85,25 @@
   compatible to jinja are always welcome.
 
 * Changelog
+
+** 0.1.6
+   * Default variables to ~undefined~ instead of raising an error
+   * Added test operator ~is~ that is another syntax for passing
+     parameters to functions that have a defined signature, they must
+     return a Boolean value. e.g.: ~{% if something is defined %}~.
+   * Support ~{% include %}~ statements (Thanks to [[https://github.com/guilhermecomum/][Guilherme Guerra]])
+   * New tests added: ~defined~, ~divisible~
+   * New filters added: ~take~ (Thanks to [[https://github.com/markokocic][Marko Kocić]]), ~abs~,
+     capitalize, ~escape~ (~e~), ~float~, ~join~, ~length~, ~max~,
+     ~min~, ~round~, and ~title~.  Documentation is still ongoing, and
+     help is wanted :)
+   * Filter deprecated: ~getattr~, please use ~attr~ instead
+   * fix: for loop must access expression via value stack [[[https://github.com/clarete/templatel/commit/42be57bed82335636ce159bcb861f28377ec6c0c][commit]]]
+   * fix: parsing floating point numbers [[[https://github.com/clarete/templatel/commit/80b2b355da92b4bb37b4ffa373cfafc562d60f1a][commit]]]
+   * fix: filter operator precedence [[[https://github.com/clarete/templatel/commit/7e6034ec20b633ac6e8a9acd1b2cfc7126d1a30a][commit]]]
+   * fix: operators for remainder of division (~%~) and exponential
+     ~**~ implemented.  They were present in the sintax but didn't
+     have an implementation
 
 ** 0.1.5
    - New filters added: ~first~, ~last~, ~getattr~ and ~default~
