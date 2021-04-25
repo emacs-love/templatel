@@ -102,7 +102,7 @@
    * fix: parsing floating point numbers [[[https://github.com/clarete/templatel/commit/80b2b355da92b4bb37b4ffa373cfafc562d60f1a][commit]]]
    * fix: filter operator precedence [[[https://github.com/clarete/templatel/commit/7e6034ec20b633ac6e8a9acd1b2cfc7126d1a30a][commit]]]
    * fix: operators for remainder of division (~%~) and exponential
-     ~**~ implemented.  They were present in the sintax but didn't
+     ~**~ implemented.  They were present in the syntax but didn't
      have an implementation
 
 ** 0.1.5
