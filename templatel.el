@@ -2167,19 +2167,26 @@ The argument OPTIONS can have the following entries:
 
 Just like with
 [[anchor:symbol-templatel-render-string][templatel-render-string]],
-templates rendered with this function also can't use ~{% extends
-%}~ statements.  Please refer to the section
+templates rendered with this function also can't use ~{% extends %}~
+statements.  Please refer to the section
 [[anchor:section-template-environments][Template Environments]]
 to learn how to use the API that enables template inheritance.
 
 Given the HTML template ~file.html~:
 #+BEGIN_SRC jinja2
-Hi {{ name }}
+Hi, {{ name }}!
 #+END_SRC
 
 And the following Lisp code:
 #+BEGIN_SRC emacs-lisp
-\(templatel-render-file \"file.html\" '((\"name\" . \"test\")))
+\(templatel-render-file \"out.html\" '((\"name\" . \"test\")))
+#+END_SRC
+
+When, executed the above code would generate the file `out.html`
+with the variable interpolated into the content.  e.g.:
+
+#+BEGIN_SRC text
+Hi, test!
 #+END_SRC
 
 The argument OPT can have the following entries:

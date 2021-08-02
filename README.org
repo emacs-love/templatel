@@ -35,8 +35,18 @@
    #+begin_src emacs-lisp
    (templatel-render-file "tmpl.html.jinja"
                           '(("title" . "A nice web page")
-                            ("users" . ((("url" . "http://clarete.li")
+                            ("users" . ((("url" . "https://clarete.li")
                                          ("name" . "link"))
-                                        (("url" . "http://gnu.org")
+                                        (("url" . "https://gnu.org")
                                          ("name" . "Gnu!!"))))))
+   #+end_src
+
+   The rendered code would look like this:
+
+   #+begin_src html
+   <h1>A nice web page</h1>
+   <ul>
+     <li><a href="https://clarete.li">link</a></li>
+     <li><a href="https://gnu.org">Gnu!!</a></li>
+   </ul>
    #+end_src

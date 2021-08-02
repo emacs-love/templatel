@@ -162,8 +162,8 @@ Render template file at PATH with VARIABLES.
 <p>
 Just like with
 <a href="#symbol-templatel-render-string">templatel-render-string</a>,
-templates rendered with this function also can’t use <code>{% extends
-%}</code> statements.  Please refer to the section
+templates rendered with this function also can’t use <code>{% extends %}</code>
+statements.  Please refer to the section
 <a href="#section-template-environments">Template Environments</a>
 to learn how to use the API that enables template inheritance.
 </p>
@@ -172,7 +172,7 @@ to learn how to use the API that enables template inheritance.
 Given the HTML template <code>file.html</code>:
 </p>
 <div class="org-src-container">
-<pre class="src src-jinja2">Hi <span class="org-type">{{</span> <span class="org-variable-name">name</span> <span class="org-type">}}</span>
+<pre class="src src-jinja2">Hi, <span class="org-type">{{</span> <span class="org-variable-name">name</span> <span class="org-type">}}</span>!
 </pre>
 </div>
 
@@ -180,7 +180,17 @@ Given the HTML template <code>file.html</code>:
 And the following Lisp code:
 </p>
 <div class="org-src-container">
-<pre class="src src-emacs-lisp">(templatel-render-file <span class="org-string">"file.html"</span> <span class="org-warning">&#8217;</span>((<span class="org-string">"name"</span> . <span class="org-string">"test"</span>)))
+<pre class="src src-emacs-lisp">(templatel-render-file <span class="org-string">"out.html"</span> <span class="org-warning">&#8217;</span>((<span class="org-string">"name"</span> . <span class="org-string">"test"</span>)))
+</pre>
+</div>
+
+<p>
+When, executed the above code would generate the file ‘out.html‘
+with the variable interpolated into the content.  e.g.:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text">Hi, test!
 </pre>
 </div>
 
