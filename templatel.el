@@ -1845,7 +1845,9 @@ Otherwise its HTML entities are escaped."
 
 (defun templatel-filters-default (value default)
   "Return DEFAULT if VALUE is nil or return VALUE."
-  (or value default))
+  (if (templatel--truthy value)
+      value
+    default))
 
 (defun templatel-filters-escape (s)
   "Convert special chars in S to their respective HTML entities."
