@@ -1,0 +1,8 @@
+* intro
+
+  This example contains the minimum setup for templatel for
+  inheritance and to find templates in the file system.
+
+  #+begin_src shell
+  emacs --script gen.el
+  #+end_src
