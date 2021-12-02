@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>The Title</h1>
+
+  <strong>
+    And some cool content too.
+  </strong>
+
+  <ul>
+    {% for shape in shapes %}
+      {{ shape }}
+    {% endfor %}
+  </ul>
+{% endblock %}
