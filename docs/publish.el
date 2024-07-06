@@ -71,7 +71,7 @@
 (weblorg-site
  :theme #'weblorg-theme-autodoc
  :template-vars '(("project_name" . "'templatel")
-                  ("project_github" . "https://github.com/clarete/templatel")
+                  ("project_github" . "https://github.com/emacs-love/templatel")
                   ("project_description" . "A modern templating language for Emacs-Lisp")))
 
 ;; Generate Index Page
