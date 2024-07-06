@@ -14,10 +14,10 @@
 
 ** Documentation
 
-   * Website: https://clarete.li/templatel
-   * Documentation: https://clarete.li/templatel/doc
-   * Code: https://github.com/clarete/templatel
-   * Issues: https://github.com/clarete/templatel/issues
+   * Website: https://emacs.love/templatel
+   * Documentation: https://emacs.love/templatel/doc
+   * Code: https://github.com/emacs-love/templatel
+   * Issues: https://github.com/emacs-love/templatel/issues
 
 ** How does it look like
 
@@ -35,7 +35,7 @@
    #+begin_src emacs-lisp
    (templatel-render-file "tmpl.html.jinja"
                           '(("title" . "A nice web page")
-                            ("users" . ((("url" . "https://clarete.li")
+                            ("users" . ((("url" . "https://emacs.love")
                                          ("name" . "link"))
                                         (("url" . "https://gnu.org")
                                          ("name" . "Gnu!!"))))))
@@ -46,7 +46,7 @@
    #+begin_src html
    <h1>A nice web page</h1>
    <ul>
-     <li><a href="https://clarete.li">link</a></li>
+     <li><a href="https://emacs.love">link</a></li>
      <li><a href="https://gnu.org">Gnu!!</a></li>
    </ul>
    #+end_src
